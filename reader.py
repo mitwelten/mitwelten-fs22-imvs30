@@ -1,4 +1,6 @@
 #!/bin/bash
+import threading
+import sys
 from typing import Optional
 import socket
 import urllib.request
@@ -51,22 +53,32 @@ def next_frame(socket: socket.socket) -> Frame:
     data = read_til_boundry(socket)
     return parse_frame(data)
 
-if __name__ == "__main__":
+def start_socket(port: int) -> None:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    # s._fileobject.default_bufsize = 0
-    s.connect(("127.0.0.1", 8080))
+    s.connect(("127.0.0.1", port))
     request = "GET /?action=stream HTTP/1.1\r\nHost:%s\r\n\r\n"
     s.send(request.encode())
 
     # HTTP Header
     read_til_boundry(s)
 
-    # first frame
-    frame = next_frame(s)
-    frame.write_to_file("out1.jpg")
+    while True:
+        frame = next_frame(s)
+        frame.write_to_file(f"out_{port}.jpg")
 
-    # second frame
-    frame = next_frame(s)
-    frame.write_to_file("out2.jpg")
+
+if __name__ == "__main__":
+
+    if len(sys.argv) == 1:
+        raise Exception("No port(s) specified")
+
+    threads = []
+    for port in sys.argv[1:]:
+        t = threading.Thread(target=start_socket, args=(int(port),))
+        t.start()
+        threads.append(t)
+
+    for thread in threads:
+        thread.join()
+
 
