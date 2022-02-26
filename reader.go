@@ -3,8 +3,9 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"net"
+	"os"
+	"sync"
 )
 
 var delim = []byte("--boundarydonotcross\r\n")
@@ -35,24 +36,35 @@ func parse_frame(data []byte) (header []byte, body []byte) {
 	panic("invalid frame")
 }
 
-func main() {
-	conn, err := net.Dial("tcp", "127.0.0.1:8081")
+func start_socket(port string) {
+	conn, err := net.Dial("tcp", "127.0.0.1:"+port)
 	if err != nil {
-		println("Socket error")
+		panic("Socket error")
 	}
 	conn.Write([]byte("GET /?action=stream HTTP/1.1\r\nHost:%s\r\n\r\n"))
-
-	//reply := make([]byte, 2000)
-	//_, err = conn.Read(reply)
-	//fmt.Println(string(reply))
 
 	reader := bufio.NewReader(conn)
 
 	//header
 	_ = read_til_boundry(reader)
 
-	//first frame
-	var data = read_til_boundry(reader)
-	var _, frame = parse_frame(data)
-	fmt.Println(string(frame))
+
+  for {
+	  var data = read_til_boundry(reader)
+	  var _, frame = parse_frame(data)
+    os.WriteFile("./out_" +port+ ".jpg", frame, 0644)
+  }
+
+}
+
+func main() {
+	var args = os.Args[1:]
+
+	var wg sync.WaitGroup
+	for _, port := range args {
+		wg.Add(1)
+		go start_socket(port)
+	}
+
+	wg.Wait()
 }
