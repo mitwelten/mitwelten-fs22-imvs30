@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"sync"
+	"time"
 )
 
 var delim = []byte("--boundarydonotcross\r\n")
@@ -36,7 +37,7 @@ func parse_frame(data []byte) (header []byte, body []byte) {
 	panic("invalid frame")
 }
 
-func start_socket(port string) {
+func start_socket(port string, channel chan []byte) {
 	conn, err := net.Dial("tcp", "127.0.0.1:"+port)
 	if err != nil {
 		panic("Socket error")
@@ -48,23 +49,42 @@ func start_socket(port string) {
 	//header
 	_ = read_til_boundry(reader)
 
+	for {
+		var data = read_til_boundry(reader)
+		var _, frame = parse_frame(data)
+		//os.WriteFile("./out_" +port+ ".jpg", frame, 0644)
+		channel <- frame
+	}
 
-  for {
-	  var data = read_til_boundry(reader)
-	  var _, frame = parse_frame(data)
-    os.WriteFile("./out_" +port+ ".jpg", frame, 0644)
-  }
+}
 
+func sink(channels []chan []byte) {
+	for {
+		for _, channel := range channels {
+			frame := <-channel
+			os.WriteFile("./out_.jpg", frame, 0644)
+		time.Sleep(250 * time.Millisecond)
+		}
+	}
 }
 
 func main() {
 	var args = os.Args[1:]
 
+	var channels []chan []byte
+	//for i := range args {
+	//  channels = append(channels, make(chan []byte))
+
 	var wg sync.WaitGroup
 	for _, port := range args {
+		var channel = make(chan []byte)
+		//channels[i] = channel
+		channels = append(channels, channel)
 		wg.Add(1)
-		go start_socket(port)
+		go start_socket(port, channel)
 	}
+
+	go sink(channels)
 
 	wg.Wait()
 }
