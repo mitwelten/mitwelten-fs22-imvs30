@@ -16,7 +16,8 @@ type Frame struct {
 }
 
 var delim = []byte("--boundarydonotcross\r\n")
-var frame_start = []byte("\xff\xd8\xff\xe0")
+// as per https://docs.fileformat.com/image/jpeg/
+var frame_start = []byte("\xff\xd8")
 
 func read_til_boundry(r *bufio.Reader) (data []byte) {
 	for {
@@ -36,10 +37,19 @@ func read_til_boundry(r *bufio.Reader) (data []byte) {
 
 func parse_frame(data []byte) (frame Frame) {
 	for i := 0; i < len(data); i++ {
-		if bytes.Compare(data[i:i+4], frame_start) == 0 {
+		if bytes.Compare(data[i:i+2], frame_start) == 0 {
 			return Frame{data[:i], data[i:]}
 		}
 	}
+
+  println(string(data[77]))
+  println(string(data[78]))
+  println(bytes.Compare(data[77:77+2], frame_start) == 0)
+  println(string(frame_start[0]))
+  println(string(frame_start[1]))
+
+  
+  os.WriteFile("./parse_frame_panic_data", data, 0644)
 	panic("invalid frame")
 }
 

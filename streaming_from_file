@@ -1,3 +1,7 @@
-mjpg_streamer -i 'input_file.so  -f /home/user/homeserver/2022_Semester_6/ip6/images/ --existing' -o 'output_http.so -w /home/user/homeserver/2022_Semester_6/ip6/mjpg-streamer/mjpg-streamer-experimental/www -p 8080'
 # open in browser http://127.0.0.1:8080/?action=stream
 # curl 'http://127.0.0.1:8080/?action=stream' --output - > out
+#
+# streaming from file
+mjpg_streamer -i 'input_file.so  -f /home/user/homeserver/2022_Semester_6/ip6/images/ --existing' -o 'output_http.so -w /home/user/homeserver/2022_Semester_6/ip6/mjpg-streamer/mjpg-streamer-experimental/www -p 8080'
+# streaming from webcame
+mjpg_streamer -i 'input_uvc.so -d /dev/video0' -o 'output_http.so -w /home/user/homeserver/2022_Semester_6/ip6/mjpg-streamer/mjpg-streamer-experimental/www -p 8080'
