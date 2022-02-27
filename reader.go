@@ -185,8 +185,8 @@ func sink(sources []chan Frame) {
 	}(agg)
 }
 
-func main() {
-	var args = os.Args[1:]
+
+func run(args []string){
 	var wg sync.WaitGroup
 
 	var channels []chan Frame
@@ -202,4 +202,9 @@ func main() {
 	sink(channels)
 
 	wg.Wait()
+}
+
+func main() {
+	var args = os.Args[1:]
+  run(args)
 }
