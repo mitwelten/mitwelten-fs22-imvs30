@@ -18,7 +18,7 @@ func run(args []string) {
 	for _, port := range args {
 		wg.Add(1)
 		var source = connection.NewSource(port)
-    source.Open()
+		source.Open()
 		var channel = source.Run()
 		channels = append(channels, channel)
 	}

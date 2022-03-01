@@ -1,6 +1,6 @@
 package connection
 
-import "mjpeg_multiplexer/mjpeg"
+import "mjpeg"
 
 import (
 	"os"
