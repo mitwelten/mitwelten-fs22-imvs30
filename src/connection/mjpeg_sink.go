@@ -1,8 +1,7 @@
 package connection
 
-import "mjpeg"
-
 import (
+	"mjpeg_multiplexer/src/mjpeg"
 	"os"
 )
 
@@ -27,7 +26,10 @@ func (sink Sink) Run(sources []chan mjpeg.Frame) {
 	go func(agg chan mjpeg.Frame) {
 		for {
 			frame := <-agg
-			os.WriteFile(sink.filePath, frame.Body, 0644)
+			err := os.WriteFile(sink.filePath, frame.Body, 0644)
+			if err != nil {
+				return
+			}
 		}
 	}(agg)
 }

@@ -1,11 +1,10 @@
 package connection
 
-import "mjpeg_multiplexer/mjpeg"
-
 import (
 	"bytes"
-  "errors"
+	"errors"
 	"io"
+	"mjpeg_multiplexer/src/mjpeg"
 	"net"
 	"strconv"
 )
@@ -27,7 +26,7 @@ func (source Source) Open() {
 	source.connection.Write([]byte("GET /?action=stream HTTP/1.1\r\nHost:%s\r\n\r\n"))
 }
 
-func (source Source) receive_frame() (mjpeg.Frame, error) {
+func (source Source) receiveFrame() (mjpeg.Frame, error) {
 	//todo optimize
 
 	// Read header
@@ -54,9 +53,9 @@ func (source Source) receive_frame() (mjpeg.Frame, error) {
 	var word = "Content-Length: "
 
 	for {
-    if index >= len(buffer){
-      break
-    }
+		if index >= len(buffer) {
+			break
+		}
 
 		if wordIndex == len(word) {
 			break
@@ -72,7 +71,7 @@ func (source Source) receive_frame() (mjpeg.Frame, error) {
 	}
 
 	if wordIndex != len(word) {
-    return mjpeg.Frame{}, errors.New("empty frame")
+		return mjpeg.Frame{}, errors.New("empty frame")
 	}
 
 	// parse content size number
@@ -102,7 +101,7 @@ func (source Source) receive_frame() (mjpeg.Frame, error) {
 
 	var body = append(mjpeg.JPEG_PREFIX, buffer_body...)
 
-	return mjpeg.Frame{buffer[:len(buffer)-len(mjpeg.JPEG_PREFIX)], body}, nil
+	return mjpeg.Frame{Header: buffer[:len(buffer)-len(mjpeg.JPEG_PREFIX)], Body: body}, nil
 }
 
 func (source Source) Run() chan mjpeg.Frame {
@@ -110,10 +109,10 @@ func (source Source) Run() chan mjpeg.Frame {
 
 	go func() {
 		for {
-			var frame, error = source.receive_frame()
-      if error != nil{
-        continue
-      }
+			var frame, error = source.receiveFrame()
+			if error != nil {
+				continue
+			}
 			channel <- frame
 			//select {
 			// case source  <- frame:

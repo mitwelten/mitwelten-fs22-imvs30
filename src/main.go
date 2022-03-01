@@ -1,8 +1,9 @@
-//https://go101.org/article/channel-use-cases.html
 package main
 
-import "mjpeg_multiplexer/mjpeg"
-import "mjpeg_multiplexer/connection"
+import (
+	"mjpeg_multiplexer/src/connection"
+	"mjpeg_multiplexer/src/mjpeg"
+)
 
 import (
 	"os"
@@ -31,6 +32,7 @@ func run(args []string) {
 }
 
 func main() {
+	println("Running the MJPEG-multiFLEXer")
 	var args = os.Args[1:]
 	run(args)
 }
