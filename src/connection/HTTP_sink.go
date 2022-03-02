@@ -19,6 +19,8 @@ type Server struct {
 	connection net.Conn
 }
 
+var delim = "--boundarydonotcross"
+
 func serve(server Server) {
 	defer server.connection.Close()
 	defer close(server.channel)
@@ -50,9 +52,9 @@ func serve(server Server) {
 func (server Server) sendHeader() error {
 	var header = "HTTP/1.0 200 OK\r\n" +
 		"Access-Control-Allow-Origin: *\r\n" +
-		"Content-Type: multipart/x-mixed-replace;boundary=boundarydonotcross\r\n" +
+		"Content-Type: multipart/x-mixed-replace;boundary=" + delim + "\r\n" +
 		"\r\n" +
-		"--boundarydonotcross\r\n"
+		"--" + delim + "\r\n"
 	_, err := server.connection.Write([]byte(header))
 	if err != nil {
 		return errors.New("Can't send header")
@@ -64,7 +66,6 @@ func (server Server) sendFrame(frame mjpeg.Frame) error {
 		"Content-Length: " + strconv.Itoa(len(frame.Body)) + "\r\n"
 	//"X-Timestamp: TODO \r\n"
 
-	println(header)
 	_, err := server.connection.Write([]byte(header))
 	if err != nil {
 		return errors.New("can't send header")
@@ -74,9 +75,9 @@ func (server Server) sendFrame(frame mjpeg.Frame) error {
 	if err != nil {
 		return errors.New("can't send frame body")
 	}
-	_, err = server.connection.Write([]byte("\r\n--boundarydonotcross\r\n"))
+	_, err = server.connection.Write([]byte("\r\n--" + delim + "\r\n"))
 	if err != nil {
-		panic("Can't send delim")
+		return errors.New("Can't send delim")
 	}
 
 	return nil
