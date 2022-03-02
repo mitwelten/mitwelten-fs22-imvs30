@@ -14,5 +14,8 @@ func NewFileSink(filePath string) (sink FileSink) {
 }
 
 func (sink FileSink) ProcessFrame(frame mjpeg.Frame) {
-	os.WriteFile(sink.filePath, frame.Body, 0644)
+	err := os.WriteFile(sink.filePath, frame.Body, 0644)
+	if err != nil {
+		panic("Can't write file")
+	}
 }

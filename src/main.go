@@ -1,7 +1,9 @@
 package main
 
 import (
+	"mjpeg_multiplexer/src/aggregator"
 	"mjpeg_multiplexer/src/connection"
+	"mjpeg_multiplexer/src/mjpeg"
 )
 
 import (
@@ -14,19 +16,20 @@ import (
 func run(args []string) {
 	var wg sync.WaitGroup
 
-	var sources []connection.Source
+	var channels []chan mjpeg.Frame
 	for _, port := range args {
 		wg.Add(1)
 		var source = connection.NewHTTPSource(port)
 		source.Open()
-		connection.RunSource(source)
-		sources = append(sources, source)
+		var channel = connection.RunSource(source)
+		channels = append(channels, channel)
 	}
+	var aggregatedChannels = aggregator.MergeImages(channels)
 
 	wg.Add(1)
 	var sink = connection.NewFileSink("out_.jpg")
-	connection.RunSink(sink, sources)
-
+	connection.RunSink(sink, aggregatedChannels)
+	//image.Test(sources[0], sources[1])
 	wg.Wait()
 }
 

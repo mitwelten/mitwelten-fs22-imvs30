@@ -6,21 +6,11 @@ type Sink interface {
 	ProcessFrame(frame mjpeg.Frame)
 }
 
-func RunSink(sink Sink, sources []Source) {
-	//Create an aggregator channel which combines all channels into one
-	agg := make(chan mjpeg.Frame)
-	for _, s := range sources {
-		go func(source Source) {
-			for msg := range source.GetChannel() {
-				agg <- msg
-			}
-		}(s)
-	}
-
+func RunSink(sink Sink, channel chan mjpeg.Frame) {
 	go func(agg chan mjpeg.Frame) {
 		for {
-			frame := <-agg
+			frame := <-channel
 			sink.ProcessFrame(frame)
 		}
-	}(agg)
+	}(channel)
 }

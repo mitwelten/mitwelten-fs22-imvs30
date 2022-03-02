@@ -4,21 +4,22 @@ import "mjpeg_multiplexer/src/mjpeg"
 
 type Source interface {
 	ReceiveFrame() (mjpeg.Frame, error)
-	GetChannel() chan mjpeg.Frame
 }
 
-func RunSource(source Source) {
+func RunSource(source Source) chan mjpeg.Frame {
+	var channel = make(chan mjpeg.Frame)
 	go func() {
 		for {
 			var frame, err = source.ReceiveFrame()
 			if err != nil {
 				continue
 			}
-			source.GetChannel() <- frame
+			channel <- frame
 			//select {
 			// case source  <- frame:
 			//default:
 			//}
 		}
 	}()
+	return channel
 }
