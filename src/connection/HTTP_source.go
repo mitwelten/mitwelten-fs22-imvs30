@@ -10,7 +10,6 @@ import (
 )
 
 type HTTPSource struct {
-	Channel    chan mjpeg.Frame
 	connection net.Conn
 }
 
@@ -20,7 +19,7 @@ func NewHTTPSource(port string) (source HTTPSource) {
 		panic("Socket error")
 	}
 
-	return HTTPSource{make(chan mjpeg.Frame), conn}
+	return HTTPSource{conn}
 }
 
 func (source HTTPSource) Open() {
@@ -103,8 +102,4 @@ func (source HTTPSource) ReceiveFrame() (mjpeg.Frame, error) {
 	var body = append(mjpeg.JPEG_PREFIX, buffer_body...)
 
 	return mjpeg.Frame{Header: buffer[:len(buffer)-len(mjpeg.JPEG_PREFIX)], Body: body}, nil
-}
-
-func (source HTTPSource) GetChannel() (frame chan mjpeg.Frame) {
-	return source.Channel
 }
