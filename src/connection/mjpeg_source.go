@@ -9,24 +9,25 @@ import (
 	"strconv"
 )
 
-type Source struct {
+type HTTPSource struct {
+	Channel    chan mjpeg.Frame
 	connection net.Conn
 }
 
-func NewSource(port string) (source Source) {
+func NewHTTPSource(port string) (source HTTPSource) {
 	conn, err := net.Dial("tcp", "127.0.0.1:"+port)
 	if err != nil {
 		panic("Socket error")
 	}
 
-	return Source{conn}
+	return HTTPSource{make(chan mjpeg.Frame), conn}
 }
 
-func (source Source) Open() {
+func (source HTTPSource) Open() {
 	source.connection.Write([]byte("GET /?action=stream HTTP/1.1\r\nHost:%s\r\n\r\n"))
 }
 
-func (source Source) receiveFrame() (mjpeg.Frame, error) {
+func (source HTTPSource) ReceiveFrame() (mjpeg.Frame, error) {
 	//todo optimize
 
 	// Read header
@@ -104,22 +105,6 @@ func (source Source) receiveFrame() (mjpeg.Frame, error) {
 	return mjpeg.Frame{Header: buffer[:len(buffer)-len(mjpeg.JPEG_PREFIX)], Body: body}, nil
 }
 
-func (source Source) Run() chan mjpeg.Frame {
-	var channel = make(chan mjpeg.Frame)
-
-	go func() {
-		for {
-			var frame, error = source.receiveFrame()
-			if error != nil {
-				continue
-			}
-			channel <- frame
-			//select {
-			// case source  <- frame:
-			//default:
-			//}
-		}
-	}()
-
-	return channel
+func (source HTTPSource) GetChannel() (frame chan mjpeg.Frame) {
+	return source.Channel
 }

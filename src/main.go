@@ -2,7 +2,6 @@ package main
 
 import (
 	"mjpeg_multiplexer/src/connection"
-	"mjpeg_multiplexer/src/mjpeg"
 )
 
 import (
@@ -15,18 +14,18 @@ import (
 func run(args []string) {
 	var wg sync.WaitGroup
 
-	var channels []chan mjpeg.Frame
+	var sources []connection.Source
 	for _, port := range args {
 		wg.Add(1)
-		var source = connection.NewSource(port)
+		var source = connection.NewHTTPSource(port)
 		source.Open()
-		var channel = source.Run()
-		channels = append(channels, channel)
+		connection.RunSource(source)
+		sources = append(sources, source)
 	}
 
 	wg.Add(1)
-	var sink = connection.NewSink("out_.jpg")
-	sink.Run(channels)
+	var sink = connection.NewFileSink("out_.jpg")
+	connection.RunSink(sink, sources)
 
 	wg.Wait()
 }
