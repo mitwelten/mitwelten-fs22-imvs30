@@ -27,7 +27,8 @@ func run(args []string) {
 	var aggregatedChannels = aggregator.MergeImages(channels)
 
 	wg.Add(1)
-	var sink = connection.NewFileSink("out_.jpg")
+	//	var sink = connection.NewFileSink("out.jpg")
+	var sink = connection.NewHTTPSink("8082")
 	connection.RunSink(sink, aggregatedChannels)
 	//image.Test(sources[0], sources[1])
 	wg.Wait()
