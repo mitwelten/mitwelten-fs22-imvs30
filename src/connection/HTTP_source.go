@@ -13,8 +13,8 @@ type HTTPSource struct {
 	connection net.Conn
 }
 
-func NewHTTPSource(port string) (source HTTPSource) {
-	conn, err := net.Dial("tcp", "127.0.0.1:"+port)
+func NewHTTPSource(url string) (source HTTPSource) {
+	conn, err := net.Dial("tcp", url)
 	if err != nil {
 		panic("Socket error")
 	}
