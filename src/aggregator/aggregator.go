@@ -36,3 +36,11 @@ func MergeImages(channels []chan mjpeg.Frame) chan mjpeg.Frame {
 
 	return out
 }
+
+func Min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+
+}
