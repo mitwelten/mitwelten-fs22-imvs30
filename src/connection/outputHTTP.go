@@ -83,7 +83,7 @@ func (server Server) sendFrame(frame mjpeg.Frame) error {
 	return nil
 }
 
-func NewHTTPSink(port string) OutputHTTP {
+func NewOutputHTTP(port string) OutputHTTP {
 	//todo this is trash
 	listener, err := net.Listen("tcp", "127.0.0.1:"+port)
 	if err != nil {
