@@ -24,7 +24,8 @@ func run(args []string) {
 		var channel = connection.RunSource(source)
 		channels = append(channels, channel)
 	}
-	var aggregatedChannels = aggregator.MergeImages(channels)
+	var aggregatedChannels = aggregator.Merge2Images(channels)
+	//var aggregatedChannels = aggregator.MergeImages(channels)
 	//var aggregatedChannels = aggregator.CombineChannels(channels)
 
 	wg.Add(1)

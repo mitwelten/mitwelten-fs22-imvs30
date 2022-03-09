@@ -3,7 +3,7 @@ package aggregator
 import (
 	"mjpeg_multiplexer/src/image"
 	"mjpeg_multiplexer/src/mjpeg"
-	"time"
+  "time"
 )
 
 func CombineChannels(channels []chan mjpeg.Frame) chan mjpeg.Frame {
@@ -44,5 +44,29 @@ func Min(a, b int) int {
 		return a
 	}
 	return b
+}
 
+func Merge2Images(channels []chan mjpeg.Frame) chan mjpeg.Frame {
+  if len(channels) != 2{
+    panic("Must specify 2 input channels")
+  }
+	var out = make(chan mjpeg.Frame)
+	go func(c1 chan mjpeg.Frame, c2 chan mjpeg.Frame) {
+		for {
+			start := time.Now()
+			var f1 = <-c1
+			var f2 = <-c2
+			t := time.Now()
+			elapsed := t.Sub(start)
+			println(elapsed.Milliseconds(), "ms for image aggregation")
+
+			start = time.Now()
+			out <- image.MergeImages(f1, f2)
+			t = time.Now()
+			elapsed = t.Sub(start)
+			println(elapsed.Milliseconds(), "ms for image merging")
+		}
+	}(channels[0], channels[1])
+
+	return out
 }

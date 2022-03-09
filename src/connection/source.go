@@ -12,13 +12,15 @@ func RunSource(source Source) chan mjpeg.Frame {
 		for {
 			var frame, err = source.ReceiveFrame()
 			if err != nil {
+        println("Warning, error!")
 				continue
 			}
-			channel <- frame
-			//select {
-			// case source  <- frame:
-			//default:
-			//}
+
+			//channel <- frame
+			select {
+			  case channel  <- frame:
+			 default:
+		  }
 		}
 	}()
 	return channel
