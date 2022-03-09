@@ -28,7 +28,6 @@ func (source InputHTTP) Open() {
 
 func (source InputHTTP) ReceiveFrame() (mjpeg.Frame, error) {
 	//todo optimize
-
 	// Read header
 	var buffer = make([]byte, 1)
 	for {
