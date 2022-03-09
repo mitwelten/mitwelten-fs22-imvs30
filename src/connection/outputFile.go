@@ -5,15 +5,15 @@ import (
 	"os"
 )
 
-type FileSink struct {
+type OutputFile struct {
 	filePath string
 }
 
-func NewFileSink(filePath string) (sink FileSink) {
-	return FileSink{filePath}
+func NewOutputFile(filePath string) (sink OutputFile) {
+	return OutputFile{filePath}
 }
 
-func (sink FileSink) ProcessFrame(frame mjpeg.Frame) {
+func (sink OutputFile) ProcessFrame(frame mjpeg.Frame) {
 	err := os.WriteFile(sink.filePath, frame.Body, 0644)
 	if err != nil {
 		panic("Can't write file")

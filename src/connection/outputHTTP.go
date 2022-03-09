@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-type HTTPSink struct {
+type OutputHTTP struct {
 }
 
 var servers = make([]Server, 0)
@@ -83,7 +83,7 @@ func (server Server) sendFrame(frame mjpeg.Frame) error {
 	return nil
 }
 
-func NewHTTPSink(port string) HTTPSink {
+func NewHTTPSink(port string) OutputHTTP {
 	//todo this is trash
 	listener, err := net.Listen("tcp", "127.0.0.1:"+port)
 	if err != nil {
@@ -109,10 +109,10 @@ func NewHTTPSink(port string) HTTPSink {
 		}
 	}()
 
-	return HTTPSink{}
+	return OutputHTTP{}
 }
 
-func (sink HTTPSink) ProcessFrame(frame mjpeg.Frame) {
+func (sink OutputHTTP) ProcessFrame(frame mjpeg.Frame) {
 	for _, server := range servers {
 		server.channel <- frame
 	}

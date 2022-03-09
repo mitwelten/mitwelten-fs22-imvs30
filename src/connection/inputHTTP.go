@@ -9,24 +9,24 @@ import (
 	"strconv"
 )
 
-type HTTPSource struct {
+type InputHTTP struct {
 	connection net.Conn
 }
 
-func NewHTTPSource(url string) (source HTTPSource) {
+func NewInputHTTP(url string) (source InputHTTP) {
 	conn, err := net.Dial("tcp", url)
 	if err != nil {
 		panic("Socket error")
 	}
 
-	return HTTPSource{conn}
+	return InputHTTP{conn}
 }
 
-func (source HTTPSource) Open() {
+func (source InputHTTP) Open() {
 	source.connection.Write([]byte("GET /?action=stream HTTP/1.1\r\nHost:%s\r\n\r\n"))
 }
 
-func (source HTTPSource) ReceiveFrame() (mjpeg.Frame, error) {
+func (source InputHTTP) ReceiveFrame() (mjpeg.Frame, error) {
 	//todo optimize
 
 	// Read header
