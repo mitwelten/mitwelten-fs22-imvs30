@@ -32,8 +32,8 @@ func run(args []string) {
 	var aggregatedChannels = aggregator.CombineChannels(channels)
 
 	wg.Add(1)
-	var output = connection.NewOutputFile("out.jpg")
-	//var output = connection.NewOutputHTTP("8082")
+	//var output = connection.NewOutputFile("out.jpg")
+	var output = connection.NewOutputHTTP("8081")
 	connection.RunOutput(output, aggregatedChannels)
 
 	wg.Wait()

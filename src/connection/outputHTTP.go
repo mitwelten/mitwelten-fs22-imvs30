@@ -85,7 +85,7 @@ func (server Server) sendFrame(frame mjpeg.Frame) error {
 
 func NewOutputHTTP(port string) OutputHTTP {
 	//todo this is trash
-	listener, err := net.Listen("tcp", "127.0.0.1:"+port)
+	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		panic("Socket error")
 	}
