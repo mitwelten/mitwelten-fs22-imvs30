@@ -39,8 +39,8 @@ func run() {
 
 	wg.Add(1)
 	//var output = connection.NewOutputFile("out.jpg")
-	var output = connection.NewOutputHTTP("8082")
-	connection.RunOutput(output, aggregatedChannels)
+	//var output = connection.NewOutputHTTP("8082")
+	connection.RunOutput(Output, aggregatedChannels)
 
 	wg.Wait()
 }

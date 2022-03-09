@@ -14,8 +14,12 @@ func NewOutputFile(filePath string) (sink OutputFile) {
 }
 
 func (sink OutputFile) ProcessFrame(frame mjpeg.Frame) {
-	err := os.WriteFile(sink.filePath, frame.Body, 0644)
+	fh, err := os.OpenFile(sink.filePath, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		panic("Can't write file")
+	}
+	_, err = fh.Write(frame.Body)
+	if err != nil {
+		return
 	}
 }
