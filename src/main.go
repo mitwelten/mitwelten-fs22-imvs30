@@ -1,9 +1,12 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"mjpeg_multiplexer/src/aggregator"
 	"mjpeg_multiplexer/src/connection"
 	"mjpeg_multiplexer/src/mjpeg"
+	"strings"
 )
 
 import (
@@ -13,12 +16,15 @@ import (
 
 // as per https://docs.fileformat.com/image/jpeg/
 
-func run(args []string) {
+var InputLocations []string
+var Output connection.Output
+
+func run() {
 	var wg sync.WaitGroup
 
 	var channels []chan mjpeg.Frame
 
-	for _, connectionString := range args {
+	for _, connectionString := range InputLocations {
 		wg.Add(1)
 
 		var input = connection.NewInputHTTP(connectionString)
@@ -39,8 +45,39 @@ func run(args []string) {
 	wg.Wait()
 }
 
+func parseArgs() {
+	fileCmd := flag.NewFlagSet("file", flag.ExitOnError)
+	fileName := fileCmd.String("name", "", "filename")
+
+	streamCmd := flag.NewFlagSet("stream", flag.ExitOnError)
+	streamPort := streamCmd.String("port", "", "port address")
+
+	inputCmd := flag.NewFlagSet("input", flag.ExitOnError)
+	inputLocations := inputCmd.String("locations", "", "string list of locations")
+
+	if len(os.Args) < 2 {
+		fmt.Println("expected 'file' or 'stream' subcommands")
+		os.Exit(1)
+	}
+
+	switch os.Args[1] {
+	case "file":
+		fileCmd.Parse(os.Args[2:4])
+		Output = connection.NewOutputFile(*fileName)
+	case "stream":
+		streamCmd.Parse(os.Args[2:4])
+		Output = connection.NewOutputHTTP(*streamPort)
+	default:
+		fmt.Println("expected 'file' or 'stream' subcommands")
+		os.Exit(1)
+	}
+
+	inputCmd.Parse(os.Args[5:])
+	InputLocations = strings.Split(*inputLocations, " ")
+
+}
 func main() {
 	println("Running the MJPEG-multiFLEXer")
-	var args = os.Args[1:]
-	run(args)
+	parseArgs()
+	run()
 }
