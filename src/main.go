@@ -29,7 +29,7 @@ func run() {
 
 		var input = connection.NewInputHTTP(connectionString)
 		input.Open()
-		var channel = connection.RunSource(input)
+		var channel = connection.ListenToInput(input)
 		channels = append(channels, channel)
 	}
 

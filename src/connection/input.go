@@ -6,7 +6,7 @@ type Input interface {
 	ReceiveFrame() (mjpeg.Frame, error)
 }
 
-func RunSource(input Input) chan mjpeg.Frame {
+func ListenToInput(input Input) chan mjpeg.Frame {
 	var channel = make(chan mjpeg.Frame)
 	go func() {
 		for {

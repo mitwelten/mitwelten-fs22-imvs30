@@ -3,7 +3,7 @@ package aggregator
 import (
 	"mjpeg_multiplexer/src/image"
 	"mjpeg_multiplexer/src/mjpeg"
-  "time"
+	"time"
 )
 
 func CombineChannels(channels []chan mjpeg.Frame) chan mjpeg.Frame {
@@ -47,9 +47,9 @@ func Min(a, b int) int {
 }
 
 func Merge2Images(channels []chan mjpeg.Frame) chan mjpeg.Frame {
-  if len(channels) != 2{
-    panic("Must specify 2 input channels")
-  }
+	if len(channels) != 2 {
+		panic("Must specify 2 input channels")
+	}
 	var out = make(chan mjpeg.Frame)
 	go func(c1 chan mjpeg.Frame, c2 chan mjpeg.Frame) {
 		for {

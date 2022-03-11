@@ -23,22 +23,25 @@ func NewInputHTTP(url string) (source InputHTTP) {
 }
 
 func (source InputHTTP) Open() {
-	source.connection.Write([]byte("GET /?action=stream HTTP/1.1\r\nHost:%s\r\n\r\n"))
+	_, err := source.connection.Write([]byte("GET /?action=stream HTTP/1.1\r\nHost:%s\r\n\r\n"))
+	if err != nil {
+		panic("cannot send GET request to " + source.connection.LocalAddr().String())
+	}
 }
 
 func (source InputHTTP) ReceiveFrame() (mjpeg.Frame, error) {
-	//todo optimize
+	// todo optimize
 	// Read header
 	var buffer = make([]byte, 1)
 	for {
-		var buffer_tmp = make([]byte, 1)
-		var _, err = source.connection.Read(buffer_tmp[:])
+		var bufferTmp = make([]byte, 1)
+		var _, err = source.connection.Read(bufferTmp[:])
 		if err != nil {
 			println("Can't read from connection")
 			return mjpeg.Frame{}, err
 		}
 
-		buffer = append(buffer, buffer_tmp...)
+		buffer = append(buffer, bufferTmp...)
 
 		// Check if jpeg start has been reached
 		if len(buffer) > len(mjpeg.JPEG_PREFIX) && bytes.Compare(buffer[len(buffer)-len(mjpeg.JPEG_PREFIX):], mjpeg.JPEG_PREFIX) == 0 {
@@ -90,12 +93,12 @@ func (source InputHTTP) ReceiveFrame() (mjpeg.Frame, error) {
 
 	if err != nil {
 		println("Can't read from connection")
-		return mjpeg.Frame{}, err;
+		return mjpeg.Frame{}, err
 	}
 
 	if n != contentLength-len(mjpeg.JPEG_PREFIX) {
 		println("Cannot read all bytes")
-		return mjpeg.Frame{}, errors.New("can't the expected amount of bytes");
+		return mjpeg.Frame{}, errors.New("can't the expected amount of bytes")
 	}
 
 	var body = append(mjpeg.JPEG_PREFIX, bufferBody...)
