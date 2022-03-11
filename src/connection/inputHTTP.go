@@ -35,7 +35,7 @@ func (source InputHTTP) ReceiveFrame() (mjpeg.Frame, error) {
 		var _, err = source.connection.Read(buffer_tmp[:])
 		if err != nil {
 			println("Can't read from connection")
-			panic(err)
+			return mjpeg.Frame{}, err
 		}
 
 		buffer = append(buffer, buffer_tmp...)
@@ -82,23 +82,23 @@ func (source InputHTTP) ReceiveFrame() (mjpeg.Frame, error) {
 		}
 		length++
 	}
-	var content_length, _ = strconv.Atoi(string(buffer[index : index+length]))
+	var contentLength, _ = strconv.Atoi(string(buffer[index : index+length]))
 
 	// read rest of the frame
-	var buffer_body = make([]byte, content_length-len(mjpeg.JPEG_PREFIX)) //jpge prefix has already been read
-	var n, err = io.ReadFull(source.connection, buffer_body)
+	var bufferBody = make([]byte, contentLength-len(mjpeg.JPEG_PREFIX)) //jpge prefix has already been read
+	var n, err = io.ReadFull(source.connection, bufferBody)
 
 	if err != nil {
 		println("Can't read from connection")
-		panic(err)
-	}
-	if n != content_length-len(mjpeg.JPEG_PREFIX) {
-		println(n)
-		println(content_length)
-		panic("Cannot read all bytes")
+		return mjpeg.Frame{}, err;
 	}
 
-	var body = append(mjpeg.JPEG_PREFIX, buffer_body...)
+	if n != contentLength-len(mjpeg.JPEG_PREFIX) {
+		println("Cannot read all bytes")
+		return mjpeg.Frame{}, errors.New("can't the expected amount of bytes");
+	}
 
-	return mjpeg.Frame{Header: buffer[:len(buffer)-len(mjpeg.JPEG_PREFIX)], Body: body}, nil
+	var body = append(mjpeg.JPEG_PREFIX, bufferBody...)
+
+	return mjpeg.Frame{Body: body}, nil
 }

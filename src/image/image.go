@@ -23,7 +23,7 @@ func MergeImages(frame1 mjpeg.Frame, frame2 mjpeg.Frame) (frame mjpeg.Frame) {
 
 	rgba := image.NewRGBA(r)
 
-	draw.Draw(rgba, img1.Bounds(), img1, image.Point{0, 0}, draw.Src)
+	draw.Draw(rgba, img1.Bounds(), img1, image.Point{}, draw.Src)
 	draw.Draw(rgba, r2, img2, image.Point{}, draw.Src)
 
 	//out, err := os.Create("./output.jpg")

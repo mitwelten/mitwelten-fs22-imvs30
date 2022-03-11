@@ -22,7 +22,13 @@ type Server struct {
 var delim = "--boundarydonotcross"
 
 func serve(server Server) {
-	defer server.connection.Close()
+	defer func(connection net.Conn) {
+		err := connection.Close()
+		if err != nil {
+			println("can't close connection to " + connection.LocalAddr().String() + ", potential leak!")
+		}
+	}(server.connection)
+
 	defer close(server.channel)
 
 	var err = server.sendHeader()
@@ -35,7 +41,9 @@ func serve(server Server) {
 		var frame = <-server.channel
 		var err = server.sendFrame(frame)
 		if err != nil {
-			print(err.Error())
+			//todo better error handling? The assumption here is that error => connection was closed, but this isn't true
+			println("error when sending frame to " + server.connection.LocalAddr().String() + ", closing connection")
+			println(err.Error())
 			serversMutex.Lock()
 			//remove this server from the list of servers
 			for i, s := range servers {
@@ -57,7 +65,7 @@ func (server Server) sendHeader() error {
 		"--" + delim + "\r\n"
 	_, err := server.connection.Write([]byte(header))
 	if err != nil {
-		return errors.New("Can't send header")
+		return errors.New("can't send header")
 	}
 	return nil
 }
@@ -77,17 +85,17 @@ func (server Server) sendFrame(frame mjpeg.Frame) error {
 	}
 	_, err = server.connection.Write([]byte("\r\n--" + delim + "\r\n"))
 	if err != nil {
-		return errors.New("Can't send delim")
+		return errors.New("can't send delim")
 	}
 
 	return nil
 }
 
-func NewOutputHTTP(port string) OutputHTTP {
+func NewOutputHTTP(port string) (Output, error) {
 	//todo this is trash
 	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil {
-		panic("Socket error")
+		return OutputHTTP{}, errors.New("can't open socket")
 	}
 
 	go func() {
@@ -109,11 +117,12 @@ func NewOutputHTTP(port string) OutputHTTP {
 		}
 	}()
 
-	return OutputHTTP{}
+	return OutputHTTP{}, nil
 }
 
-func (sink OutputHTTP) ProcessFrame(frame mjpeg.Frame) {
+func (sink OutputHTTP) ProcessFrame(frame mjpeg.Frame) error {
 	for _, server := range servers {
 		server.channel <- frame
 	}
+	return nil
 }

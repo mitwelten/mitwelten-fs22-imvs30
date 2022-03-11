@@ -1,6 +1,7 @@
 package connection
 
 import (
+	"errors"
 	"mjpeg_multiplexer/src/mjpeg"
 	"os"
 )
@@ -13,13 +14,14 @@ func NewOutputFile(filePath string) (sink OutputFile) {
 	return OutputFile{filePath}
 }
 
-func (sink OutputFile) ProcessFrame(frame mjpeg.Frame) {
+func (sink OutputFile) ProcessFrame(frame mjpeg.Frame) error {
 	fh, err := os.OpenFile(sink.filePath, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
-		panic("Can't write file")
+		return errors.New("cannot write to file")
 	}
 	_, err = fh.Write(frame.Body)
 	if err != nil {
-		return
+		return errors.New("cannot write to file")
 	}
+	return nil
 }

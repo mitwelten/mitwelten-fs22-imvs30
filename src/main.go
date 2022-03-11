@@ -66,7 +66,12 @@ func parseArgs() {
 		Output = connection.NewOutputFile(*fileName)
 	case "stream":
 		streamCmd.Parse(os.Args[2:4])
-		Output = connection.NewOutputHTTP(*streamPort)
+		var err error
+		Output, err = connection.NewOutputHTTP(*streamPort)
+		if err != nil {
+			println(err.Error())
+			panic("Could not open output socket, aborting...")
+		}
 	default:
 		fmt.Println("expected 'file' or 'stream' subcommands")
 		os.Exit(1)

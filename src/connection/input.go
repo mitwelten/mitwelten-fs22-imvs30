@@ -12,7 +12,8 @@ func RunSource(input Input) chan mjpeg.Frame {
 		for {
 			var frame, err = input.ReceiveFrame()
 			if err != nil {
-				println("Warning, error!")
+				println("Error while trying to read frame from input")
+				println(err.Error())
 				continue
 			}
 
@@ -21,8 +22,7 @@ func RunSource(input Input) chan mjpeg.Frame {
 			//Skip current frame if channel is not being read
 			select {
 			case channel <- frame:
-			default:
-				//skip frame
+			default: //skip frame
 			}
 		}
 	}()
