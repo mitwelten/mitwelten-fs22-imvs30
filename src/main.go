@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"mjpeg_multiplexer/src/aggregator"
 	"mjpeg_multiplexer/src/args"
 	"mjpeg_multiplexer/src/connection"
 	"mjpeg_multiplexer/src/mjpeg"
+	"os"
 	"sync"
 )
 
@@ -40,6 +42,14 @@ func run() {
 }
 
 func main() {
+	println(os.Args)
+
+	// loop over all arguments by index and value
+	for i, arg := range os.Args {
+		// print index and value
+		fmt.Println("item", i, "is", arg)
+	}
+
 	println("Running the MJPEG-multiFLEXer")
 	InputLocations, Output = args.ParseArgs()
 	run()
