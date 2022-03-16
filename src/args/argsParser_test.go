@@ -1,7 +1,9 @@
 package args
 
 import (
+	"errors"
 	"mjpeg_multiplexer/src/connection"
+	"mjpeg_multiplexer/src/customErrors"
 	"strings"
 	"testing"
 )
@@ -19,12 +21,27 @@ func TestStreamCommandShouldNotCrash(t *testing.T) {
 }
 
 func TestFileCommandShouldNotCrash(t *testing.T) {
-
 	// given
 	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "file", "-output_filename", "out.jpg", "-method", "grid"}
 
 	// then
 	_, _ = ParseArgs(argsMock)
+}
+
+func TestShouldFailWithNotFulfillingMinArguments(t *testing.T) {
+	// given
+	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "stream", "-method", "grid"}
+	var expected error = &customErrors.ArgParserUnfulfilledMinArgumentsError{}
+
+	// then
+	var _, err = ParseArgs(argsMock)
+	if err == nil {
+		t.Errorf("Error not thrown")
+	}
+	
+	if !(errors.As(err, &expected)) {
+		t.Errorf("Wrong error thrown")
+	}
 }
 
 func TestShouldFailWithMissingPort(t *testing.T) {

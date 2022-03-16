@@ -78,9 +78,9 @@ func MergeImages(frame1 mjpeg.Frame, frame2 mjpeg.Frame) (frame mjpeg.Frame) {
 	draw.Draw(rgba, img1.Bounds(), img1, image.Point{}, draw.Src)
 	draw.Draw(rgba, r2, img2, image.Point{}, draw.Src)
 
-	//out, err := os.Create("./output.jpg")
-	//if err != nil {
-	//	fmt.Println(err)
+	//out, customErrors := os.Create("./output.jpg")
+	//if customErrors != nil {
+	//	fmt.Println(customErrors)
 	//}
 
 	//var opt jpeg.Options

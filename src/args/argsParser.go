@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"mjpeg_multiplexer/src/connection"
+	"mjpeg_multiplexer/src/customErrors"
 	"os"
 	"strings"
 )
@@ -33,12 +34,13 @@ func ParseArgs(args []string) (config MultiplexerConfig, err error) {
 	// first validation
 	// check if at least all three mandatory parameters are present
 	if len(*inputPtr) == 0 || len(*outputPtr) == 0 || len(*methodPtr) == 0 {
-		return MultiplexerConfig{}, errors.New("expected at least '-input' '-output' and '-method' arguments")
+		println("wrong here...")
+		return MultiplexerConfig{}, &customErrors.ArgParserUnfulfilledMinArgumentsError{}
 	}
 	// stream
 	if strings.Compare(*outputPtr, "stream") == 0 {
 		if len(*outputStreamPortPtr) == 0 {
-			return MultiplexerConfig{}, errors.New("-output 'stream' only valid in combination with -output_port ")
+			return MultiplexerConfig{}, &customErrors.ArgParserInvalidInputError{}
 		} else {
 			config.Output, err = connection.NewOutputHTTP(*outputStreamPortPtr)
 			if err != nil {
