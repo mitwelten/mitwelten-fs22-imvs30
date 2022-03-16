@@ -3,7 +3,6 @@ package connection
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"mjpeg_multiplexer/src/mjpeg"
 	"net"
@@ -15,7 +14,6 @@ type InputHTTP struct {
 }
 
 func NewInputHTTP(url string) (source InputHTTP) {
-	fmt.Println(url)
 	conn, err := net.Dial("tcp", url)
 	if err != nil {
 		panic("Socket error")

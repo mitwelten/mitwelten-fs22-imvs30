@@ -69,7 +69,7 @@ func parseArgs() {
 			fmt.Println("-output 'stream' only valid in combination with -output_port ")
 			os.Exit(3)
 		} else {
-			Output = connection.NewOutputFile(*outputStreamPortPtr)
+			Output, _ = connection.NewOutputHTTP(*outputStreamPortPtr)
 		}
 		// file
 	} else if strings.Compare(*outputPtr, "file") == 0 {
