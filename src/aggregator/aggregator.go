@@ -20,7 +20,27 @@ func CombineChannels(channels []chan mjpeg.Frame) chan mjpeg.Frame {
 
 	return agg
 }
+func MergeImagesGrid(col int, row int, channels ...chan mjpeg.Frame) chan mjpeg.Frame {
+	var channel = CombineChannels(channels)
+	var out = make(chan mjpeg.Frame)
+	go func(channel_ chan mjpeg.Frame) {
+		for {
+			var frames []mjpeg.Frame
+			for i := 0; i < len(channels); i++ {
+				frame := <-channels[i]
+				frames = append(frames, frame)
+			}
 
+			start := time.Now()
+			out <- image.Grid(col, row, frames...)
+			t := time.Now()
+			elapsed := t.Sub(start)
+			println(elapsed.Milliseconds(), "ms for image merging grid4")
+		}
+	}(channel)
+
+	return out
+}
 func MergeImages(channels []chan mjpeg.Frame) chan mjpeg.Frame {
 	var channel = CombineChannels(channels)
 	var out = make(chan mjpeg.Frame)

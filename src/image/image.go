@@ -1,5 +1,7 @@
 package image
 
+// Reference: https://go.dev/blog/image-draw
+
 import (
 	"bytes"
 	"image"
@@ -7,6 +9,56 @@ import (
 	"image/jpeg"
 	"mjpeg_multiplexer/src/mjpeg"
 )
+
+func decode(frames []mjpeg.Frame) []image.Image {
+	var images []image.Image
+	for _, frame := range frames {
+		var img, _, _ = image.Decode(bytes.NewReader(frame.Body))
+		images = append(images, img)
+	}
+	return images
+}
+
+func Grid(row int, col int, frames ...mjpeg.Frame) mjpeg.Frame {
+	var nCells = row * col
+	var nFrames = len(frames)
+
+	if nFrames > nCells {
+		panic("Too many frames")
+	}
+
+	if nFrames == 0 {
+		panic("At least one frame needed")
+	}
+	var images = decode(frames)
+
+	// rectangle
+	var i0 = images[0]
+	var pointMax = image.Point{X: i0.Bounds().Dx() * col, Y: i0.Bounds().Dy() * row}
+	var rectangle = image.Rectangle{Min: image.Point{}, Max: pointMax}
+
+	// image
+	var imageOut = image.NewRGBA(rectangle)
+
+	for i := 0; i < nCells; i++ {
+		var col_ = i % col
+		var row_ = i / row
+		if i >= nFrames {
+			break
+		}
+
+		var sp = image.Point{X: i0.Bounds().Dx() * col_, Y: i0.Bounds().Dy() * row_}
+		var r = image.Rectangle{Min: sp, Max: sp.Add(images[i].Bounds().Size())}
+		draw.Draw(imageOut, r, images[i], image.Point{}, draw.Src)
+	}
+
+	buff := bytes.NewBuffer([]byte{})
+	err := jpeg.Encode(buff, imageOut, nil)
+	if err != nil {
+		panic("can't encode jpeg")
+	}
+	return mjpeg.Frame{Body: buff.Bytes()}
+}
 
 func MergeImages(frame1 mjpeg.Frame, frame2 mjpeg.Frame) (frame mjpeg.Frame) {
 	var img1, _, _ = image.Decode(bytes.NewReader(frame1.Body))
