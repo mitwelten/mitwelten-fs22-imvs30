@@ -35,8 +35,7 @@ func run() {
 
 	//var aggregatedChannels = aggregator.Merge2Images(channels)
 	//var aggregatedChannels = aggregator.MergeImages(channels)
-	//var aggregatedChannels = aggregator.CombineChannels(channels)
-	var aggregatedChannels = aggregator.MergeImagesGrid4(channels)
+	var aggregatedChannels = aggregator.CombineChannels(channels)
 
 	wg.Add(1)
 	//var output = connection.NewOutputFile("out.jpg")
