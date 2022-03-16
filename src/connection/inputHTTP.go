@@ -13,6 +13,7 @@ type InputHTTP struct {
 	connection net.Conn
 }
 
+// NewInputHTTP todo TEST: Test this function by creating an input and checking if it runs
 func NewInputHTTP(url string) (source InputHTTP) {
 	conn, err := net.Dial("tcp", url)
 	if err != nil {
