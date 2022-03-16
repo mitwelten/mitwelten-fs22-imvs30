@@ -4,7 +4,6 @@ import (
 	"errors"
 	"mjpeg_multiplexer/src/connection"
 	"mjpeg_multiplexer/src/customErrors"
-	"strings"
 	"testing"
 )
 
@@ -31,14 +30,18 @@ func TestFileCommandShouldNotCrash(t *testing.T) {
 func TestShouldFailWithNotFulfillingMinArguments(t *testing.T) {
 	// given
 	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "stream", "-method", "grid"}
-	var expected error = &customErrors.ArgParserUnfulfilledMinArgumentsError{}
+	var expected error = &customErrors.ErrArgParserUnfulfilledMinArguments{}
+
+	// when
+	var _, err = ParseArgs(argsMock)
 
 	// then
-	var _, err = ParseArgs(argsMock)
 	if err == nil {
 		t.Errorf("Error not thrown")
 	}
-	
+
+	println(err.Error())
+
 	if !(errors.As(err, &expected)) {
 		t.Errorf("Wrong error thrown")
 	}
@@ -47,47 +50,59 @@ func TestShouldFailWithNotFulfillingMinArguments(t *testing.T) {
 func TestShouldFailWithMissingPort(t *testing.T) {
 	// given
 	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "stream", "-method", "grid"}
+	var expected error = &customErrors.ErrArgParserInvalidOutputPort{}
+
+	// when
+	var _, err = ParseArgs(argsMock)
 
 	// then
-	var _, err = ParseArgs(argsMock)
 	if err == nil {
 		t.Errorf("Error not thrown")
 	}
 
-	if strings.Compare(err.Error(), "-output 'stream' only valid in combination with -output_port ") != 0 {
+	println(err.Error())
+
+	if !(errors.As(err, &expected)) {
 		t.Errorf("Wrong error thrown")
 	}
 }
 
 func TestShouldFailWithMissingFilename(t *testing.T) {
-
 	// given
 	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "file", "-method", "grid"}
+	var expected error = &customErrors.ErrArgParserInvalidOutputFilename{}
+
+	// when
+	var _, err = ParseArgs(argsMock)
 
 	// then
-	var _, err = ParseArgs(argsMock)
 	if err == nil {
 		t.Errorf("Error not thrown")
 	}
 
-	if strings.Compare(err.Error(), "-output 'file' only valid in combination with -output_filename ") != 0 {
+	println(err.Error())
+
+	if !(errors.As(err, &expected)) {
 		t.Errorf("Wrong error thrown")
 	}
 }
 
 func TestShouldFailWithInvalidOutputArgument(t *testing.T) {
-
 	// given
 	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "XXXX", "-method", "grid"}
+	var expected error = &customErrors.ErrArgParserInvalidArgument{}
+
+	// when
+	var _, err = ParseArgs(argsMock)
 
 	// then
-	var _, err = ParseArgs(argsMock)
 	if err == nil {
 		t.Errorf("Error not thrown")
 	}
 
-	//fixme :)
-	if strings.Compare(err.Error()[:41], "invalid output argument: -output argument") != 0 {
+	println(err.Error())
+
+	if !(errors.As(err, &expected)) {
 		t.Errorf("Wrong error thrown")
 	}
 }
