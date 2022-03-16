@@ -30,7 +30,7 @@ func TestFileCommandShouldNotCrash(t *testing.T) {
 func TestShouldFailWithNotFulfillingMinArguments(t *testing.T) {
 	// given
 	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "stream", "-method", "grid"}
-	var expected error = &customErrors.ErrArgParserUnfulfilledMinArguments{}
+	var expected *customErrors.ErrArgParserUnfulfilledMinArguments
 
 	// when
 	var _, err = ParseArgs(argsMock)
@@ -45,12 +45,20 @@ func TestShouldFailWithNotFulfillingMinArguments(t *testing.T) {
 	if !(errors.As(err, &expected)) {
 		t.Errorf("Wrong error thrown")
 	}
+
+	//alternative
+	//if _, ok := err.(*customErrors.ErrArgParserUnfulfilledMinArguments); ok {
+	//	fmt.Printf("is of type: customErrors")
+	//} else {
+	//	fmt.Println("Using Assert: Error NOT of type customErrors error")
+	//	t.Errorf("Wrong error thrown")
+	//}
 }
 
 func TestShouldFailWithMissingPort(t *testing.T) {
 	// given
 	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "stream", "-method", "grid"}
-	var expected error = &customErrors.ErrArgParserInvalidOutputPort{}
+	var expected *customErrors.ErrArgParserInvalidOutputPort
 
 	// when
 	var _, err = ParseArgs(argsMock)
@@ -70,7 +78,7 @@ func TestShouldFailWithMissingPort(t *testing.T) {
 func TestShouldFailWithMissingFilename(t *testing.T) {
 	// given
 	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "file", "-method", "grid"}
-	var expected error = &customErrors.ErrArgParserInvalidOutputFilename{}
+	var expected *customErrors.ErrArgParserInvalidOutputFilename
 
 	// when
 	var _, err = ParseArgs(argsMock)
@@ -90,7 +98,7 @@ func TestShouldFailWithMissingFilename(t *testing.T) {
 func TestShouldFailWithInvalidOutputArgument(t *testing.T) {
 	// given
 	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "XXXX", "-method", "grid"}
-	var expected error = &customErrors.ErrArgParserInvalidArgument{}
+	var expected *customErrors.ErrArgParserInvalidArgument
 
 	// when
 	var _, err = ParseArgs(argsMock)
