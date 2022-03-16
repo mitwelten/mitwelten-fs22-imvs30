@@ -17,13 +17,17 @@ func decode(frames []mjpeg.Frame) []image.Image {
 	return images
 }
 
-func Grid4(frames []mjpeg.Frame) mjpeg.Frame {
+func Grid4(frames ...mjpeg.Frame) mjpeg.Frame {
 	if len(frames) != 4 {
 		panic("must be 4 frames")
 	}
 
 	var images = decode(frames)
 	var i0 = images[0]
+	var sp1 = image.Point{X: i0.Bounds().Dx()}
+	var sp2 = image.Point{Y: i0.Bounds().Dy()}
+	var sp3 = image.Point{X: i0.Bounds().Dx(), Y: i0.Bounds().Dy()}
+
 	//rectangle for the 4 grid
 	var pointMax = image.Point{X: i0.Bounds().Dx() * 2, Y: i0.Bounds().Dy() * 2}
 	var r = image.Rectangle{Min: image.Point{}, Max: pointMax}
@@ -33,9 +37,15 @@ func Grid4(frames []mjpeg.Frame) mjpeg.Frame {
 
 	//fill the grid
 	draw.Draw(imageOut, images[0].Bounds(), images[0], image.Point{}, draw.Src)
-	draw.Draw(imageOut, images[1].Bounds(), images[1], image.Point{X: i0.Bounds().Dx()}, draw.Src)
-	draw.Draw(imageOut, images[2].Bounds(), images[2], image.Point{Y: i0.Bounds().Dy()}, draw.Src)
-	draw.Draw(imageOut, images[3].Bounds(), images[3], image.Point{X: i0.Bounds().Dx(), Y: i0.Bounds().Dy()}, draw.Src)
+
+	var r1 = image.Rectangle{Min: sp1, Max: sp1.Add(images[1].Bounds().Size())}
+	draw.Draw(imageOut, r1, images[1], image.Point{}, draw.Src)
+
+	var r2 = image.Rectangle{Min: sp2, Max: sp2.Add(images[2].Bounds().Size())}
+	draw.Draw(imageOut, r2, images[2], image.Point{}, draw.Src)
+
+	var r3 = image.Rectangle{Min: sp3, Max: sp3.Add(images[3].Bounds().Size())}
+	draw.Draw(imageOut, r3, images[3], image.Point{}, draw.Src)
 
 	buff := bytes.NewBuffer([]byte{})
 	err := jpeg.Encode(buff, imageOut, nil)
