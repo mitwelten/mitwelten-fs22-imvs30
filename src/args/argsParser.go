@@ -1,6 +1,7 @@
 package args
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"mjpeg_multiplexer/src/connection"
@@ -8,53 +9,55 @@ import (
 	"strings"
 )
 
-var InputLocations []string
-var Output connection.Output
-
-func parseInput(inputStr string) {
-	InputLocations = strings.Split(inputStr, " ")
+type MultiplexerConfig struct {
+	InputLocations []string
+	Output         connection.Output
 }
 
-func ParseArgs() ([]string, connection.Output) {
+func parseInput(config MultiplexerConfig, inputStr string) {
+	config.InputLocations = strings.Split(inputStr, " ")
+}
+
+func ParseArgs(args []string) (config MultiplexerConfig, err error) {
+	var CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	//---Define all various flags---
-	inputPtr := flag.String("input", "", "Use Input flag to determine input streams")
-	outputPtr := flag.String("output", "", "Use Out flag to determine output modus") // file oder stream
-	outputFileNamePtr := flag.String("output_filename", "", "")
-	outputStreamPortPtr := flag.String("output_port", "", "port for output stream")
-	methodPtr := flag.String("method", "", "How will the out be mixed?") // grid, combine etc.
+	inputPtr := CommandLine.String("input", "", "Use Input flag to determine input streams")
+	outputPtr := CommandLine.String("output", "", "Use Out flag to determine output modus") // file oder stream
+	outputFileNamePtr := CommandLine.String("output_filename", "", "")
+	outputStreamPortPtr := CommandLine.String("output_port", "", "port for output stream")
+	methodPtr := CommandLine.String("method", "", "How will the out be mixed?") // grid, combine etc.
 
 	//---parse the command line into the defined flags---
-	flag.Parse()
-
+	//flag.Parse()
+	CommandLine.Parse(args[1:])
 	// first validation
 	// check if at least all three mandatory parameters are present
 	if len(*inputPtr) == 0 || len(*outputPtr) == 0 || len(*methodPtr) == 0 {
-		fmt.Println("expected at least '-input' '-output' and '-method' arguments")
-		os.Exit(2)
+		return MultiplexerConfig{}, errors.New("expected at least '-input' '-output' and '-method' arguments")
 	}
 	// stream
 	if strings.Compare(*outputPtr, "stream") == 0 {
 		if len(*outputStreamPortPtr) == 0 {
-			fmt.Println("-output 'stream' only valid in combination with -output_port ")
-			os.Exit(3)
+			return MultiplexerConfig{}, errors.New("-output 'stream' only valid in combination with -output_port ")
 		} else {
-			Output, _ = connection.NewOutputHTTP(*outputStreamPortPtr)
+			config.Output, err = connection.NewOutputHTTP(*outputStreamPortPtr)
+			if err != nil {
+				return MultiplexerConfig{}, errors.New("can't open HTTP output")
+			}
 		}
 		// file
 	} else if strings.Compare(*outputPtr, "file") == 0 {
 		if len(*outputFileNamePtr) == 0 {
-			fmt.Println("-output 'file' only valid in combination with -output_filename ")
-			os.Exit(4)
+			return MultiplexerConfig{}, errors.New("-output 'file' only valid in combination with -output_filename ")
 		} else {
-			Output = connection.NewOutputFile(*outputFileNamePtr)
+			config.Output = connection.NewOutputFile(*outputFileNamePtr)
 		}
 	} else {
-		fmt.Println("invalid output argument: -output argument '" + *outputPtr + "' not valid. Use -output 'stream' or -output 'file'")
-		os.Exit(5)
+		return MultiplexerConfig{}, errors.New("invalid output argument: -output argument '" + *outputPtr + "' not valid. Use -output 'stream' or -output 'file'")
 	}
 
 	// input parsing
-	parseInput(*inputPtr)
+	parseInput(config, *inputPtr)
 
 	fmt.Println(*inputPtr)
 	fmt.Println(*outputPtr)
@@ -62,5 +65,5 @@ func ParseArgs() ([]string, connection.Output) {
 	fmt.Println(*outputStreamPortPtr)
 	fmt.Println(*methodPtr)
 
-	return InputLocations, Output
+	return config, nil
 }

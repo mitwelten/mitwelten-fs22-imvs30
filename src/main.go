@@ -51,6 +51,13 @@ func main() {
 	}
 
 	println("Running the MJPEG-multiFLEXer")
-	InputLocations, Output = args.ParseArgs()
+	config, err := args.ParseArgs(os.Args)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	InputLocations = config.InputLocations
+	Output = config.Output
+
 	run()
 }
