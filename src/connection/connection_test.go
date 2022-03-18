@@ -6,6 +6,7 @@ import (
 	"mjpeg_multiplexer/src/mjpeg"
 	"os"
 	"testing"
+	"time"
 )
 
 //todo change hardcoded file path to something more robust?
@@ -31,12 +32,21 @@ func mockFrame() mjpeg.Frame {
 }
 
 func TestSendAndReceive(t *testing.T) {
+	go func() {
+		time.Sleep(2 * time.Second)
+		t.Error("frame not received within time limit")
+		os.Exit(1)
+	}()
+
 	output, err := NewOutputHTTP("8081")
 	if err != nil {
 		panic("Can't open output")
 	}
 
 	input := NewInputHTTP("localhost:8081")
+
+	// Wait a short amount to make sure that input and output are ready
+	time.Sleep(250 * time.Millisecond)
 
 	frame := mockFrame()
 	err = output.SendFrame(frame)
