@@ -1,13 +1,17 @@
 package connection
 
-import "mjpeg_multiplexer/src/mjpeg"
+import (
+	args "mjpeg_multiplexer/src/communication"
+	"mjpeg_multiplexer/src/mjpeg"
+)
 
 type Input interface {
 	ReceiveFrame() (mjpeg.Frame, error)
 }
 
-func ListenToInput(input Input) chan mjpeg.Frame {
-	var channel = make(chan mjpeg.Frame)
+func ListenToInput(input Input) *args.FrameData {
+	var frameData = args.FrameData{}
+	frameData.Init() // init with a black frame
 	go func() {
 		for {
 			var frame, err = input.ReceiveFrame()
@@ -16,15 +20,8 @@ func ListenToInput(input Input) chan mjpeg.Frame {
 				println(err.Error())
 				continue
 			}
-
-			//channel <- frame
-
-			//Skip current frame if channel is not being read
-			select {
-			case channel <- frame:
-			default: //skip frame
-			}
+			frameData.Store(frame)
 		}
 	}()
-	return channel
+	return &frameData
 }
