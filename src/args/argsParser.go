@@ -2,9 +2,11 @@ package args
 
 import (
 	"flag"
+	"mjpeg_multiplexer/src/aggregator"
 	"mjpeg_multiplexer/src/connection"
 	"mjpeg_multiplexer/src/customErrors"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -13,17 +15,39 @@ const (
 	OutputUsage            = "Use -output to determine output modus. 'file' or 'stream' possible."
 	OutputFileNameUsage    = "filename used to save input to file"
 	OutputStreamPortUsage  = "port used for output stream"
-	MethodUsage            = "Method, how the output will be mixed. 'combine' or 'grid' possible. "
+	MethodUsage            = "Method, how the output will be mixed. 'grid' is possible. "
+	GridUsage              = "Number of rows and columns for the grid. format: '<row> <col>'"
 	InputLocationSeparator = " "
 )
 
 type MultiplexerConfig struct {
 	InputLocations []string
 	Output         connection.Output
+	Aggregator     aggregator.Aggregator
 }
 
-func parseInput(config MultiplexerConfig, inputStr string) {
+func parseGrid(config MultiplexerConfig, methodGridPtr *string) (MultiplexerConfig, error) {
+	var gridDimension = strings.Split(*methodGridPtr, InputLocationSeparator)
+	if len(gridDimension) != 2 {
+		return config, &customErrors.ErrArgParserInvalidGridDimension{}
+	}
+
+	row, err := strconv.Atoi(gridDimension[0])
+	if err != nil {
+		return config, &customErrors.ErrArgParserInvalidGridDimension{}
+	}
+	col, err := strconv.Atoi(gridDimension[1])
+	if err != nil {
+		return config, &customErrors.ErrArgParserInvalidGridDimension{}
+	}
+	config.Aggregator = aggregator.AggregatorGrid{Row: row, Col: col}
+
+	return config, nil
+}
+
+func parseInput(config MultiplexerConfig, inputStr string) MultiplexerConfig {
 	config.InputLocations = strings.Split(inputStr, InputLocationSeparator)
+	return config
 }
 
 func ParseArgs(args []string) (config MultiplexerConfig, err error) {
@@ -34,6 +58,7 @@ func ParseArgs(args []string) (config MultiplexerConfig, err error) {
 	outputFileNamePtr := CommandLine.String("output_filename", "", OutputFileNameUsage)
 	outputStreamPortPtr := CommandLine.String("output_port", "", OutputStreamPortUsage)
 	methodPtr := CommandLine.String("method", "", MethodUsage) // grid, combine etc.
+	methodGridPtr := CommandLine.String("grid_dimension", "", GridUsage)
 
 	//---parse the command line into the defined flags---
 	CommandLine.Parse(args[1:])
@@ -65,8 +90,21 @@ func ParseArgs(args []string) (config MultiplexerConfig, err error) {
 	}
 
 	// input parsing
-	parseInput(config, *inputPtr)
+	config = parseInput(config, *inputPtr)
+
+	// method
+	switch *methodPtr {
+	case "grid":
+		config, err = parseGrid(config, methodGridPtr)
+
+		if err != nil {
+			return MultiplexerConfig{}, err
+		}
+	default:
+		return MultiplexerConfig{}, &customErrors.ErrArgParserInvalidMethod{Argument: *methodPtr}
+	}
 
 	// non error case, return nil
+
 	return config, nil
 }

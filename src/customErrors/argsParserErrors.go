@@ -29,6 +29,25 @@ func (*ErrArgParserInvalidOutputPort) Error() string {
 	return fmt.Sprintf("when using -output 'stream' a valid -output_port must be specified")
 }
 
+// ErrArgParserInvalidMethod Invalid method parameter
+type ErrArgParserInvalidMethod struct {
+	Argument string
+	err      error
+}
+
+func (e *ErrArgParserInvalidMethod) Error() string {
+	return fmt.Sprintf("invalid method argument: -method argument '" + e.Argument + "' not valid.")
+}
+
+// ErrArgParserInvalidGridDimension Invalid method: Grid invalid paramters
+type ErrArgParserInvalidGridDimension struct {
+	err error
+}
+
+func (*ErrArgParserInvalidGridDimension) Error() string {
+	return fmt.Sprintf("when using -method 'grid', the grid dimension must be specified. Usage '-grid_dimension \"<row> <col>\"'")
+}
+
 // Invalid Argument Error
 type ErrArgParserInvalidArgument struct {
 	Argument string

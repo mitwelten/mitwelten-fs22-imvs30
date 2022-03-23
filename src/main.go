@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"mjpeg_multiplexer/src/aggregator"
 	"mjpeg_multiplexer/src/args"
 	"mjpeg_multiplexer/src/connection"
 	"mjpeg_multiplexer/src/mjpeg"
@@ -12,15 +11,14 @@ import (
 
 // as per https://docs.fileformat.com/image/jpeg/
 
-var InputLocations []string
-var Output connection.Output
+var Config args.MultiplexerConfig
 
 func run() {
 	var wg sync.WaitGroup
 
 	var channels []chan mjpeg.Frame
 
-	for _, connectionString := range InputLocations {
+	for _, connectionString := range Config.InputLocations {
 		wg.Add(1)
 
 		var input = connection.NewInputHTTP(connectionString)
@@ -29,22 +27,15 @@ func run() {
 		channels = append(channels, channel)
 	}
 
-	//var aggregatedChannels = aggregator.Merge2Images(channels)
-	//var aggregatedChannels = aggregator.MergeImages(channels)
-	//var aggregatedChannels = aggregator.CombineChannels(channels)
-	var aggregatedChannels = aggregator.MergeImagesGrid(2, 1, channels...)
+	var aggregatedChannels = Config.Aggregator.Aggregate(channels...)
 
 	wg.Add(1)
-	//var output = connection.NewOutputFile("out.jpg")
-	//var output = connection.NewOutputHTTP("8082")
-	connection.RunOutput(Output, aggregatedChannels)
+	connection.RunOutput(Config.Output, aggregatedChannels)
 
 	wg.Wait()
 }
 
 func main() {
-	println(os.Args)
-
 	// loop over all arguments by index and value
 	for i, arg := range os.Args {
 		// print index and value
@@ -52,13 +43,12 @@ func main() {
 	}
 
 	println("Running the MJPEG-multiFLEXer")
-	config, err := args.ParseArgs(os.Args)
+	c, err := args.ParseArgs(os.Args)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	InputLocations = config.InputLocations
-	Output = config.Output
+	Config = c
 
 	run()
 }
