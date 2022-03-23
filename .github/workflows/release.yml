@@ -20,3 +20,4 @@ jobs:
         goarch: arm
         project_path: "./src/"
         overwrite: TRUE
+        release_tag: "nightly"
