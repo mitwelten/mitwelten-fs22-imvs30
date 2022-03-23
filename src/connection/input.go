@@ -1,7 +1,7 @@
 package connection
 
 import (
-	args "mjpeg_multiplexer/src/communication"
+	"mjpeg_multiplexer/src/communication"
 	"mjpeg_multiplexer/src/mjpeg"
 )
 
@@ -9,9 +9,13 @@ type Input interface {
 	ReceiveFrame() (mjpeg.Frame, error)
 }
 
-func ListenToInput(input Input) *args.FrameData {
-	var frameData = args.FrameData{}
-	frameData.Init() // init with a black frame
+func ListenToInput(input Input) *communication.FrameData {
+	var frame = mjpeg.Frame{}
+	frame.Body = mjpeg.Init()
+
+	var frameData = communication.FrameData{}
+	frameData.Store(frame) // init with a black frame
+
 	go func() {
 		for {
 			var frame, err = input.ReceiveFrame()

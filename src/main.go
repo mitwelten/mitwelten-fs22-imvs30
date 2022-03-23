@@ -44,6 +44,7 @@ func main() {
 	}
 
 	println("Running the MJPEG-multiFLEXer")
+
 	c, err := args.ParseArgs(os.Args)
 	if err != nil {
 		panic(err.Error())
