@@ -17,17 +17,9 @@ func (grid AggregatorGrid) Aggregate(channels ...*communication.FrameData) chan 
 	go func() {
 		for {
 			var frames []mjpeg.Frame
-			var n = false
 			for i := 0; i < len(channels); i++ {
 				frame := channels[i]
-				if frame.Get().Body == nil {
-					n = true
-				}
 				frames = append(frames, frame.Get())
-			}
-
-			if n == true {
-				continue
 			}
 
 			start := time.Now()
