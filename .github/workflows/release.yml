@@ -8,8 +8,8 @@ on:
 
 jobs:
 
-  release-linux-amd64:
-    name: release linux/amd64
+  release-multiplexer:
+    name: release multiplexer linux/arm
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -21,3 +21,4 @@ jobs:
         project_path: "./src/"
         overwrite: TRUE
         release_tag: "nightly"
+        binary_name: "multiplexer"
