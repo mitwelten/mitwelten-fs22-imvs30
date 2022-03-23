@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"mjpeg_multiplexer/src/args"
+	"mjpeg_multiplexer/src/communication"
 	"mjpeg_multiplexer/src/connection"
-	"mjpeg_multiplexer/src/mjpeg"
 	"os"
 	"sync"
 )
@@ -16,18 +16,19 @@ var Config args.MultiplexerConfig
 func run() {
 	var wg sync.WaitGroup
 
-	var channels []chan mjpeg.Frame
+	//	var channels []chan mjpeg.Frame
+	var frameDatas []*communication.FrameData
 
 	for _, connectionString := range Config.InputLocations {
 		wg.Add(1)
 
 		var input = connection.NewInputHTTP(connectionString)
 		input.Open()
-		var channel = connection.ListenToInput(input)
-		channels = append(channels, channel)
+		var frameData = connection.ListenToInput(input)
+		frameDatas = append(frameDatas, frameData)
 	}
 
-	var aggregatedChannels = Config.Aggregator.Aggregate(channels...)
+	var aggregatedChannels = Config.Aggregator.Aggregate(frameDatas...)
 
 	wg.Add(1)
 	connection.RunOutput(Config.Output, aggregatedChannels)

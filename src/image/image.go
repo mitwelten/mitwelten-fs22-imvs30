@@ -41,8 +41,9 @@ func Grid(row int, col int, frames ...mjpeg.Frame) mjpeg.Frame {
 	var imageOut = image.NewRGBA(rectangle)
 
 	for i := 0; i < nCells; i++ {
+		var row_ = i / col
 		var col_ = i % col
-		var row_ = i / row
+
 		if i >= nFrames {
 			break
 		}

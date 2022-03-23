@@ -1,6 +1,7 @@
 package aggregator
 
 import (
+	"mjpeg_multiplexer/src/communication"
 	"mjpeg_multiplexer/src/image"
 	"mjpeg_multiplexer/src/mjpeg"
 	"time"
@@ -11,14 +12,14 @@ type AggregatorGrid struct {
 	Col int
 }
 
-func (grid AggregatorGrid) Aggregate(channels ...chan mjpeg.Frame) chan mjpeg.Frame {
+func (grid AggregatorGrid) Aggregate(channels ...*communication.FrameData) chan mjpeg.Frame {
 	var out = make(chan mjpeg.Frame)
 	go func() {
 		for {
 			var frames []mjpeg.Frame
 			for i := 0; i < len(channels); i++ {
-				frame := <-channels[i]
-				frames = append(frames, frame)
+				frame := channels[i]
+				frames = append(frames, frame.Get())
 			}
 
 			start := time.Now()

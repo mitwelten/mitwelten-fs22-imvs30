@@ -28,7 +28,6 @@ func mockFrame() mjpeg.Frame {
 	}
 
 	return mjpeg.Frame{Body: b}
-
 }
 
 func TestSendAndReceive(t *testing.T) {
