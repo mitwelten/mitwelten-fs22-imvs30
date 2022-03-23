@@ -14,12 +14,12 @@ Redirect output to a file or provide output as a stream.
 
 - Redirect output to a file:
     ```
-    $ go run ./src/main.go -input "192.168.137.216:8080 192.168.137.59:8080" -output "file" -output_filename "out.jpg" -method "grid"
+    $ go run ./src/main.go -input "192.168.137.216:8080 192.168.137.59:8080" -output "file" -output_filename "out.jpg" -method "grid" -grid_dimension "2 1"
     ```
 
 - Output stream:
     ```
-    $ go run ./src/main.go -input "192.168.137.102:8080 192.168.137.187:8080" -output "stream" -output_port "8088" -method "grid"
+    $ go run ./src/main.go -input "192.168.137.102:8080 192.168.137.187:8080" -output "stream" -output_port "8088" -method "grid" -grid_dimension "2 1"
     ```
 
 ## Badge
