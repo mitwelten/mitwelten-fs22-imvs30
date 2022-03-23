@@ -1,4 +1,4 @@
-name: Go
+name: Release Go Binary
 
 on:
   push:
@@ -18,3 +18,5 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: linux
         goarch: arm
+        project_path: "./src/"
+        overwrite: TRUE
