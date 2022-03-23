@@ -40,7 +40,6 @@ func Grid(row int, col int, frames ...mjpeg.Frame) mjpeg.Frame {
 	// image
 	var imageOut = image.NewRGBA(rectangle)
 
-	println()
 	for i := 0; i < nCells; i++ {
 		var row_ = i / col
 		var col_ = i % col
