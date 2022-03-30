@@ -1,6 +1,7 @@
 package aggregator
 
 import (
+	"log"
 	"mjpeg_multiplexer/src/communication"
 	"mjpeg_multiplexer/src/image"
 	"mjpeg_multiplexer/src/mjpeg"
@@ -26,7 +27,7 @@ func (grid AggregatorGrid) Aggregate(channels ...*communication.FrameData) chan 
 			out <- image.Grid(grid.Row, grid.Col, frames...)
 			t := time.Now()
 			elapsed := t.Sub(start)
-			println(elapsed.Milliseconds(), "ms for image merging grid")
+			log.Println(elapsed.Milliseconds(), "ms for image merging grid")
 		}
 	}()
 
