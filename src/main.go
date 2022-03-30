@@ -4,13 +4,11 @@ import (
 	"io"
 	"log"
 	"mjpeg_multiplexer/src/args"
-	"mjpeg_multiplexer/src/communication"
-	"mjpeg_multiplexer/src/connection"
+	"mjpeg_multiplexer/src/multiplexer"
 	"os"
-	"sync"
 )
 
-var Config args.MultiplexerConfig
+var Config multiplexer.MultiplexerConfig
 
 const logFile string = "multiplexer.log"
 
@@ -23,29 +21,6 @@ func setupLog() {
 	mw := io.MultiWriter(os.Stdout, file)
 	log.SetOutput(mw)
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
-}
-
-func run() {
-	var wg sync.WaitGroup
-
-	//	var channels []chan mjpeg.Frame
-	var frameDatas []*communication.FrameData
-
-	for _, connectionString := range Config.InputLocations {
-		wg.Add(1)
-
-		var input = connection.NewInputHTTP(connectionString)
-		input.Open()
-		var frameData = connection.ListenToInput(input)
-		frameDatas = append(frameDatas, frameData)
-	}
-
-	var aggregatedChannels = Config.Aggregator.Aggregate(frameDatas...)
-
-	wg.Add(1)
-	connection.RunOutput(Config.Output, aggregatedChannels)
-
-	wg.Wait()
 }
 
 func main() {
@@ -66,5 +41,5 @@ func main() {
 
 	Config = c
 
-	run()
+	multiplexer.Multiplexer(Config)
 }
