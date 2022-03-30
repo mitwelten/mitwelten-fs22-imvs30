@@ -21,6 +21,17 @@ type Server struct {
 
 var delim = "--boundarydonotcross"
 
+var HEADER = "HTTP/1.1 200 OK\r\n" +
+	"Server: mjpeg-multiplexer\r\n" +
+	"Connection: close\r\n" +
+	"Max-Age: 0\r\n" +
+	"Expires: 0\r\n" +
+	"Cache-Control: no-cache, private\r\n" +
+	"Pragma: no-cache\r\n" +
+	"Content-Type: multipart/x-mixed-replace; boundary=--boundarydonotcross\r\n" +
+	"\r\n" +
+	"--boundarydonotcross\r\n"
+
 func serve(server Server) {
 	defer func(connection net.Conn) {
 		err := connection.Close()
@@ -58,11 +69,7 @@ func serve(server Server) {
 	}
 }
 func (server Server) sendHeader() error {
-	var header = "HTTP/1.0 200 OK\r\n" +
-		"Access-Control-Allow-Origin: *\r\n" +
-		"Content-Type: multipart/x-mixed-replace;boundary=" + delim + "\r\n" +
-		"\r\n" +
-		"--" + delim + "\r\n"
+	var header = HEADER
 	_, err := server.connection.Write([]byte(header))
 	if err != nil {
 		return errors.New("can't send header")
@@ -70,9 +77,10 @@ func (server Server) sendHeader() error {
 	return nil
 }
 func (server Server) sendFrame(frame mjpeg.Frame) error {
+	//Format must be not be change, else it will not work on some browsers!
 	var header = "Content-Type: image/jpeg\r\n" +
-		"Content-Length: " + strconv.Itoa(len(frame.Body)) + "\r\n"
-	//"X-Timestamp: TODO \r\n"
+		"Content-Length: " + strconv.Itoa(len(frame.Body)) + "\r\n" +
+		"\r\n"
 
 	_, err := server.connection.Write([]byte(header))
 	if err != nil {
