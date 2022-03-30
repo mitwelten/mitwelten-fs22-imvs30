@@ -5,6 +5,7 @@ import (
 	"mjpeg_multiplexer/src/aggregator"
 	"mjpeg_multiplexer/src/connection"
 	"mjpeg_multiplexer/src/customErrors"
+	"mjpeg_multiplexer/src/multiplexer"
 	"os"
 	"strconv"
 	"strings"
@@ -20,13 +21,7 @@ const (
 	InputLocationSeparator = " "
 )
 
-type MultiplexerConfig struct {
-	InputLocations []string
-	Output         connection.Output
-	Aggregator     aggregator.Aggregator
-}
-
-func parseGrid(config MultiplexerConfig, methodGridPtr *string) (MultiplexerConfig, error) {
+func parseGrid(config multiplexer.MultiplexerConfig, methodGridPtr *string) (multiplexer.MultiplexerConfig, error) {
 	var gridDimension = strings.Split(*methodGridPtr, InputLocationSeparator)
 	if len(gridDimension) != 2 {
 		return config, &customErrors.ErrArgParserInvalidGridDimension{}
@@ -45,12 +40,12 @@ func parseGrid(config MultiplexerConfig, methodGridPtr *string) (MultiplexerConf
 	return config, nil
 }
 
-func parseInput(config MultiplexerConfig, inputStr string) MultiplexerConfig {
+func parseInput(config multiplexer.MultiplexerConfig, inputStr string) multiplexer.MultiplexerConfig {
 	config.InputLocations = strings.Split(inputStr, InputLocationSeparator)
 	return config
 }
 
-func ParseArgs(args []string) (config MultiplexerConfig, err error) {
+func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) {
 	var CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	//---Define all various flags---
 	inputPtr := CommandLine.String("input", "", InputUsage)
@@ -66,27 +61,27 @@ func ParseArgs(args []string) (config MultiplexerConfig, err error) {
 	// first validation
 	// check if at least all three mandatory parameters are present
 	if len(*inputPtr) == 0 || len(*outputPtr) == 0 || len(*methodPtr) == 0 {
-		return MultiplexerConfig{}, &customErrors.ErrArgParserUnfulfilledMinArguments{}
+		return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserUnfulfilledMinArguments{}
 	}
 	// stream
 	if strings.Compare(*outputPtr, "stream") == 0 {
 		if len(*outputStreamPortPtr) == 0 {
-			return MultiplexerConfig{}, &customErrors.ErrArgParserInvalidOutputPort{}
+			return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidOutputPort{}
 		} else {
 			config.Output, err = connection.NewOutputHTTP(*outputStreamPortPtr)
 			if err != nil {
-				return MultiplexerConfig{}, &customErrors.ErrHttpOpenOutputSocket{}
+				return multiplexer.MultiplexerConfig{}, &customErrors.ErrHttpOpenOutputSocket{}
 			}
 		}
 		// file
 	} else if strings.Compare(*outputPtr, "file") == 0 {
 		if len(*outputFileNamePtr) == 0 {
-			return MultiplexerConfig{}, &customErrors.ErrArgParserInvalidOutputFilename{}
+			return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidOutputFilename{}
 		} else {
 			config.Output = connection.NewOutputFile(*outputFileNamePtr)
 		}
 	} else {
-		return MultiplexerConfig{}, &customErrors.ErrArgParserInvalidArgument{Argument: *outputPtr}
+		return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidArgument{Argument: *outputPtr}
 	}
 
 	// input parsing
@@ -98,10 +93,10 @@ func ParseArgs(args []string) (config MultiplexerConfig, err error) {
 		config, err = parseGrid(config, methodGridPtr)
 
 		if err != nil {
-			return MultiplexerConfig{}, err
+			return multiplexer.MultiplexerConfig{}, err
 		}
 	default:
-		return MultiplexerConfig{}, &customErrors.ErrArgParserInvalidMethod{Argument: *methodPtr}
+		return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidMethod{Argument: *methodPtr}
 	}
 
 	// non error case, return nil
