@@ -33,7 +33,7 @@ var HEADER = "HTTP/1.1 200 OK\r\n" +
 var DELIM = "\r\n----boundarydonotcross\r\n"
 
 func remove(server Server) {
-	//remove this server from the list of servers
+	//remove this SimpleServer from the list of servers
 	serversMutex.Lock()
 	for i, s := range servers {
 		if server == s {
