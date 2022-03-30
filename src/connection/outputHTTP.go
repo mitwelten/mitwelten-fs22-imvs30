@@ -19,8 +19,6 @@ type Server struct {
 	connection net.Conn
 }
 
-var delim = "--boundarydonotcross"
-
 var HEADER = "HTTP/1.1 200 OK\r\n" +
 	"Server: mjpeg-multiplexer\r\n" +
 	"Connection: close\r\n" +
@@ -31,6 +29,20 @@ var HEADER = "HTTP/1.1 200 OK\r\n" +
 	"Content-Type: multipart/x-mixed-replace; boundary=--boundarydonotcross\r\n" +
 	"\r\n" +
 	"--boundarydonotcross\r\n"
+
+var DELIM = "\r\n----boundarydonotcross\r\n"
+
+func remove(server Server) {
+	//remove this server from the list of servers
+	serversMutex.Lock()
+	for i, s := range servers {
+		if server == s {
+			servers = append(servers[:i], servers[i+1:]...)
+			break
+		}
+	}
+	serversMutex.Unlock()
+}
 
 func serve(server Server) {
 	defer func(connection net.Conn) {
@@ -44,7 +56,9 @@ func serve(server Server) {
 
 	var err = server.sendHeader()
 	if err != nil {
+		println("error when sending header to " + server.connection.LocalAddr().String() + ", closing connection")
 		println(err.Error())
+		remove(server)
 		return
 	}
 
@@ -52,18 +66,10 @@ func serve(server Server) {
 		var frame = <-server.channel
 		var err = server.sendFrame(frame)
 		if err != nil {
-			//todo better error handling? The assumption here is that error => connection was closed, but this isn't true
+			//todo Counter that closes after X errors
 			println("error when sending frame to " + server.connection.LocalAddr().String() + ", closing connection")
 			println(err.Error())
-			serversMutex.Lock()
-			//remove this server from the list of servers
-			for i, s := range servers {
-				if server == s {
-					servers = append(servers[:i], servers[i+1:]...)
-					break
-				}
-			}
-			serversMutex.Unlock()
+			remove(server)
 			return
 		}
 	}
@@ -72,7 +78,7 @@ func (server Server) sendHeader() error {
 	var header = HEADER
 	_, err := server.connection.Write([]byte(header))
 	if err != nil {
-		return errors.New("can't send header")
+		return err
 	}
 	return nil
 }
@@ -82,18 +88,13 @@ func (server Server) sendFrame(frame mjpeg.Frame) error {
 		"Content-Length: " + strconv.Itoa(len(frame.Body)) + "\r\n" +
 		"\r\n"
 
-	_, err := server.connection.Write([]byte(header))
-	if err != nil {
-		return errors.New("can't send header")
-	}
+	var data = []byte(header)
+	data = append(data, frame.Body...)
+	data = append(data, []byte(DELIM)...)
 
-	_, err = server.connection.Write(frame.Body)
+	_, err := server.connection.Write(data)
 	if err != nil {
-		return errors.New("can't send frame body")
-	}
-	_, err = server.connection.Write([]byte("\r\n--" + delim + "\r\n"))
-	if err != nil {
-		return errors.New("can't send delim")
+		return err
 	}
 
 	return nil
