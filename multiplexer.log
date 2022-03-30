@@ -1,0 +1,61 @@
+main.go:69: item 0 is C:\Users\marcb\AppData\Local\Temp\go-build4072396034\b001\exe\main.exe
+main.go:69: item 1 is -input
+main.go:69: item 2 is 192.168.137.76:8088
+main.go:69: item 3 is -output
+main.go:69: item 4 is file
+main.go:69: item 5 is -output_filename
+main.go:69: item 6 is out.jpg
+main.go:69: item 7 is -method
+main.go:69: item 8 is grid
+main.go:69: item 9 is -grid_dimension
+main.go:69: item 10 is 1 1
+main.go:72: Running the MJPEG-multiFLEXer
+main.go:66: item 0 is C:\Users\marcb\AppData\Local\Temp\go-build3706265044\b001\exe\main.exe
+main.go:66: item 1 is -input
+main.go:66: item 2 is 192.168.137.76:8088
+main.go:66: item 3 is -output
+main.go:66: item 4 is file
+main.go:66: item 5 is -output_filename
+main.go:66: item 6 is out.jpg
+main.go:66: item 7 is -method
+main.go:66: item 8 is grid
+main.go:66: item 9 is -grid_dimension
+main.go:66: item 10 is 1 1
+main.go:69: Running the MJPEG-multiFLEXer
+2022/03/30 14:28:13 main.go:66: item 0 is C:\Users\marcb\AppData\Local\Temp\go-build3066451663\b001\exe\main.exe
+2022/03/30 14:28:14 main.go:66: item 1 is -input
+2022/03/30 14:28:14 main.go:66: item 2 is 192.168.137.76:8088
+2022/03/30 14:28:14 main.go:66: item 3 is -output
+2022/03/30 14:28:14 main.go:66: item 4 is file
+2022/03/30 14:28:14 main.go:66: item 5 is -output_filename
+2022/03/30 14:28:14 main.go:66: item 6 is out.jpg
+2022/03/30 14:28:14 main.go:66: item 7 is -method
+2022/03/30 14:28:14 main.go:66: item 8 is grid
+2022/03/30 14:28:14 main.go:66: item 9 is -grid_dimension
+2022/03/30 14:28:14 main.go:66: item 10 is 1 1
+2022/03/30 14:28:14 main.go:69: Running the MJPEG-multiFLEXer
+2022/03/30 14:32:41 main.go:58: item 0 is C:\Users\marcb\AppData\Local\Temp\go-build1010359667\b001\exe\main.exe
+2022/03/30 14:32:41 main.go:58: item 1 is -input
+2022/03/30 14:32:41 main.go:58: item 2 is 192.168.137.76:8088
+2022/03/30 14:32:41 main.go:58: item 3 is -output
+2022/03/30 14:32:41 main.go:58: item 4 is file
+2022/03/30 14:32:41 main.go:58: item 5 is -output_filename
+2022/03/30 14:32:41 main.go:58: item 6 is out.jpg
+2022/03/30 14:32:41 main.go:58: item 7 is -method
+2022/03/30 14:32:41 main.go:58: item 8 is grid
+2022/03/30 14:32:41 main.go:58: item 9 is -grid_dimension
+2022/03/30 14:32:41 main.go:58: item 10 is 1 1
+2022/03/30 14:32:41 main.go:61: Running the MJPEG-multiFLEXer
+2022/03/30 14:35:19 main.go:53: Running the MJPEG-multiFLEXer
+2022/03/30 14:35:19 main.go:55: parsing args...
+2022/03/30 14:35:19 main.go:59: item 0 is C:\Users\marcb\AppData\Local\Temp\go-build2746118687\b001\exe\main.exe
+2022/03/30 14:35:19 main.go:59: item 1 is -input
+2022/03/30 14:35:19 main.go:59: item 2 is 192.168.137.76:8088
+2022/03/30 14:35:19 main.go:59: item 3 is -output
+2022/03/30 14:35:19 main.go:59: item 4 is file
+2022/03/30 14:35:19 main.go:59: item 5 is -output_filename
+2022/03/30 14:35:19 main.go:59: item 6 is out.jpg
+2022/03/30 14:35:19 main.go:59: item 7 is -method
+2022/03/30 14:35:19 main.go:59: item 8 is grid
+2022/03/30 14:35:19 main.go:59: item 9 is -grid_dimension
+2022/03/30 14:35:19 main.go:59: item 10 is 1 1
