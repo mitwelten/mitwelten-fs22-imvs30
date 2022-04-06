@@ -14,15 +14,15 @@ var redJPG []byte
 //go:embed blue.jpg
 var blueJPG []byte
 
-func RedFrame() mjpeg.Frame {
-	return mjpeg.Frame{Body: redJPG}
+func RedFrame() mjpeg.MjpegFrame {
+	return mjpeg.MjpegFrame{Body: redJPG}
 }
 
-func BlueFrame() mjpeg.Frame {
-	return mjpeg.Frame{Body: blueJPG}
+func BlueFrame() mjpeg.MjpegFrame {
+	return mjpeg.MjpegFrame{Body: blueJPG}
 }
 
-func SimpleServer(port string, frame mjpeg.Frame) error {
+func SimpleServer(port string, frame mjpeg.MjpegFrame) error {
 	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		return err
