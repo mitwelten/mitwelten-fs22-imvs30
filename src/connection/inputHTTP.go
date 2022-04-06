@@ -10,21 +10,22 @@ import (
 )
 
 type InputHTTP struct {
+	url        string
 	connection net.Conn
 }
 
 // NewInputHTTP todo TEST: Test this function by creating an input and checking if it runs
 func NewInputHTTP(url string) (source InputHTTP) {
-	conn, err := net.Dial("tcp", url)
-	if err != nil {
-		panic("Socket error")
-	}
-
-	return InputHTTP{conn}
+	return InputHTTP{url: url}
 }
 
-func (source InputHTTP) Open() {
-	_, err := source.connection.Write([]byte("GET /?action=stream HTTP/1.1\r\nHost:%s\r\n\r\n"))
+func (source InputHTTP) Start() {
+	var err error
+	source.connection, err = net.Dial("tcp", source.url)
+	if err != nil {
+		panic("Socket error") // todo: error handling...
+	}
+	_, err = source.connection.Write([]byte("GET /?action=stream HTTP/1.1\r\nHost:%s\r\n\r\n"))
 	if err != nil {
 		panic("cannot send GET request to " + source.connection.LocalAddr().String())
 	}
