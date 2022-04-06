@@ -13,7 +13,7 @@ func ImageMerge_Integration_test(t *testing.T) {
 		os.Exit(1)
 	}()
 
-	var serverRed = SimpleServer("8097", RedFrame())
-	var serverBlue = SimpleServer("8098", BlueFrame())
+	var _ = SimpleServer("8097", RedFrame())
+	var _ = SimpleServer("8098", BlueFrame())
 
 }
