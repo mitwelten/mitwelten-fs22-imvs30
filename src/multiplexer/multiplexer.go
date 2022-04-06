@@ -8,7 +8,7 @@ import (
 )
 
 type MultiplexerConfig struct {
-	InputLocations []string
+	InputLocations []connection.Input
 	Output         connection.Output
 	Aggregator     aggregator.Aggregator
 }
@@ -18,12 +18,11 @@ func Multiplexer(config MultiplexerConfig) {
 
 	var frameStorage []*communication.FrameStorage
 
-	for _, connectionString := range config.InputLocations {
+	for _, inputConnection := range config.InputLocations {
 		wg.Add(1)
 
-		var input = connection.NewInputHTTP(connectionString)
-		input.Open()
-		var frameData = connection.ListenToInput(input)
+		inputConnection.Start()
+		var frameData = connection.ListenToInput(inputConnection)
 		frameStorage = append(frameStorage, frameData)
 	}
 

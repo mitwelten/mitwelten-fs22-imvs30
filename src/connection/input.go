@@ -7,6 +7,7 @@ import (
 
 type Input interface {
 	ReceiveFrame() (mjpeg.MjpegFrame, error)
+	Start()
 }
 
 func ListenToInput(input Input) *communication.FrameStorage {

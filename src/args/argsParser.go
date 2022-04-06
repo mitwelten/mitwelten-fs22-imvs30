@@ -41,7 +41,12 @@ func parseGrid(config multiplexer.MultiplexerConfig, methodGridPtr *string) (mul
 }
 
 func parseInput(config multiplexer.MultiplexerConfig, inputStr string) multiplexer.MultiplexerConfig {
-	config.InputLocations = strings.Split(inputStr, InputLocationSeparator)
+	inputUrls := strings.Split(inputStr, InputLocationSeparator)
+	var conns []connection.Input
+	for _, s := range inputUrls {
+		conns = append(conns, connection.NewInputHTTP(s))
+	}
+	config.InputLocations = conns
 	return config
 }
 
