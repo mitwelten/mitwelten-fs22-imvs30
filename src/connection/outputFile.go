@@ -2,6 +2,7 @@ package connection
 
 import (
 	"errors"
+	"mjpeg_multiplexer/src/communication"
 	"mjpeg_multiplexer/src/mjpeg"
 	"os"
 )
@@ -25,4 +26,18 @@ func (output OutputFile) SendFrame(frame mjpeg.MjpegFrame) error {
 		return errors.New("cannot write to file")
 	}
 	return nil
+}
+
+func (output OutputFile) Run(storage *communication.FrameStorage) {
+	go func(storage_ *communication.FrameStorage) {
+		for {
+			frame := storage_.Get()
+			err := output.SendFrame(frame)
+			if err != nil {
+				println("Error while trying to send frame to output")
+				println(err.Error())
+				continue
+			}
+		}
+	}(storage)
 }

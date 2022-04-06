@@ -2,6 +2,7 @@ package connection
 
 import (
 	"errors"
+	"mjpeg_multiplexer/src/communication"
 	"mjpeg_multiplexer/src/mjpeg"
 	"net"
 	"strconv"
@@ -134,4 +135,17 @@ func (output OutputHTTP) SendFrame(frame mjpeg.MjpegFrame) error {
 		server.channel <- frame
 	}
 	return nil
+}
+func (output OutputHTTP) Run(storage *communication.FrameStorage) {
+	go func(storage_ *communication.FrameStorage) {
+		for {
+			frame := storage_.Get()
+			err := output.SendFrame(frame)
+			if err != nil {
+				println("Error while trying to send frame to output")
+				println(err.Error())
+				continue
+			}
+		}
+	}(storage)
 }

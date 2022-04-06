@@ -7,6 +7,7 @@ import (
 	"mjpeg_multiplexer/src/mjpeg"
 	"net"
 	"strconv"
+	"time"
 )
 
 type InputHTTP struct {
@@ -15,13 +16,13 @@ type InputHTTP struct {
 }
 
 // NewInputHTTP todo TEST: Test this function by creating an input and checking if it runs
-func NewInputHTTP(url string) (source InputHTTP) {
-	return InputHTTP{url: url}
+func NewInputHTTP(url string) *InputHTTP {
+	return &InputHTTP{url: url}
 }
 
-func (source InputHTTP) Start() {
+func (source *InputHTTP) Start() {
 	var err error
-	source.connection, err = net.Dial("tcp", source.url)
+	source.connection, err = net.DialTimeout("tcp", source.url, 3*time.Second)
 	if err != nil {
 		panic("Socket error") // todo: error handling...
 	}
@@ -31,7 +32,7 @@ func (source InputHTTP) Start() {
 	}
 }
 
-func (source InputHTTP) ReceiveFrame() (mjpeg.MjpegFrame, error) {
+func (source *InputHTTP) ReceiveFrame() (mjpeg.MjpegFrame, error) {
 	// todo optimize
 	// Read header
 	var buffer = make([]byte, 1)
