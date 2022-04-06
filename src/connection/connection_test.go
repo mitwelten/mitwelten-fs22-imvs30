@@ -43,6 +43,7 @@ func TestSendAndReceive(t *testing.T) {
 	}
 
 	input := NewInputHTTP("localhost:8081")
+	input.Start()
 
 	// Wait a short amount to make sure that input and output are ready
 	time.Sleep(250 * time.Millisecond)
