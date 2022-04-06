@@ -12,7 +12,7 @@ import (
 //todo change hardcoded file path to something more robust?
 var imageLocation = "../../resources/images1/image1.jpg"
 
-func mockFrame() mjpeg.Frame {
+func mockFrame() mjpeg.MjpegFrame {
 	fh, err := os.OpenFile(imageLocation, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		panic("cant find file " + imageLocation)
@@ -27,7 +27,7 @@ func mockFrame() mjpeg.Frame {
 		panic("cant close file handler for " + imageLocation)
 	}
 
-	return mjpeg.Frame{Body: b}
+	return mjpeg.MjpegFrame{Body: b}
 }
 
 func TestSendAndReceive(t *testing.T) {

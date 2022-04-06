@@ -6,14 +6,14 @@ import (
 )
 
 type Input interface {
-	ReceiveFrame() (mjpeg.Frame, error)
+	ReceiveFrame() (mjpeg.MjpegFrame, error)
 }
 
-func ListenToInput(input Input) *communication.FrameData {
-	var frame = mjpeg.Frame{}
+func ListenToInput(input Input) *communication.FrameStorage {
+	var frame = mjpeg.MjpegFrame{}
 	frame.Body = mjpeg.Init()
 
-	var frameData = communication.FrameData{}
+	var frameData = communication.FrameStorage{}
 	frameData.Store(frame) // init with a black frame
 
 	go func() {

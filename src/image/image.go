@@ -10,7 +10,7 @@ import (
 	"mjpeg_multiplexer/src/mjpeg"
 )
 
-func decode(frames []mjpeg.Frame) []image.Image {
+func decode(frames []mjpeg.MjpegFrame) []image.Image {
 	var images []image.Image
 	for _, frame := range frames {
 		var img, _, _ = image.Decode(bytes.NewReader(frame.Body))
@@ -19,7 +19,7 @@ func decode(frames []mjpeg.Frame) []image.Image {
 	return images
 }
 
-func Grid(row int, col int, frames ...mjpeg.Frame) mjpeg.Frame {
+func Grid(row int, col int, frames ...mjpeg.MjpegFrame) mjpeg.MjpegFrame {
 	var nCells = row * col
 	var nFrames = len(frames)
 
@@ -58,10 +58,10 @@ func Grid(row int, col int, frames ...mjpeg.Frame) mjpeg.Frame {
 	if err != nil {
 		panic("can't encode jpeg")
 	}
-	return mjpeg.Frame{Body: buff.Bytes()}
+	return mjpeg.MjpegFrame{Body: buff.Bytes()}
 }
 
-func MergeImages(frame1 mjpeg.Frame, frame2 mjpeg.Frame) (frame mjpeg.Frame) {
+func MergeImages(frame1 mjpeg.MjpegFrame, frame2 mjpeg.MjpegFrame) (frame mjpeg.MjpegFrame) {
 	var img1, _, _ = image.Decode(bytes.NewReader(frame1.Body))
 	var img2, _, _ = image.Decode(bytes.NewReader(frame2.Body))
 
@@ -93,5 +93,5 @@ func MergeImages(frame1 mjpeg.Frame, frame2 mjpeg.Frame) (frame mjpeg.Frame) {
 		panic("can't encode jpeg")
 	}
 
-	return mjpeg.Frame{Body: buff.Bytes()}
+	return mjpeg.MjpegFrame{Body: buff.Bytes()}
 }

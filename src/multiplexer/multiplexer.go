@@ -16,8 +16,7 @@ type MultiplexerConfig struct {
 func Multiplexer(config MultiplexerConfig) {
 	var wg sync.WaitGroup
 
-	//	var channels []chan mjpeg.Frame
-	var frameDatas []*communication.FrameData
+	var frameStorage []*communication.FrameStorage
 
 	for _, connectionString := range config.InputLocations {
 		wg.Add(1)
@@ -25,13 +24,13 @@ func Multiplexer(config MultiplexerConfig) {
 		var input = connection.NewInputHTTP(connectionString)
 		input.Open()
 		var frameData = connection.ListenToInput(input)
-		frameDatas = append(frameDatas, frameData)
+		frameStorage = append(frameStorage, frameData)
 	}
 
-	var aggregatedChannels = config.Aggregator.Aggregate(frameDatas...)
+	var aggregatedFrameStorage = config.Aggregator.Aggregate(frameStorage...)
 
 	wg.Add(1)
-	connection.RunOutput(config.Output, aggregatedChannels)
+	connection.RunOutput(config.Output, aggregatedFrameStorage)
 
 	wg.Wait()
 }

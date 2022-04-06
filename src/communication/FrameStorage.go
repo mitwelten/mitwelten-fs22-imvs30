@@ -5,19 +5,19 @@ import (
 	"sync"
 )
 
-type FrameData struct {
+type FrameStorage struct {
 	mu    sync.RWMutex
-	frame mjpeg.Frame
+	frame mjpeg.MjpegFrame
 }
 
-func (frameData *FrameData) Store(data mjpeg.Frame) {
+func (frameData *FrameStorage) Store(data mjpeg.MjpegFrame) {
 	frameData.mu.Lock()
 	defer frameData.mu.Unlock()
 
 	frameData.frame = data
 }
 
-func (frameData *FrameData) Get() mjpeg.Frame {
+func (frameData *FrameStorage) Get() mjpeg.MjpegFrame {
 	frameData.mu.RLock()
 	defer frameData.mu.RUnlock()
 

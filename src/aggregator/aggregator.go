@@ -6,5 +6,5 @@ import (
 )
 
 type Aggregator interface {
-	Aggregate(channels ...*communication.FrameData) chan mjpeg.Frame
+	Aggregate(channels ...*communication.FrameStorage) chan mjpeg.MjpegFrame
 }
