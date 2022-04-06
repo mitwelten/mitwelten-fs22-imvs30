@@ -13,23 +13,26 @@ type AggregatorGrid struct {
 	Col int
 }
 
-func (grid AggregatorGrid) Aggregate(channels ...*communication.FrameStorage) chan mjpeg.MjpegFrame {
-	var out = make(chan mjpeg.MjpegFrame)
+func (grid AggregatorGrid) Aggregate(storages ...*communication.FrameStorage) *communication.FrameStorage {
+	storage := communication.FrameStorage{}
 	go func() {
 		for {
 			var frames []mjpeg.MjpegFrame
-			for i := 0; i < len(channels); i++ {
-				frame := channels[i]
+			for i := 0; i < len(storages); i++ {
+				frame := storages[i]
 				frames = append(frames, frame.Get())
 			}
 
 			start := time.Now()
-			out <- image.Grid(grid.Row, grid.Col, frames...)
+
+			frame := image.Grid(grid.Row, grid.Col, frames...)
+			storage.Store(frame)
+
 			t := time.Now()
 			elapsed := t.Sub(start)
 			log.Println(elapsed.Milliseconds(), "ms for image merging grid")
 		}
 	}()
 
-	return out
+	return &storage
 }

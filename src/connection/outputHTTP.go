@@ -129,7 +129,7 @@ func NewOutputHTTP(port string) (Output, error) {
 	return OutputHTTP{}, nil
 }
 
-func (sink OutputHTTP) SendFrame(frame mjpeg.MjpegFrame) error {
+func (output OutputHTTP) SendFrame(frame mjpeg.MjpegFrame) error {
 	for _, server := range servers {
 		server.channel <- frame
 	}

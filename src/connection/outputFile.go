@@ -15,8 +15,8 @@ func NewOutputFile(filePath string) (sink OutputFile) {
 }
 
 // SendFrame todo TEST: check if file has been created and matches
-func (sink OutputFile) SendFrame(frame mjpeg.MjpegFrame) error {
-	fh, err := os.OpenFile(sink.filePath, os.O_RDWR|os.O_CREATE, 0644)
+func (output OutputFile) SendFrame(frame mjpeg.MjpegFrame) error {
+	fh, err := os.OpenFile(output.filePath, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		return errors.New("cannot write to file")
 	}
