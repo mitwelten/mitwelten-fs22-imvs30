@@ -15,7 +15,7 @@ var servers = make([]Server, 0)
 var serversMutex sync.Mutex
 
 type Server struct {
-	channel    chan mjpeg.Frame
+	channel    chan mjpeg.MjpegFrame
 	connection net.Conn
 }
 
@@ -82,7 +82,7 @@ func (server Server) sendHeader() error {
 	}
 	return nil
 }
-func (server Server) sendFrame(frame mjpeg.Frame) error {
+func (server Server) sendFrame(frame mjpeg.MjpegFrame) error {
 	//Format must be not be change, else it will not work on some browsers!
 	var header = "Content-Type: image/jpeg\r\n" +
 		"Content-Length: " + strconv.Itoa(len(frame.Body)) + "\r\n" +
@@ -116,7 +116,7 @@ func NewOutputHTTP(port string) (Output, error) {
 				continue
 			}
 
-			var server = Server{make(chan mjpeg.Frame), conn}
+			var server = Server{make(chan mjpeg.MjpegFrame), conn}
 
 			serversMutex.Lock()
 			servers = append(servers, server)
@@ -129,7 +129,7 @@ func NewOutputHTTP(port string) (Output, error) {
 	return OutputHTTP{}, nil
 }
 
-func (sink OutputHTTP) SendFrame(frame mjpeg.Frame) error {
+func (sink OutputHTTP) SendFrame(frame mjpeg.MjpegFrame) error {
 	for _, server := range servers {
 		server.channel <- frame
 	}

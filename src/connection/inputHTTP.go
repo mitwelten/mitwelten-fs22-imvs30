@@ -30,7 +30,7 @@ func (source InputHTTP) Open() {
 	}
 }
 
-func (source InputHTTP) ReceiveFrame() (mjpeg.Frame, error) {
+func (source InputHTTP) ReceiveFrame() (mjpeg.MjpegFrame, error) {
 	// todo optimize
 	// Read header
 	var buffer = make([]byte, 1)
@@ -39,7 +39,7 @@ func (source InputHTTP) ReceiveFrame() (mjpeg.Frame, error) {
 		var _, err = source.connection.Read(bufferTmp[:])
 		if err != nil {
 			println("Can't read from connection")
-			return mjpeg.Frame{}, err
+			return mjpeg.MjpegFrame{}, err
 		}
 
 		buffer = append(buffer, bufferTmp...)
@@ -74,7 +74,7 @@ func (source InputHTTP) ReceiveFrame() (mjpeg.Frame, error) {
 	}
 
 	if wordIndex != len(word) {
-		return mjpeg.Frame{}, errors.New("empty frame")
+		return mjpeg.MjpegFrame{}, errors.New("empty frame")
 	}
 
 	// parse content size number
@@ -94,15 +94,15 @@ func (source InputHTTP) ReceiveFrame() (mjpeg.Frame, error) {
 
 	if err != nil {
 		println("Can't read from connection")
-		return mjpeg.Frame{}, err
+		return mjpeg.MjpegFrame{}, err
 	}
 
 	if n != contentLength-len(mjpeg.JPEG_PREFIX) {
 		println("Cannot read all bytes")
-		return mjpeg.Frame{}, errors.New("can't the expected amount of bytes")
+		return mjpeg.MjpegFrame{}, errors.New("can't the expected amount of bytes")
 	}
 
 	var body = append(mjpeg.JPEG_PREFIX, bufferBody...)
 
-	return mjpeg.Frame{Body: body}, nil
+	return mjpeg.MjpegFrame{Body: body}, nil
 }

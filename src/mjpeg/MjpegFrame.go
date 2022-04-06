@@ -8,7 +8,7 @@ import (
 var JPEG_PREFIX = []byte("\xff\xd8")
 var FRAME_DELIM = []byte("--boundarydonotcross\r\n")
 
-type Frame struct {
+type MjpegFrame struct {
 	Body []byte
 }
 
@@ -19,10 +19,10 @@ func Init() []byte {
 	return blackJPG
 }
 
-func parse_frame(data []byte) (frame Frame) {
+func parse_frame(data []byte) (frame MjpegFrame) {
 	for i := 0; i < len(data); i++ {
 		if bytes.Compare(data[i:i+2], JPEG_PREFIX) == 0 {
-			return Frame{data[i:]}
+			return MjpegFrame{data[i:]}
 		}
 	}
 	panic("Can't parse frame")

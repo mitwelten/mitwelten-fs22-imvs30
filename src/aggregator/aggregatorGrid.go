@@ -13,11 +13,11 @@ type AggregatorGrid struct {
 	Col int
 }
 
-func (grid AggregatorGrid) Aggregate(channels ...*communication.FrameData) chan mjpeg.Frame {
-	var out = make(chan mjpeg.Frame)
+func (grid AggregatorGrid) Aggregate(channels ...*communication.FrameStorage) chan mjpeg.MjpegFrame {
+	var out = make(chan mjpeg.MjpegFrame)
 	go func() {
 		for {
-			var frames []mjpeg.Frame
+			var frames []mjpeg.MjpegFrame
 			for i := 0; i < len(channels); i++ {
 				frame := channels[i]
 				frames = append(frames, frame.Get())

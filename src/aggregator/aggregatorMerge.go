@@ -9,11 +9,11 @@ import (
 type AggregatorMerge struct {
 }
 
-func (merge AggregatorMerge) MergeImages(channels ...chan mjpeg.Frame) chan mjpeg.Frame {
+func (merge AggregatorMerge) MergeImages(channels ...chan mjpeg.MjpegFrame) chan mjpeg.MjpegFrame {
 	var combine = AggregatorCombine{}
 	var channel = combine.Aggregate(channels...)
-	var out = make(chan mjpeg.Frame)
-	go func(channel_ chan mjpeg.Frame) {
+	var out = make(chan mjpeg.MjpegFrame)
+	go func(channel_ chan mjpeg.MjpegFrame) {
 		for {
 			var f1 = <-channel_
 			var f2 = <-channel_
