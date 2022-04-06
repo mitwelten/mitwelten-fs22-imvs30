@@ -8,21 +8,6 @@ import (
 )
 
 // This is only used for integration testing
-
-//go:embed image1.jpg
-var image1 []byte
-
-//go:embed image2.jpg
-var image2 []byte
-
-func getImage1() mjpeg.MjpegFrame {
-	return mjpeg.MjpegFrame{Body: image1}
-}
-
-func getImage2() mjpeg.MjpegFrame {
-	return mjpeg.MjpegFrame{Body: image2}
-}
-
 //go:embed red.jpg
 var redJPG []byte
 
