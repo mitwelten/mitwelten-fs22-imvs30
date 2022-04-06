@@ -33,7 +33,7 @@ func SimpleServer(port string, frame mjpeg.MjpegFrame) error {
 		return err
 	}
 
-	var server = Server{nil, conn}
+	var server = ClientConnection{nil, conn, false}
 	err = server.sendHeader()
 	if err != nil {
 		return err

@@ -12,12 +12,13 @@ import (
 type OutputHTTP struct {
 }
 
-var servers = make([]Server, 0)
-var serversMutex sync.Mutex
+var clients = make([]ClientConnection, 0)
+var clientsMutex sync.Mutex
 
-type Server struct {
+type ClientConnection struct {
 	channel    chan mjpeg.MjpegFrame
 	connection net.Conn
+	isClosed   bool
 }
 
 var HEADER = "HTTP/1.1 200 OK\r\n" +
@@ -33,57 +34,60 @@ var HEADER = "HTTP/1.1 200 OK\r\n" +
 
 var DELIM = "\r\n----boundarydonotcross\r\n"
 
-func remove(server Server) {
-	//remove this SimpleServer from the list of servers
-	serversMutex.Lock()
-	for i, s := range servers {
-		if server == s {
-			servers = append(servers[:i], servers[i+1:]...)
+func remove(client ClientConnection) {
+	//remove this SimpleServer from the list of clients
+	for i, s := range clients {
+		if client == s {
+			//remove this client from the client list
+			clients = append(clients[:i], clients[i+1:]...)
 			break
 		}
 	}
-	serversMutex.Unlock()
 }
 
-func serve(server Server) {
-	defer func(connection net.Conn) {
-		err := connection.Close()
+func serve(client ClientConnection) {
+	defer func(client_ ClientConnection) {
+		//safely remove client from client list and close its channel
+		println("Trying to remove...")
+		remove(client_)
+		<-client_.channel
+		close(client_.channel)
+
+		println("Successfully removed!!")
+
+		err := client_.connection.Close()
 		if err != nil {
-			println("can't close connection to " + connection.LocalAddr().String() + ", potential leak!")
+			println("can't close connection to " + client_.connection.LocalAddr().String() + ", potential leak!")
 		}
-	}(server.connection)
+	}(client)
 
-	defer close(server.channel)
-
-	var err = server.sendHeader()
+	var err = client.sendHeader()
 	if err != nil {
-		println("error when sending header to " + server.connection.LocalAddr().String() + ", closing connection")
+		println("error when sending header to " + client.connection.LocalAddr().String() + ", closing connection")
 		println(err.Error())
-		remove(server)
 		return
 	}
 
 	for {
-		var frame = <-server.channel
-		var err = server.sendFrame(frame)
+		var frame = <-client.channel
+		var err = client.sendFrame(frame)
 		if err != nil {
 			//todo Counter that closes after X errors
-			println("error when sending frame to " + server.connection.LocalAddr().String() + ", closing connection")
+			println("error when sending frame to " + client.connection.LocalAddr().String() + ", closing connection")
 			println(err.Error())
-			remove(server)
 			return
 		}
 	}
 }
-func (server Server) sendHeader() error {
+func (client ClientConnection) sendHeader() error {
 	var header = HEADER
-	_, err := server.connection.Write([]byte(header))
+	_, err := client.connection.Write([]byte(header))
 	if err != nil {
 		return err
 	}
 	return nil
 }
-func (server Server) sendFrame(frame mjpeg.MjpegFrame) error {
+func (client ClientConnection) sendFrame(frame mjpeg.MjpegFrame) error {
 	//Format must be not be change, else it will not work on some browsers!
 	var header = "Content-Type: image/jpeg\r\n" +
 		"Content-Length: " + strconv.Itoa(len(frame.Body)) + "\r\n" +
@@ -93,7 +97,7 @@ func (server Server) sendFrame(frame mjpeg.MjpegFrame) error {
 	data = append(data, frame.Body...)
 	data = append(data, []byte(DELIM)...)
 
-	_, err := server.connection.Write(data)
+	_, err := client.connection.Write(data)
 	if err != nil {
 		return err
 	}
@@ -111,19 +115,18 @@ func NewOutputHTTP(port string) (Output, error) {
 	go func() {
 		for {
 			conn, err := listener.Accept()
-			println(conn.LocalAddr(), " connected!")
+			println(conn.RemoteAddr().String(), " connected!")
+
 			if err != nil {
 				println("Invalid connection")
 				continue
 			}
 
-			var server = Server{make(chan mjpeg.MjpegFrame), conn}
+			client := ClientConnection{make(chan mjpeg.MjpegFrame), conn, false}
 
-			serversMutex.Lock()
-			servers = append(servers, server)
-			serversMutex.Unlock()
+			clients = append(clients, client)
 
-			go serve(server)
+			go serve(client)
 		}
 	}()
 
@@ -131,9 +134,11 @@ func NewOutputHTTP(port string) (Output, error) {
 }
 
 func (output OutputHTTP) SendFrame(frame mjpeg.MjpegFrame) error {
-	for _, server := range servers {
-		server.channel <- frame
+	//TODO CRITICAL: FIX DATARACE
+	for _, client := range clients {
+		client.channel <- frame
 	}
+
 	return nil
 }
 func (output OutputHTTP) Run(storage *communication.FrameStorage) {
