@@ -34,11 +34,11 @@ func SimpleServer(port string, frame mjpeg.MjpegFrame) error {
 	}
 
 	var server = ClientConnection{nil, conn, false}
-	err = server.sendHeader()
+	err = server.SendHeader()
 	if err != nil {
 		return err
 	}
-	err = server.sendFrame(frame)
+	err = server.SendFrame(frame)
 	if err != nil {
 		return err
 	}

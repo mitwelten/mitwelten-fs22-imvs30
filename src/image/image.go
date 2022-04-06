@@ -54,7 +54,8 @@ func Grid(row int, col int, frames ...mjpeg.MjpegFrame) mjpeg.MjpegFrame {
 	}
 
 	buff := bytes.NewBuffer([]byte{})
-	err := jpeg.Encode(buff, imageOut, nil)
+	options := jpeg.Options{Quality: 100}
+	err := jpeg.Encode(buff, imageOut, &options)
 	if err != nil {
 		panic("can't encode jpeg")
 	}

@@ -17,7 +17,7 @@ var clientsMutex sync.Mutex
 
 type ClientConnection struct {
 	channel    chan mjpeg.MjpegFrame
-	connection net.Conn
+	Connection net.Conn
 	isClosed   bool
 }
 
@@ -55,39 +55,39 @@ func serve(client ClientConnection) {
 
 		println("Successfully removed!!")
 
-		err := client_.connection.Close()
+		err := client_.Connection.Close()
 		if err != nil {
-			println("can't close connection to " + client_.connection.LocalAddr().String() + ", potential leak!")
+			println("can't close Connection to " + client_.Connection.LocalAddr().String() + ", potential leak!")
 		}
 	}(client)
 
-	var err = client.sendHeader()
+	var err = client.SendHeader()
 	if err != nil {
-		println("error when sending header to " + client.connection.LocalAddr().String() + ", closing connection")
+		println("error when sending header to " + client.Connection.LocalAddr().String() + ", closing Connection")
 		println(err.Error())
 		return
 	}
 
 	for {
 		var frame = <-client.channel
-		var err = client.sendFrame(frame)
+		var err = client.SendFrame(frame)
 		if err != nil {
 			//todo Counter that closes after X errors
-			println("error when sending frame to " + client.connection.LocalAddr().String() + ", closing connection")
+			println("error when sending frame to " + client.Connection.LocalAddr().String() + ", closing Connection")
 			println(err.Error())
 			return
 		}
 	}
 }
-func (client ClientConnection) sendHeader() error {
+func (client ClientConnection) SendHeader() error {
 	var header = HEADER
-	_, err := client.connection.Write([]byte(header))
+	_, err := client.Connection.Write([]byte(header))
 	if err != nil {
 		return err
 	}
 	return nil
 }
-func (client ClientConnection) sendFrame(frame mjpeg.MjpegFrame) error {
+func (client ClientConnection) SendFrame(frame mjpeg.MjpegFrame) error {
 	//Format must be not be change, else it will not work on some browsers!
 	var header = "Content-Type: image/jpeg\r\n" +
 		"Content-Length: " + strconv.Itoa(len(frame.Body)) + "\r\n" +
@@ -97,7 +97,7 @@ func (client ClientConnection) sendFrame(frame mjpeg.MjpegFrame) error {
 	data = append(data, frame.Body...)
 	data = append(data, []byte(DELIM)...)
 
-	_, err := client.connection.Write(data)
+	_, err := client.Connection.Write(data)
 	if err != nil {
 		return err
 	}
@@ -118,7 +118,7 @@ func NewOutputHTTP(port string) (Output, error) {
 			println(conn.RemoteAddr().String(), " connected!")
 
 			if err != nil {
-				println("Invalid connection")
+				println("Invalid Connection")
 				continue
 			}
 

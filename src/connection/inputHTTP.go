@@ -40,7 +40,7 @@ func (source *InputHTTP) ReceiveFrame() (mjpeg.MjpegFrame, error) {
 		var bufferTmp = make([]byte, 1)
 		var _, err = source.connection.Read(bufferTmp[:])
 		if err != nil {
-			println("Can't read from connection")
+			println("Can't read from Connection")
 			return mjpeg.MjpegFrame{}, err
 		}
 
@@ -95,7 +95,7 @@ func (source *InputHTTP) ReceiveFrame() (mjpeg.MjpegFrame, error) {
 	var n, err = io.ReadFull(source.connection, bufferBody)
 
 	if err != nil {
-		println("Can't read from connection")
+		println("Can't read from Connection")
 		return mjpeg.MjpegFrame{}, err
 	}
 
