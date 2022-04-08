@@ -21,8 +21,9 @@ func ListenToInput(input Input) *communication.FrameStorage {
 		for {
 			var frame, err = input.ReceiveFrame()
 			if err != nil {
-				println("Error while trying to read frame from input")
+				//TODO proper logging here
 				println(err.Error())
+				// TODO proper error handling if input is no longer reachable
 				continue
 			}
 			frameData.Store(frame)

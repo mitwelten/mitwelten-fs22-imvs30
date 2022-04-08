@@ -3,6 +3,7 @@ package connection
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"mjpeg_multiplexer/src/mjpeg"
 	"net"
@@ -40,8 +41,7 @@ func (source *InputHTTP) ReceiveFrame() (mjpeg.MjpegFrame, error) {
 		var bufferTmp = make([]byte, 1)
 		var _, err = source.connection.Read(bufferTmp[:])
 		if err != nil {
-			println("Can't read from Connection")
-			return mjpeg.MjpegFrame{}, err
+			return mjpeg.MjpegFrame{}, fmt.Errorf("error while reading header: %w", err)
 		}
 
 		buffer = append(buffer, bufferTmp...)
@@ -95,13 +95,12 @@ func (source *InputHTTP) ReceiveFrame() (mjpeg.MjpegFrame, error) {
 	var n, err = io.ReadFull(source.connection, bufferBody)
 
 	if err != nil {
-		println("Can't read from Connection")
-		return mjpeg.MjpegFrame{}, err
+		return mjpeg.MjpegFrame{}, fmt.Errorf("error while reading frame: %w", err)
 	}
 
 	if n != contentLength-len(mjpeg.JPEG_PREFIX) {
 		println("Cannot read all bytes")
-		return mjpeg.MjpegFrame{}, errors.New("can't the expected amount of bytes")
+		return mjpeg.MjpegFrame{}, fmt.Errorf("could not read expected amount of bytes: %w", err)
 	}
 
 	var body = append(mjpeg.JPEG_PREFIX, bufferBody...)
