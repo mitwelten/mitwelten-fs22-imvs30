@@ -1,8 +1,9 @@
 package connection
 
 import (
-	"errors"
+	"log"
 	"mjpeg_multiplexer/src/communication"
+	"mjpeg_multiplexer/src/customErrors"
 	"mjpeg_multiplexer/src/mjpeg"
 	"os"
 )
@@ -19,11 +20,13 @@ func NewOutputFile(filePath string) (sink OutputFile) {
 func (output OutputFile) SendFrame(frame mjpeg.MjpegFrame) error {
 	fh, err := os.OpenFile(output.filePath, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
-		return errors.New("cannot write to file")
+		log.Println("error: cannot write to file")
+		return &customErrors.ErrIOWrite{}
 	}
 	_, err = fh.Write(frame.Body)
 	if err != nil {
-		return errors.New("cannot write to file")
+		log.Println("error: cannot write to file")
+		return &customErrors.ErrIOWrite{}
 	}
 	return nil
 }
@@ -34,7 +37,7 @@ func (output OutputFile) Run(storage *communication.FrameStorage) {
 			frame := storage_.Get()
 			err := output.SendFrame(frame)
 			if err != nil {
-				println("Error while trying to send frame to output")
+				log.Println("error: while trying to send frame to output")
 				println(err.Error())
 				continue
 			}

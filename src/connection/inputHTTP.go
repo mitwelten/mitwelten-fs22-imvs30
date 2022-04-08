@@ -2,9 +2,9 @@ package connection
 
 import (
 	"bytes"
-	"errors"
-	"fmt"
 	"io"
+	"log"
+	"mjpeg_multiplexer/src/customErrors"
 	"mjpeg_multiplexer/src/mjpeg"
 	"net"
 	"strconv"
@@ -41,7 +41,7 @@ func (source *InputHTTP) ReceiveFrame() (mjpeg.MjpegFrame, error) {
 		var bufferTmp = make([]byte, 1)
 		var _, err = source.connection.Read(bufferTmp[:])
 		if err != nil {
-			return mjpeg.MjpegFrame{}, fmt.Errorf("error while reading header: %w", err)
+			return mjpeg.MjpegFrame{}, &customErrors.ErrHttpReadHeader{}
 		}
 
 		buffer = append(buffer, bufferTmp...)
@@ -76,7 +76,8 @@ func (source *InputHTTP) ReceiveFrame() (mjpeg.MjpegFrame, error) {
 	}
 
 	if wordIndex != len(word) {
-		return mjpeg.MjpegFrame{}, errors.New("empty frame")
+		log.Println("error: empty frame received")
+		return mjpeg.MjpegFrame{}, &customErrors.ErrHttpEmptyFrame{}
 	}
 
 	// parse content size number
@@ -95,12 +96,13 @@ func (source *InputHTTP) ReceiveFrame() (mjpeg.MjpegFrame, error) {
 	var n, err = io.ReadFull(source.connection, bufferBody)
 
 	if err != nil {
-		return mjpeg.MjpegFrame{}, fmt.Errorf("error while reading frame: %w", err)
+		log.Println("error: could not read frame")
+		return mjpeg.MjpegFrame{}, &customErrors.ErrHttpReadFrame{}
 	}
 
 	if n != contentLength-len(mjpeg.JPEG_PREFIX) {
-		println("Cannot read all bytes")
-		return mjpeg.MjpegFrame{}, fmt.Errorf("could not read expected amount of bytes: %w", err)
+		log.Println("error: cannot read all bytes")
+		return mjpeg.MjpegFrame{}, &customErrors.ErrHttpReadEntireFrame{}
 	}
 
 	var body = append(mjpeg.JPEG_PREFIX, bufferBody...)

@@ -2,6 +2,7 @@ package args
 
 import (
 	"flag"
+	"log"
 	"mjpeg_multiplexer/src/aggregator"
 	"mjpeg_multiplexer/src/connection"
 	"mjpeg_multiplexer/src/customErrors"
@@ -29,10 +30,12 @@ func parseGrid(config multiplexer.MultiplexerConfig, methodGridPtr *string) (mul
 
 	row, err := strconv.Atoi(gridDimension[0])
 	if err != nil {
+		log.Println("error: ErrArgParserInvalidGridDimension with " + gridDimension[0])
 		return config, &customErrors.ErrArgParserInvalidGridDimension{}
 	}
 	col, err := strconv.Atoi(gridDimension[1])
 	if err != nil {
+		log.Println("error: ErrArgParserInvalidGridDimension with " + gridDimension[1])
 		return config, &customErrors.ErrArgParserInvalidGridDimension{}
 	}
 	config.Aggregator = aggregator.AggregatorGrid{Row: row, Col: col}

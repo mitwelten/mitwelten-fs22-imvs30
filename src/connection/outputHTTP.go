@@ -2,6 +2,7 @@ package connection
 
 import (
 	"errors"
+	"log"
 	"mjpeg_multiplexer/src/communication"
 	"mjpeg_multiplexer/src/mjpeg"
 	"net"
@@ -56,14 +57,14 @@ func serve(client ClientConnection) {
 
 		err := client_.Connection.Close()
 		if err != nil {
-			println("can't close Connection to " + client_.Connection.LocalAddr().String() + ", potential leak!")
+			log.Println("can't close Connection to " + client_.Connection.LocalAddr().String() + ", potential leak!")
 		}
 	}(client)
 
 	var err = client.SendHeader()
 	if err != nil {
-		println("error when sending header to " + client.Connection.LocalAddr().String() + ", closing Connection")
-		println(err.Error())
+		log.Println("error when sending header to " + client.Connection.LocalAddr().String() + ", closing Connection")
+		log.Println(err.Error())
 		return
 	}
 
@@ -72,8 +73,8 @@ func serve(client ClientConnection) {
 		var err = client.SendFrame(frame)
 		if err != nil {
 			//todo Counter that closes after X errors
-			println("error when sending frame to " + client.Connection.LocalAddr().String() + ", closing Connection")
-			println(err.Error())
+			log.Println("error when sending frame to " + client.Connection.LocalAddr().String() + ", closing Connection")
+			log.Println(err.Error())
 			return
 		}
 	}
@@ -114,10 +115,10 @@ func NewOutputHTTP(port string) (Output, error) {
 	go func() {
 		for {
 			conn, err := listener.Accept()
-			println(conn.RemoteAddr().String(), " connected!")
+			log.Println(conn.RemoteAddr().String(), " connected!")
 
 			if err != nil {
-				println("Invalid Connection")
+				log.Println("Invalid Connection")
 				continue
 			}
 
@@ -153,8 +154,8 @@ func (output OutputHTTP) Run(storage *communication.FrameStorage) {
 			frame := storage_.Get()
 			err := output.SendFrame(frame)
 			if err != nil {
-				println("Error while trying to send frame to output")
-				println(err.Error())
+				log.Println("Error while trying to send frame to output")
+				log.Println(err.Error())
 				continue
 			}
 		}

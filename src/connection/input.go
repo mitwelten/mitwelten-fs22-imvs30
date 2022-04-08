@@ -1,6 +1,7 @@
 package connection
 
 import (
+	"log"
 	"mjpeg_multiplexer/src/communication"
 	"mjpeg_multiplexer/src/mjpeg"
 )
@@ -22,7 +23,7 @@ func ListenToInput(input Input) *communication.FrameStorage {
 			var frame, err = input.ReceiveFrame()
 			if err != nil {
 				//TODO proper logging here
-				println(err.Error())
+				log.Println("error " + err.Error())
 				// TODO proper error handling if input is no longer reachable
 				continue
 			}
