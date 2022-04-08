@@ -1,11 +1,9 @@
 package aggregator
 
 import (
-	"log"
 	"mjpeg_multiplexer/src/communication"
 	"mjpeg_multiplexer/src/image"
 	"mjpeg_multiplexer/src/mjpeg"
-	"time"
 )
 
 type AggregatorGrid struct {
@@ -23,14 +21,15 @@ func (grid AggregatorGrid) Aggregate(storages ...*communication.FrameStorage) *c
 				frames = append(frames, frame.Get())
 			}
 
-			start := time.Now()
+			//			start := time.Now()
 
 			frame := image.Grid(grid.Row, grid.Col, frames...)
 			storage.Store(frame)
-
-			t := time.Now()
-			elapsed := t.Sub(start)
-			log.Println(elapsed.Milliseconds(), "ms for image merging grid")
+			/*
+				t := time.Now()
+				elapsed := t.Sub(start)
+				log.Println(elapsed.Milliseconds(), "ms for image merging grid")
+			*/
 		}
 	}()
 

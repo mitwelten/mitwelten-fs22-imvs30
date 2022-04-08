@@ -13,7 +13,7 @@ type OutputHTTP struct {
 }
 
 var clients = make([]ClientConnection, 0)
-var clientsMutex sync.Mutex
+var clientsMutex sync.RWMutex
 
 type ClientConnection struct {
 	channel    chan mjpeg.MjpegFrame
@@ -48,12 +48,11 @@ func remove(client ClientConnection) {
 func serve(client ClientConnection) {
 	defer func(client_ ClientConnection) {
 		//safely remove client from client list and close its channel
-		println("Trying to remove...")
-		remove(client_)
-		<-client_.channel
-		close(client_.channel)
 
-		println("Successfully removed!!")
+		clientsMutex.Lock()
+		remove(client_)
+		close(client_.channel)
+		clientsMutex.Unlock()
 
 		err := client_.Connection.Close()
 		if err != nil {
@@ -124,7 +123,9 @@ func NewOutputHTTP(port string) (Output, error) {
 
 			client := ClientConnection{make(chan mjpeg.MjpegFrame), conn, false}
 
+			clientsMutex.Lock()
 			clients = append(clients, client)
+			clientsMutex.Unlock()
 
 			go serve(client)
 		}
@@ -134,9 +135,14 @@ func NewOutputHTTP(port string) (Output, error) {
 }
 
 func (output OutputHTTP) SendFrame(frame mjpeg.MjpegFrame) error {
-	//TODO CRITICAL: FIX DATARACE
+	defer clientsMutex.RUnlock()
+	clientsMutex.RLock()
+
 	for _, client := range clients {
-		client.channel <- frame
+		select {
+		case client.channel <- frame:
+		default:
+		}
 	}
 
 	return nil
