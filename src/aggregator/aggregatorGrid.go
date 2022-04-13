@@ -21,15 +21,8 @@ func (grid AggregatorGrid) Aggregate(storages ...*communication.FrameStorage) *c
 				frames = append(frames, frame.Get())
 			}
 
-			//			start := time.Now()
-
 			frame := image.Grid(grid.Row, grid.Col, frames...)
 			storage.Store(frame)
-			/*
-				t := time.Now()
-				elapsed := t.Sub(start)
-				log.Println(elapsed.Milliseconds(), "ms for image merging grid")
-			*/
 		}
 	}()
 

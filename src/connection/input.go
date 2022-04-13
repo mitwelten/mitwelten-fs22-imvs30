@@ -4,14 +4,16 @@ import (
 	"log"
 	"mjpeg_multiplexer/src/communication"
 	"mjpeg_multiplexer/src/mjpeg"
+	"time"
 )
 
 type Input interface {
 	ReceiveFrame() (mjpeg.MjpegFrame, error)
-	Start()
+	Start() error
 }
 
 func ListenToInput(input Input) *communication.FrameStorage {
+
 	var frame = mjpeg.MjpegFrame{}
 	frame.Body = mjpeg.Init()
 
@@ -22,9 +24,10 @@ func ListenToInput(input Input) *communication.FrameStorage {
 		for {
 			var frame, err = input.ReceiveFrame()
 			if err != nil {
-				//TODO proper logging here
 				log.Println("error " + err.Error())
+
 				// TODO proper error handling if input is no longer reachable
+				time.Sleep(1 * time.Second)
 				continue
 			}
 			frameData.Store(frame)

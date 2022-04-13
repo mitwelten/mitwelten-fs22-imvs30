@@ -21,16 +21,18 @@ func NewInputHTTP(url string) *InputHTTP {
 	return &InputHTTP{url: url}
 }
 
-func (source *InputHTTP) Start() {
+func (source *InputHTTP) Start() error {
 	var err error
 	source.connection, err = net.DialTimeout("tcp", source.url, 3*time.Second)
 	if err != nil {
-		panic("Socket error") // todo: error handling...
+		return &customErrors.ErrHttpOpenInputSocketDial{IP: source.url}
 	}
 	_, err = source.connection.Write([]byte("GET /?action=stream HTTP/1.1\r\nHost:%s\r\n\r\n"))
 	if err != nil {
-		panic("cannot send GET request to " + source.connection.LocalAddr().String())
+		return &customErrors.ErrHttpWriteHeader{IP: source.connection.LocalAddr().String()}
 	}
+
+	return nil
 }
 
 func (source *InputHTTP) ReceiveFrame() (mjpeg.MjpegFrame, error) {

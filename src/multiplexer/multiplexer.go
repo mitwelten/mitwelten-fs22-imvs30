@@ -1,6 +1,7 @@
 package multiplexer
 
 import (
+	"fmt"
 	"mjpeg_multiplexer/src/aggregator"
 	"mjpeg_multiplexer/src/communication"
 	"mjpeg_multiplexer/src/connection"
@@ -21,7 +22,10 @@ func Multiplexer(config MultiplexerConfig) {
 	for _, inputConnection := range config.InputLocations {
 		wg.Add(1)
 
-		inputConnection.Start()
+		err := inputConnection.Start()
+		if err != nil {
+			panic(fmt.Sprintf("Can't open input stream: %s", err.Error()))
+		}
 		var frameData = connection.ListenToInput(inputConnection)
 		frameStorage = append(frameStorage, frameData)
 	}

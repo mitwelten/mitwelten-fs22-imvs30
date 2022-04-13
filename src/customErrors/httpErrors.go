@@ -12,11 +12,21 @@ func (*ErrHttpOpenOutputSocket) Error() string {
 }
 
 type ErrHttpOpenInputSocketDial struct {
+	IP  string
 	err error
 }
 
-func (*ErrHttpOpenInputSocketDial) Error() string {
-	return fmt.Sprintf("dial input socket failed")
+func (e *ErrHttpOpenInputSocketDial) Error() string {
+	return fmt.Sprintf("dial input socket failed for IP address %s", e.IP)
+}
+
+type ErrHttpWriteHeader struct {
+	IP  string
+	err error
+}
+
+func (e *ErrHttpWriteHeader) Error() string {
+	return fmt.Sprintf("error while writing header to IP address %s", e.IP)
 }
 
 type ErrHttpReadHeader struct {
