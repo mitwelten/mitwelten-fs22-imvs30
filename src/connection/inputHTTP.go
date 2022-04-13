@@ -21,15 +21,41 @@ func NewInputHTTP(url string) *InputHTTP {
 	return &InputHTTP{url: url}
 }
 
-func (source *InputHTTP) Start() error {
+func (source *InputHTTP) Info() string {
+	return source.url
+}
+func (source *InputHTTP) open() error {
 	var err error
 	source.connection, err = net.DialTimeout("tcp", source.url, 3*time.Second)
+
 	if err != nil {
 		return &customErrors.ErrHttpOpenInputSocketDial{IP: source.url}
 	}
+
+	return nil
+}
+
+func (source *InputHTTP) sendHeader() error {
+	var err error
+
 	_, err = source.connection.Write([]byte("GET /?action=stream HTTP/1.1\r\nHost:%s\r\n\r\n"))
 	if err != nil {
 		return &customErrors.ErrHttpWriteHeader{IP: source.connection.LocalAddr().String()}
+	}
+
+	return nil
+}
+func (source *InputHTTP) Start() error {
+	var err error
+
+	err = source.open()
+	if err != nil {
+		return err
+	}
+
+	err = source.sendHeader()
+	if err != nil {
+		return err
 	}
 
 	return nil
