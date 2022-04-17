@@ -149,6 +149,7 @@ func (output OutputHTTP) SendFrame(frame mjpeg.MjpegFrame) error {
 
 	return nil
 }
+
 func (output OutputHTTP) Run(storage *communication.FrameStorage) {
 	go func(storage_ *communication.FrameStorage) {
 		var previousFrame mjpeg.MjpegFrame
@@ -161,7 +162,8 @@ func (output OutputHTTP) Run(storage *communication.FrameStorage) {
 			}
 
 			previousFrame = frame
-			err := output.SendFrame(frame)
+
+			err := output.SendFrame(previousFrame)
 			if err != nil {
 				log.Printf("Error while trying to send frame to output: %s\n", err.Error())
 				continue
