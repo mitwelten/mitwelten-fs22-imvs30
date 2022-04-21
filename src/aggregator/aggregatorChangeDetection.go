@@ -8,12 +8,13 @@ import (
 	"time"
 )
 
-// AggregatorChange aggregates multiple frame storages, calculculates score to detect most attractive input and sets output
+// AggregatorChange aggregates multiple frame storages, calculates score to detect most attractive input and sets output
 type AggregatorChange struct {
 	OutputCondition *sync.Cond
 }
 
-const delay = 500 * time.Millisecond
+const delay = 5000 * time.Millisecond
+const averageSize = 20
 
 func (aggregator AggregatorChange) Aggregate(storages ...*communication.FrameStorage) *communication.FrameStorage {
 	storage := communication.FrameStorage{}
@@ -46,14 +47,12 @@ func (aggregator AggregatorChange) Aggregate(storages ...*communication.FrameSto
 				}
 				fmt.Printf("%v\n", scores)
 				index, _ := argmax(scores)
-				fmt.Printf("Setting %d\n", index)
 
 				lastIndex = index
 				lastTimestamp = time.Now()
 
 				storage.Store(storages[index].GetLatest())
 			} else {
-				println(len(storages[lastIndex].GetLatest().Body))
 				storage.Store(storages[lastIndex].GetLatest())
 			}
 

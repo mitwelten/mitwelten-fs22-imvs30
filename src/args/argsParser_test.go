@@ -7,29 +7,35 @@ import (
 	"testing"
 )
 
-var argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "file", "-output_filename", "out.jpg", "-method", "grid"}
+var argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "file", "-output_filename", "out.jpg", "-mode", "grid"}
 var expectedInputLocations []string
 var expectedOutput connection.Output
 
 func TestStreamCommandShouldNotCrash(t *testing.T) {
 	// given
-	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "stream", "-output_port", "8088", "-method", "grid"}
+	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "stream", "-output_port", "8088", "-mode", "grid", "-grid_dimension", "1 2"}
 
 	// then
-	_, _ = ParseArgs(argsMock)
+	_, err := ParseArgs(argsMock)
+	if err != nil {
+		t.Errorf("Error thrown")
+	}
 }
 
 func TestFileCommandShouldNotCrash(t *testing.T) {
 	// given
-	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "file", "-output_filename", "out.jpg", "-method", "grid"}
+	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "file", "-output_filename", "out.jpg", "-mode", "grid", "-grid_dimension", "1 2"}
 
 	// then
-	_, _ = ParseArgs(argsMock)
+	_, err := ParseArgs(argsMock)
+	if err != nil {
+		t.Errorf("Error thrown")
+	}
 }
 
 func TestShouldFailWithNotFulfillingMinArguments(t *testing.T) {
 	// given
-	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "stream", "-method", "grid"}
+	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "stream", "-mode", "grid", "-grid_dimension", "1 2"}
 	var expected *customErrors.ErrArgParserUnfulfilledMinArguments
 
 	// when
@@ -57,7 +63,7 @@ func TestShouldFailWithNotFulfillingMinArguments(t *testing.T) {
 
 func TestShouldFailWithMissingPort(t *testing.T) {
 	// given
-	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "stream", "-method", "grid"}
+	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "stream", "-mode", "grid", "-grid_dimension", "1 2"}
 	var expected *customErrors.ErrArgParserInvalidOutputPort
 
 	// when
@@ -77,7 +83,7 @@ func TestShouldFailWithMissingPort(t *testing.T) {
 
 func TestShouldFailWithMissingFilename(t *testing.T) {
 	// given
-	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "file", "-method", "grid"}
+	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "file", "-mode", "grid", "-grid_dimension", "1 2"}
 	var expected *customErrors.ErrArgParserInvalidOutputFilename
 
 	// when
@@ -97,8 +103,48 @@ func TestShouldFailWithMissingFilename(t *testing.T) {
 
 func TestShouldFailWithInvalidOutputArgument(t *testing.T) {
 	// given
-	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "XXXX", "-method", "grid"}
+	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "XXXX", "-mode", "grid", "-grid_dimension", "1 2"}
 	var expected *customErrors.ErrArgParserInvalidArgument
+
+	// when
+	var _, err = ParseArgs(argsMock)
+
+	// then
+	if err == nil {
+		t.Errorf("Error not thrown")
+	}
+
+	println(err.Error())
+
+	if !(errors.As(err, &expected)) {
+		t.Errorf("Wrong error thrown")
+	}
+}
+
+func TestShouldFailWithInvalidMode(t *testing.T) {
+	// given
+	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "file", "-output_filename", "name", "-mode", "XXXX", "-grid_dimension", "1 2"}
+	var expected *customErrors.ErrArgParserInvalidMode
+
+	// when
+	var _, err = ParseArgs(argsMock)
+
+	// then
+	if err == nil {
+		t.Errorf("Error not thrown")
+	}
+
+	println(err.Error())
+
+	if !(errors.As(err, &expected)) {
+		t.Errorf("Wrong error thrown")
+	}
+}
+
+func TestShouldFailWithInvalidGridDimension(t *testing.T) {
+	// given
+	argsMock = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "file", "-output_filename", "name", "-mode", "grid", "-grid_dimension", "1"}
+	var expected *customErrors.ErrArgParserInvalidGridDimension
 
 	// when
 	var _, err = ParseArgs(argsMock)

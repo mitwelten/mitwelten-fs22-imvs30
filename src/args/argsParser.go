@@ -14,10 +14,10 @@ import (
 
 const (
 	InputUsage             = "Use -input to determine input streams. Pattern: [IP][:][PORT][SPACE][IP][:][PORT]..."
-	OutputUsage            = "Use -output to determine output modus. 'file' or 'stream' possible."
+	OutputUsage            = "Use -output to determine output mode. 'file' or 'stream' possible."
 	OutputFileNameUsage    = "filename used to save input to file"
 	OutputStreamPortUsage  = "port used for output stream"
-	MethodUsage            = "Method, how the output will be mixed. 'grid' is possible. "
+	ModeUsage              = "Method, how the output will be mixed. 'grid' is possible. "
 	GridUsage              = "Number of rows and columns for the grid. format: '<row> <col>'"
 	InputLocationSeparator = " "
 )
@@ -63,15 +63,15 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	outputPtr := CommandLine.String("output", "", OutputUsage) // file oder stream
 	outputFileNamePtr := CommandLine.String("output_filename", "", OutputFileNameUsage)
 	outputStreamPortPtr := CommandLine.String("output_port", "", OutputStreamPortUsage)
-	methodPtr := CommandLine.String("method", "", MethodUsage) // grid, combine etc.
-	methodGridPtr := CommandLine.String("grid_dimension", "", GridUsage)
+	modePtr := CommandLine.String("mode", "", ModeUsage) // grid OR motion
+	modeGridPtr := CommandLine.String("grid_dimension", "", GridUsage)
 
 	//---parse the command line into the defined flags---
 	CommandLine.Parse(args[1:])
 
 	// first validation
 	// check if at least all three mandatory parameters are present
-	if len(*inputPtr) == 0 || len(*outputPtr) == 0 || len(*methodPtr) == 0 {
+	if len(*inputPtr) == 0 || len(*outputPtr) == 0 || len(*modePtr) == 0 {
 		return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserUnfulfilledMinArguments{}
 	}
 	// output: stream
@@ -98,16 +98,18 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	// input parsing
 	config = parseInput(config, *inputPtr)
 
-	// method
-	switch *methodPtr {
+	// mode
+	switch *modePtr {
 	case "grid":
-		config, err = parseGrid(config, methodGridPtr)
+		config, err = parseGrid(config, modeGridPtr)
 
 		if err != nil {
 			return multiplexer.MultiplexerConfig{}, err
 		}
+	case "motion":
+		config.Aggregator = aggregator.AggregatorChange{}
 	default:
-		return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidMethod{Argument: *methodPtr}
+		return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidMode{Argument: *modePtr}
 	}
 
 	// non error case, return nil

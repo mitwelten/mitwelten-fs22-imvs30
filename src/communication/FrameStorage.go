@@ -7,6 +7,7 @@ import (
 
 const nOfStoredFrames = 5
 
+// FrameStorage stores multiple MJPEG frames
 type FrameStorage struct {
 	mu                  sync.RWMutex
 	frames              [nOfStoredFrames]mjpeg.MjpegFrame
@@ -14,6 +15,7 @@ type FrameStorage struct {
 	currentFramePointer int
 }
 
+// NewFrameStorage FrameStorage ctor
 func NewFrameStorage() *FrameStorage {
 	frame := mjpeg.MjpegFrame{}
 	frame.Body = mjpeg.Init()
@@ -25,6 +27,7 @@ func NewFrameStorage() *FrameStorage {
 	return &frameStorage
 }
 
+// Store stores a MjpegFrame into the storage
 func (frameStorage *FrameStorage) Store(frame mjpeg.MjpegFrame) {
 	frameStorage.set(frame)
 
@@ -33,6 +36,7 @@ func (frameStorage *FrameStorage) Store(frame mjpeg.MjpegFrame) {
 	}
 }
 
+// GetLatest returns the newest frame inserted into the storage
 func (frameStorage *FrameStorage) GetLatest() mjpeg.MjpegFrame {
 	frameStorage.mu.RLock()
 	defer frameStorage.mu.RUnlock()
@@ -41,6 +45,7 @@ func (frameStorage *FrameStorage) GetLatest() mjpeg.MjpegFrame {
 	return frameStorage.frames[index]
 }
 
+// GetAll returns all frames in storage
 func (frameStorage *FrameStorage) GetAll() []mjpeg.MjpegFrame {
 	frameStorage.mu.RLock()
 	defer frameStorage.mu.RUnlock()
@@ -65,6 +70,8 @@ func (frameStorage *FrameStorage) GetAll() []mjpeg.MjpegFrame {
 	return outputFrames
 }
 
+// set stores a frame into the storage
+// storage has a fixed size of nOfStoredFrames: if overflow happens: overwrite "outdatet" frame
 func (frameStorage *FrameStorage) set(frame mjpeg.MjpegFrame) {
 	frameStorage.mu.RLock()
 	defer frameStorage.mu.RUnlock()

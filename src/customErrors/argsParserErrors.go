@@ -17,7 +17,7 @@ type ErrArgParserInvalidOutputFilename struct {
 }
 
 func (*ErrArgParserInvalidOutputFilename) Error() string {
-	return fmt.Sprintf("when using -output 'file' a valid -output_fielname must be specified")
+	return fmt.Sprintf("when using -output 'file' a valid -output_filename must be specified")
 }
 
 // Invalid output port
@@ -29,13 +29,13 @@ func (*ErrArgParserInvalidOutputPort) Error() string {
 	return fmt.Sprintf("when using -output 'stream' a valid -output_port must be specified")
 }
 
-// ErrArgParserInvalidMethod Invalid method parameter
-type ErrArgParserInvalidMethod struct {
+// ErrArgParserInvalidMode Invalid method parameter
+type ErrArgParserInvalidMode struct {
 	Argument string
 	err      error
 }
 
-func (e *ErrArgParserInvalidMethod) Error() string {
+func (e *ErrArgParserInvalidMode) Error() string {
 	return fmt.Sprintf("invalid method argument: -method argument '" + e.Argument + "' not valid.")
 }
 
