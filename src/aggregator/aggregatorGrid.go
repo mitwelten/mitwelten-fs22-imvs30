@@ -31,7 +31,7 @@ func (grid AggregatorGrid) Aggregate(storages ...*communication.FrameStorage) *c
 
 			for i := 0; i < len(storages); i++ {
 				frame := storages[i]
-				frames = append(frames, frame.Get())
+				frames = append(frames, frame.GetLatest())
 			}
 
 			frame := image.Grid(grid.Row, grid.Col, frames...)

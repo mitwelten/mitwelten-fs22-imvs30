@@ -154,7 +154,7 @@ func (output OutputHTTP) Run(storage *communication.FrameStorage) {
 	go func(storage_ *communication.FrameStorage) {
 		var previousFrame mjpeg.MjpegFrame
 		for {
-			frame := storage_.Get()
+			frame := storage_.GetLatest()
 
 			// TODO this thread is always busy waiting - consider using channels / notify solution
 			if reflect.DeepEqual(frame, previousFrame) {

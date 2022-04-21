@@ -34,7 +34,7 @@ func (output OutputFile) SendFrame(frame mjpeg.MjpegFrame) error {
 func (output OutputFile) Run(storage *communication.FrameStorage) {
 	go func(storage_ *communication.FrameStorage) {
 		for {
-			frame := storage_.Get()
+			frame := storage_.GetLatest()
 			err := output.SendFrame(frame)
 			if err != nil {
 				log.Println("error: while trying to send frame to output")
