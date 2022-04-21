@@ -6,7 +6,6 @@ import (
 	"mjpeg_multiplexer/src/communication"
 	"mjpeg_multiplexer/src/mjpeg"
 	"net"
-	"reflect"
 	"strconv"
 	"sync"
 )
@@ -151,16 +150,21 @@ func (output OutputHTTP) SendFrame(frame mjpeg.MjpegFrame) error {
 }
 
 func (output OutputHTTP) Run(storage *communication.FrameStorage) {
+	lock := sync.Mutex{}
+	lock.Lock()
+	condition := sync.NewCond(&lock)
+	storage.AggregatorCondition = condition
 	go func(storage_ *communication.FrameStorage) {
 		var previousFrame mjpeg.MjpegFrame
 		for {
+			condition.Wait()
 			frame := storage_.GetLatest()
 
-			// TODO this thread is always busy waiting - consider using channels / notify solution
-			if reflect.DeepEqual(frame, previousFrame) {
-				continue
-			}
-
+			/*			// TODO this thread is always busy waiting - consider using channels / notify solution
+						if reflect.DeepEqual(frame, previousFrame) {
+							continue
+						}
+			*/
 			previousFrame = frame
 
 			err := output.SendFrame(previousFrame)

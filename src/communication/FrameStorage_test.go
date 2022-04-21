@@ -6,6 +6,7 @@ import (
 	"testing"
 )
 
+// proxies requests to the golang.org playground service.
 func getFrame(content int) mjpeg.MjpegFrame {
 	return mjpeg.MjpegFrame{Body: []byte{byte(content)}}
 }

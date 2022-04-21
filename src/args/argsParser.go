@@ -22,6 +22,7 @@ const (
 	InputLocationSeparator = " "
 )
 
+// parseGrid parses grid dimensions from command line arguments
 func parseGrid(config multiplexer.MultiplexerConfig, methodGridPtr *string) (multiplexer.MultiplexerConfig, error) {
 	var gridDimension = strings.Split(*methodGridPtr, InputLocationSeparator)
 	if len(gridDimension) != 2 {
@@ -43,6 +44,7 @@ func parseGrid(config multiplexer.MultiplexerConfig, methodGridPtr *string) (mul
 	return config, nil
 }
 
+// parseInput parses input URLS derived from command line arguments
 func parseInput(config multiplexer.MultiplexerConfig, inputStr string) multiplexer.MultiplexerConfig {
 	inputUrls := strings.Split(inputStr, InputLocationSeparator)
 	var conns []connection.Input
@@ -53,6 +55,7 @@ func parseInput(config multiplexer.MultiplexerConfig, inputStr string) multiplex
 	return config
 }
 
+// ParseArgs parses all arguments derived from command line
 func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) {
 	var CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	//---Define all various flags---
@@ -71,7 +74,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	if len(*inputPtr) == 0 || len(*outputPtr) == 0 || len(*methodPtr) == 0 {
 		return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserUnfulfilledMinArguments{}
 	}
-	// stream
+	// output: stream
 	if strings.Compare(*outputPtr, "stream") == 0 {
 		if len(*outputStreamPortPtr) == 0 {
 			return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidOutputPort{}
@@ -81,7 +84,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 				return multiplexer.MultiplexerConfig{}, &customErrors.ErrHttpOpenOutputSocket{}
 			}
 		}
-		// file
+		// or output: file
 	} else if strings.Compare(*outputPtr, "file") == 0 {
 		if len(*outputFileNamePtr) == 0 {
 			return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidOutputFilename{}
@@ -108,6 +111,5 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	}
 
 	// non error case, return nil
-
 	return config, nil
 }
