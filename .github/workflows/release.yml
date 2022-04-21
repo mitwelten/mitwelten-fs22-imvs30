@@ -20,5 +20,5 @@ jobs:
         goarch: arm
         project_path: "./src/"
         overwrite: TRUE
-        release_tag: "nightly"
+        release_tag: "latest"
         binary_name: "multiplexer"
