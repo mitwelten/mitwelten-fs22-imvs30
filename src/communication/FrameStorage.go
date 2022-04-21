@@ -6,8 +6,19 @@ import (
 )
 
 type FrameStorage struct {
-	mu    sync.RWMutex
-	frame mjpeg.MjpegFrame
+	mu                  sync.RWMutex
+	frame               mjpeg.MjpegFrame
+	AggregatorCondition *sync.Cond
+}
+
+func NewFrameStorage() *FrameStorage {
+	frame := mjpeg.MjpegFrame{}
+	frame.Body = mjpeg.Init()
+
+	frameStorage := FrameStorage{}
+	frameStorage.Store(frame) // init with a black frame
+
+	return &frameStorage
 }
 
 func (frameData *FrameStorage) Store(data mjpeg.MjpegFrame) {
@@ -15,6 +26,10 @@ func (frameData *FrameStorage) Store(data mjpeg.MjpegFrame) {
 	defer frameData.mu.Unlock()
 
 	frameData.frame = data
+
+	if frameData.AggregatorCondition != nil {
+		frameData.AggregatorCondition.Signal()
+	}
 }
 
 func (frameData *FrameStorage) Get() mjpeg.MjpegFrame {

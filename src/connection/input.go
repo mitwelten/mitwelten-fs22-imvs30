@@ -30,11 +30,7 @@ func reconnectInput(input Input) {
 
 func ListenToInput(input Input) *communication.FrameStorage {
 
-	var frame = mjpeg.MjpegFrame{}
-	frame.Body = mjpeg.Init()
-
-	var frameData = communication.FrameStorage{}
-	frameData.Store(frame) // init with a black frame
+	frameData := communication.NewFrameStorage()
 
 	go func() {
 		for {
@@ -47,5 +43,5 @@ func ListenToInput(input Input) *communication.FrameStorage {
 			frameData.Store(frame)
 		}
 	}()
-	return &frameData
+	return frameData
 }
