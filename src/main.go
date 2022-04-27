@@ -5,6 +5,8 @@ import (
 	"log"
 	"mjpeg_multiplexer/src/args"
 	"mjpeg_multiplexer/src/multiplexer"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 )
 
@@ -21,6 +23,13 @@ func setupLog() {
 	mw := io.MultiWriter(os.Stdout, file)
 	log.SetOutput(mw)
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+}
+
+func profile() {
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
+	//view with `go tool pprof http://localhost:6060/debug/pprof/profile\?seconds\=30`
 }
 
 func main() {

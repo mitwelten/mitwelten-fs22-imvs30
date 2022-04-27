@@ -43,8 +43,13 @@ func (aggregator *AggregatorGrid) Aggregate(storages ...*communication.FrameStor
 				frames = append(frames, frame.GetLatest())
 			}
 
-			frame := image.Grid(aggregator.Row, aggregator.Col, frames...)
-		
+			var frame mjpeg.MjpegFrame
+			if len(storages) == 1 {
+				frame = frames[0]
+			} else {
+				frame = image.Grid(aggregator.Row, aggregator.Col, frames...)
+			}
+
 			if aggregator.OutputCondition != nil {
 				aggregator.OutputStorage.Store(frame)
 				aggregator.OutputCondition.Signal()
