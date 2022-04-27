@@ -26,7 +26,7 @@ func TestRedBlueMerge(t *testing.T) {
 		multiplexer.Multiplexer(multiplexer.MultiplexerConfig{
 			InputLocations: []connection.Input{connection.NewInputHTTP("localhost:8097"), connection.NewInputHTTP("localhost:8098")},
 			Output:         connection.NewOutputFile(FILE_NAME_OUTPUT),
-			Aggregator:     aggregator.AggregatorGrid{Row: 1, Col: 2},
+			Aggregator:     &aggregator.AggregatorGrid{Row: 1, Col: 2},
 		})
 	}()
 

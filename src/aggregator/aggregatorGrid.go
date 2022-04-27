@@ -8,12 +8,21 @@ import (
 )
 
 type AggregatorGrid struct {
-	Row int
-	Col int
+	Row             int
+	Col             int
+	OutputStorage   *communication.FrameStorage
+	OutputCondition *sync.Cond
 }
 
-func (grid AggregatorGrid) Aggregate(storages ...*communication.FrameStorage) *communication.FrameStorage {
-	storage := communication.FrameStorage{}
+func (aggregator *AggregatorGrid) SetOutputCondition(cond *sync.Cond) {
+	aggregator.OutputCondition = cond
+}
+func (aggregator *AggregatorGrid) GetStorage() *communication.FrameStorage {
+	return aggregator.OutputStorage
+}
+
+func (aggregator *AggregatorGrid) Aggregate(storages ...*communication.FrameStorage) {
+	aggregator.OutputStorage = communication.NewFrameStorage()
 
 	// init the lock and condition object to notify the aggregator when a new frame has been stored
 	lock := sync.Mutex{}
@@ -34,10 +43,12 @@ func (grid AggregatorGrid) Aggregate(storages ...*communication.FrameStorage) *c
 				frames = append(frames, frame.GetLatest())
 			}
 
-			frame := image.Grid(grid.Row, grid.Col, frames...)
-			storage.Store(frame)
+			frame := image.Grid(aggregator.Row, aggregator.Col, frames...)
+		
+			if aggregator.OutputCondition != nil {
+				aggregator.OutputStorage.Store(frame)
+				aggregator.OutputCondition.Signal()
+			}
 		}
 	}()
-
-	return &storage
 }

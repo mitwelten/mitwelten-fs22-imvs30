@@ -3,6 +3,7 @@ package connection
 import (
 	"errors"
 	"log"
+	"mjpeg_multiplexer/src/aggregator"
 	"mjpeg_multiplexer/src/communication"
 	"mjpeg_multiplexer/src/mjpeg"
 	"net"
@@ -149,11 +150,13 @@ func (output OutputHTTP) SendFrame(frame mjpeg.MjpegFrame) error {
 	return nil
 }
 
-func (output OutputHTTP) Run(storage *communication.FrameStorage) {
+func (output OutputHTTP) Run(aggregator aggregator.Aggregator) {
+
 	lock := sync.Mutex{}
 	lock.Lock()
 	condition := sync.NewCond(&lock)
-	storage.AggregatorCondition = condition
+	aggregator.SetOutputCondition(condition)
+
 	go func(storage_ *communication.FrameStorage) {
 		var previousFrame mjpeg.MjpegFrame
 		for {
@@ -173,5 +176,5 @@ func (output OutputHTTP) Run(storage *communication.FrameStorage) {
 				continue
 			}
 		}
-	}(storage)
+	}(aggregator.GetStorage())
 }

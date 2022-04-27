@@ -37,12 +37,12 @@ func TestSendAndReceive(t *testing.T) {
 		os.Exit(1)
 	}()
 
-	output, err := NewOutputHTTP("8081")
+	output, err := NewOutputHTTP("12346")
 	if err != nil {
 		panic("Can't open output")
 	}
 
-	input := NewInputHTTP("localhost:8081")
+	input := NewInputHTTP("localhost:12346")
 	err = input.Start()
 	if err != nil {
 		panic(err.Error())

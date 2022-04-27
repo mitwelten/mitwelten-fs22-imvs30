@@ -1,0 +1,1 @@
+go run  ./src/main.go -input "localhost:8081 localhost:8082" -output "stream" -output_port "8088" -method "grid" -grODid_dimension "1 2"

@@ -39,7 +39,7 @@ func parseGrid(config multiplexer.MultiplexerConfig, methodGridPtr *string) (mul
 		log.Println("error: ErrArgParserInvalidGridDimension with " + gridDimension[1])
 		return config, &customErrors.ErrArgParserInvalidGridDimension{}
 	}
-	config.Aggregator = aggregator.AggregatorGrid{Row: row, Col: col}
+	config.Aggregator = &aggregator.AggregatorGrid{Row: row, Col: col}
 
 	return config, nil
 }
@@ -107,7 +107,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 			return multiplexer.MultiplexerConfig{}, err
 		}
 	case "motion":
-		config.Aggregator = aggregator.AggregatorChange{}
+		config.Aggregator = &aggregator.AggregatorChange{}
 	default:
 		return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidMode{Argument: *modePtr}
 	}
