@@ -9,6 +9,7 @@ import (
 
 type Input interface {
 	ReceiveFrame() (mjpeg.MjpegFrame, error)
+	ReceiveFrameFast() (mjpeg.MjpegFrame, error)
 	Start() error
 	Info() string
 }
@@ -34,7 +35,7 @@ func ListenToInput(input Input) *communication.FrameStorage {
 
 	go func() {
 		for {
-			var frame, err = input.ReceiveFrame()
+			var frame, err = input.ReceiveFrameFast()
 			if err != nil {
 				log.Printf("error %s\n", err.Error())
 				reconnectInput(input)
