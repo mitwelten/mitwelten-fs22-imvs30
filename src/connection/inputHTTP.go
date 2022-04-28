@@ -121,7 +121,7 @@ func (source *InputHTTP) ReceiveFrame() (mjpeg.MjpegFrame, error) {
 
 		buffer = append(buffer, bufferTmp...)
 
-		// Check if jpeg start has been reached
+		// Check if jpg start has been reached
 		if len(buffer) > len(mjpeg.JPEG_PREFIX) && bytes.Compare(buffer[len(buffer)-len(mjpeg.JPEG_PREFIX):], mjpeg.JPEG_PREFIX) == 0 {
 			break
 		}

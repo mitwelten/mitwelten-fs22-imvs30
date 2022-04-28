@@ -96,7 +96,7 @@ func GetImgDiffResize(frame1 mjpeg.MjpegFrame, frame2 mjpeg.MjpegFrame) mjpeg.Mj
 	err := jpeg.Encode(buff, inBig, &options)
 
 	if err != nil {
-		panic("can't encode jpeg")
+		panic("can't encode jpg")
 	}
 	return mjpeg.MjpegFrame{Body: buff.Bytes()}
 }
@@ -113,7 +113,7 @@ func GetImgDiff(frame1 mjpeg.MjpegFrame, frame2 mjpeg.MjpegFrame) mjpeg.MjpegFra
 	options := jpeg.Options{Quality: 100}
 	err := jpeg.Encode(buff, out, &options)
 	if err != nil {
-		panic("can't encode jpeg")
+		panic("can't encode jpg")
 	}
 	return mjpeg.MjpegFrame{Body: buff.Bytes()}
 }
@@ -165,7 +165,7 @@ func Grid(row int, col int, frames ...mjpeg.MjpegFrame) mjpeg.MjpegFrame {
 	options := jpeg.Options{Quality: 100}
 	err := jpeg.Encode(buff, imageOut, &options)
 	if err != nil {
-		panic("can't encode jpeg")
+		panic("can't encode jpg")
 	}
 	return mjpeg.MjpegFrame{Body: buff.Bytes()}
 }
@@ -193,13 +193,13 @@ func MergeImages(frame1 mjpeg.MjpegFrame, frame2 mjpeg.MjpegFrame) (frame mjpeg.
 	//	fmt.Println(customErrors)
 	//}
 
-	//var opt jpeg.Options
+	//var opt jpg.Options
 	//opt.Quality = 100
 	buff := bytes.NewBuffer([]byte{})
-	//jpeg.Encode(out, rgba, &opt)
+	//jpg.Encode(out, rgba, &opt)
 	err := jpeg.Encode(buff, rgba, nil)
 	if err != nil {
-		panic("can't encode jpeg")
+		panic("can't encode jpg")
 	}
 
 	return mjpeg.MjpegFrame{Body: buff.Bytes()}

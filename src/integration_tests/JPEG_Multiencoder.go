@@ -23,7 +23,7 @@ func EncodeAndDecode(in []byte) []byte {
 	options := jpeg.Options{Quality: 100}
 	err := jpeg.Encode(buff, imageOut, &options)
 	if err != nil {
-		panic("can't encode jpeg")
+		panic("can't encode jpg")
 	}
 
 	return buff.Bytes()
@@ -37,12 +37,12 @@ func TestJPEG(t *testing.T) {
 
 	fh, err := os.OpenFile("out.jpg", os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
-		panic("can't encode jpeg")
+		panic("can't encode jpg")
 
 	}
 	_, err = fh.Write(data)
 	if err != nil {
-		panic("can't encode jpeg")
+		panic("can't encode jpg")
 	}
 	fh.Close()
 }

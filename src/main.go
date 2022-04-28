@@ -33,6 +33,7 @@ func profile() {
 }
 
 func main() {
+	profile()
 	setupLog()
 	log.Println("Running the MJPEG-multiFLEXer")
 

@@ -90,7 +90,7 @@ func (client ClientConnection) SendHeader() error {
 }
 func (client ClientConnection) SendFrame(frame mjpeg.MjpegFrame) error {
 	//Format must be not be change, else it will not work on some browsers!
-	var header = "Content-Type: image/jpeg\r\n" +
+	var header = "Content-Type: image/jpg\r\n" +
 		"Content-Length: " + strconv.Itoa(len(frame.Body)) + "\r\n" +
 		"\r\n"
 
