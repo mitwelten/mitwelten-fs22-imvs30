@@ -85,6 +85,7 @@ func (aggregator *AggregatorChange) Aggregate(FrameStorages ...*communication.Fr
 			if aggregator.OutputCondition != nil {
 				//fmt.Printf("update index is %d\n", frameStorageIndex)
 				aggregator.OutputStorage.Store(FrameStorages[frameStorageIndex].GetLatest())
+				//aggregator.OutputStorage.Store(scorer.Diff(FrameStorages[frameStorageIndex].GetAll()))
 				aggregator.OutputCondition.Signal()
 			}
 			lastFrameUpdate = time.Now()

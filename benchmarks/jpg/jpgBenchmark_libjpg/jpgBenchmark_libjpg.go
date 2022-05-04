@@ -15,6 +15,8 @@ import (
 
 var imageData []byte
 
+var DecodeOptions = jpeg.DecoderOptions{ScaleTarget: image.Rectangle{}, DCTMethod: jpeg.DCTIFast, DisableFancyUpsampling: false, DisableBlockSmoothing: false}
+
 // OptimizeCoding: Slightly more efficient compreesion, but way slower
 // ProgressiveMode not needed in our case
 // DCTMethod JDCT_ISLOW is the fastest on my (Tobi) system
@@ -22,7 +24,7 @@ var imageData []byte
 var EncodingOptions = jpeg.EncoderOptions{Quality: 100, OptimizeCoding: false, ProgressiveMode: false, DCTMethod: jpeg.DCTISlow}
 
 func Encode(iterations int) {
-	img, _, _ := image.Decode(bytes.NewReader(imageData))
+	img, _ := jpeg.Decode(bytes.NewReader(imageData), &DecodeOptions)
 	fmt.Printf("  Encode\n")
 	fmt.Printf("    Number of runs: %v\n", iterations)
 	start := time.Now()
@@ -45,7 +47,7 @@ func Decode(iterations int) {
 	fmt.Printf("    Number of runs: %v\n", iterations)
 	start := time.Now()
 	for i := 0; i < iterations; i++ {
-		_, _, _ = image.Decode(bytes.NewReader(imageData))
+		_, _ = jpeg.Decode(bytes.NewReader(imageData), &DecodeOptions)
 	}
 	end := time.Since(start).Milliseconds()
 	fmt.Printf("    Total: %v ms\n", end)
@@ -58,7 +60,7 @@ func DecodeEncode(iterations int) {
 	start := time.Now()
 	for i := 0; i < iterations; i++ {
 		//decode
-		img, _, _ := image.Decode(bytes.NewReader(imageData))
+		img, _ := jpeg.Decode(bytes.NewReader(imageData), &DecodeOptions)
 
 		//encode
 		buff := bytes.NewBuffer([]byte{})
@@ -75,7 +77,7 @@ func DecodeEncode(iterations int) {
 }
 
 func DecodeEncodeSave() []byte {
-	img, _, _ := image.Decode(bytes.NewReader(imageData))
+	img, _ := jpeg.Decode(bytes.NewReader(imageData), &DecodeOptions)
 
 	//encode
 	buff := bytes.NewBuffer([]byte{})

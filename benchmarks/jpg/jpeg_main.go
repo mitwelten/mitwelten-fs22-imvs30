@@ -14,13 +14,13 @@ func main() {
 	jpgBenchmark_std.Decode(iterations)
 	jpgBenchmark_std.Encode(iterations)
 	jpgBenchmark_std.DecodeEncode(iterations)
-	_ = jpgBenchmark_std.DecodeEncodeSave()
+	//	_ = jpgBenchmark_std.DecodeEncodeSave()
 
 	fmt.Printf("libjpg: \n")
 	jpgBenchmark_libjpg.Decode(iterations)
 	jpgBenchmark_libjpg.Encode(iterations)
 	jpgBenchmark_libjpg.DecodeEncode(iterations)
-	_ = jpgBenchmark_libjpg.DecodeEncodeSave()
+	//	_ = jpgBenchmark_libjpg.DecodeEncodeSave()
 }
 
 func compareDCTMethods() {
