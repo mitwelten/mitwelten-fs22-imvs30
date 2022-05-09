@@ -36,14 +36,14 @@ func (aggregator *AggregatorChange) Aggregate(FrameStorages ...*communication.Fr
 	condition := sync.NewCond(&lock)
 
 	// buffer for the average change values - one for each storage
-	previousScores := make([]utils.RingBuffer[int], len(FrameStorages))
+	previousScores := make([]utils.RingBuffer[float64], len(FrameStorages))
 
 	for i, el := range FrameStorages {
 		// set the condition for the wakeup signal
 		el.AggregatorCondition = condition
 
 		// init the buffers for the average change scores
-		previousScores[i] = utils.NewRingBuffer[int](nPreviousScores)
+		previousScores[i] = utils.NewRingBuffer[float64](nPreviousScores)
 	}
 
 	frameStorageIndex := -1
@@ -61,15 +61,17 @@ func (aggregator *AggregatorChange) Aggregate(FrameStorages ...*communication.Fr
 				if frameStorage.LastUpdated.Before(lastFrameUpdate) {
 					continue
 				}
-				s := time.Now()
+
+				//s := time.Now()
 				score := scorer.Score(frameStorage.GetAll())
-				fmt.Printf("%v\n", time.Since(s).Milliseconds())
+				//fmt.Printf("Score time: %v\n", time.Since(s))
 				previousScores[i].Push(score)
+
 			}
 
 			// change the index to the newest active frame
 			if frameStorageIndex == -1 || time.Since(lastScoreUpdate) > delay {
-				scores := make([]int, len(previousScores))
+				scores := make([]float64, len(previousScores))
 				for i, el := range previousScores {
 					data, size := el.GetData()
 					if size == 0 {
@@ -86,8 +88,14 @@ func (aggregator *AggregatorChange) Aggregate(FrameStorages ...*communication.Fr
 
 			if aggregator.OutputCondition != nil {
 				//fmt.Printf("update index is %d\n", frameStorageIndex)
-				aggregator.OutputStorage.Store(FrameStorages[frameStorageIndex].GetLatest())
-				//aggregator.OutputStorage.Store(scorer.Diff(FrameStorages[frameStorageIndex].GetAll()))
+				//aggregator.OutputStorage.Store(FrameStorages[frameStorageIndex].GetLatest())
+				s := time.Now()
+				aggregator.OutputStorage.Store(scorer.Diff(FrameStorages[frameStorageIndex].GetAll()))
+				fmt.Printf("%v\n", time.Since(s))
+
+				/*				aggregator.OutputStorage.Store(scorer.Diff(FrameStorages[frameStorageIndex].GetAll()))
+								fmt.Printf("%v\n", time.Since(s))
+				*/
 				aggregator.OutputCondition.Signal()
 			}
 			lastFrameUpdate = time.Now()
@@ -95,17 +103,17 @@ func (aggregator *AggregatorChange) Aggregate(FrameStorages ...*communication.Fr
 	}()
 }
 
-func averageScore(arr []int, size int) int {
-	sum := 0
+func averageScore(arr []float64, size int) float64 {
+	sum := 0.0
 	for i := 0; i < size; i++ {
 		sum += arr[i]
 	}
-	return sum / size
+	return sum / float64(size)
 
 }
 
 // argmax returns index of max int value in given array
-func argmax(data []int) (int, int) {
+func argmax(data []float64) (int, float64) {
 	max := data[0]
 	maxIndex := 0
 
