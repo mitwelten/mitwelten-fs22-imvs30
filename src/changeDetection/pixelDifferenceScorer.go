@@ -2,9 +2,9 @@ package changeDetection
 
 import (
 	"bytes"
+	"github.com/pixiv/go-libjpeg/jpeg"
 	"image"
 	"image/color"
-	"image/jpeg"
 	"math"
 	"mjpeg_multiplexer/src/mjpeg"
 )
@@ -12,19 +12,22 @@ import (
 // PixelDifferenceScorer simple pixel scorer struct
 type PixelDifferenceScorer struct{}
 
+var DecodeOptions = jpeg.DecoderOptions{ScaleTarget: image.Rectangle{}, DCTMethod: jpeg.DCTIFast, DisableFancyUpsampling: false, DisableBlockSmoothing: false}
+var EncodingOptions = jpeg.EncoderOptions{Quality: 100, OptimizeCoding: false, ProgressiveMode: false, DCTMethod: jpeg.DCTISlow}
+
 // Score implements Scorer.Score Method
 func (s *PixelDifferenceScorer) Diff(frames []mjpeg.MjpegFrame) mjpeg.MjpegFrame {
 	if len(frames) < 2 {
 		return mjpeg.MjpegFrame{Body: mjpeg.Init()}
 	}
-	img1, _, _ := image.Decode(bytes.NewReader(frames[0].Body))
-	img2, _, _ := image.Decode(bytes.NewReader(frames[1].Body))
+	img1, _ := jpeg.Decode(bytes.NewReader(frames[0].Body), &DecodeOptions)
+	img2, _ := jpeg.Decode(bytes.NewReader(frames[1].Body), &DecodeOptions)
 
 	//return kernelDiff(img1, img2) / (img1.Bounds().Dx() * img1.Bounds().Dy())
 	img := kernelPixelChangedThresholdImg(img1, img2)
 	buff := bytes.NewBuffer([]byte{})
-	options := jpeg.Options{Quality: 100}
-	_ = jpeg.Encode(buff, img, &options)
+	//options := jpeg.Options{Quality: 100}
+	_ = jpeg.Encode(buff, img, &EncodingOptions)
 	return mjpeg.MjpegFrame{buff.Bytes()}
 }
 
@@ -33,8 +36,8 @@ func (s *PixelDifferenceScorer) Score(frames []mjpeg.MjpegFrame) int {
 	if len(frames) < 2 {
 		return -1
 	}
-	img1, _, _ := image.Decode(bytes.NewReader(frames[0].Body))
-	img2, _, _ := image.Decode(bytes.NewReader(frames[1].Body))
+	img1, _ := jpeg.Decode(bytes.NewReader(frames[0].Body), &DecodeOptions)
+	img2, _ := jpeg.Decode(bytes.NewReader(frames[1].Body), &DecodeOptions)
 
 	//return kernelDiff(img1, img2) / (img1.Bounds().Dx() * img1.Bounds().Dy())
 	return kernelPixelChangedThreshold(img1, img2)

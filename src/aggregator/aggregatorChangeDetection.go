@@ -61,7 +61,9 @@ func (aggregator *AggregatorChange) Aggregate(FrameStorages ...*communication.Fr
 				if frameStorage.LastUpdated.Before(lastFrameUpdate) {
 					continue
 				}
+				s := time.Now()
 				score := scorer.Score(frameStorage.GetAll())
+				fmt.Printf("%v\n", time.Since(s).Milliseconds())
 				previousScores[i].Push(score)
 			}
 

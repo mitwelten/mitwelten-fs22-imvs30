@@ -28,14 +28,20 @@ func compareDCTMethods() {
 
 	fmt.Printf("libjpg DCTIFast: \n")
 	jpgBenchmark_libjpg.EncodingOptions.DCTMethod = jpeg.DCTIFast
+	jpgBenchmark_libjpg.DecodeOptions.DCTMethod = jpeg.DCTIFast
 	jpgBenchmark_libjpg.Encode(iterations)
+	jpgBenchmark_libjpg.Decode(iterations)
 
 	fmt.Printf("libjpg DCTFloat: \n")
 	jpgBenchmark_libjpg.EncodingOptions.DCTMethod = jpeg.DCTFloat
+	jpgBenchmark_libjpg.DecodeOptions.DCTMethod = jpeg.DCTFloat
 	jpgBenchmark_libjpg.Encode(iterations)
+	jpgBenchmark_libjpg.Decode(iterations)
 
 	fmt.Printf("libjpg DCTISlow: \n")
 	jpgBenchmark_libjpg.EncodingOptions.DCTMethod = jpeg.DCTISlow
+	jpgBenchmark_libjpg.DecodeOptions.DCTMethod = jpeg.DCTISlow
 	jpgBenchmark_libjpg.Encode(iterations)
+	jpgBenchmark_libjpg.Decode(iterations)
 
 }
