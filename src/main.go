@@ -4,6 +4,7 @@ import (
 	"io"
 	"log"
 	"mjpeg_multiplexer/src/args"
+	"mjpeg_multiplexer/src/config"
 	"mjpeg_multiplexer/src/multiplexer"
 	"net/http"
 	_ "net/http/pprof"
@@ -30,11 +31,21 @@ func profile() {
 	//view with `go tool pprof http://localhost:6060/debug/pprof/profile\?seconds\=30`
 }
 
-func main() {
-	profile()
-	setupLog()
-	log.Println("Running the MJPEG-multiFLEXer")
+func SetupInitialConfig() {
+	config.Config = config.GlobalConfig{
+		Authentications: map[string]string{},
+		LogTime:         false,
+		MaxWidth:        -1,
+		MaxHeight:       -1,
+	}
+}
 
+func main() {
+	//profile()
+	setupLog()
+	SetupInitialConfig()
+
+	log.Println("Running the MJPEG-multiFLEXer")
 	log.Println("parsing args...")
 	// loop over all arguments by index and value
 	for i, arg := range os.Args {
@@ -42,10 +53,10 @@ func main() {
 		log.Println("item", i, "is", arg)
 	}
 
-	config, err := args.ParseArgs(os.Args)
+	multiplexerConfig, err := args.ParseArgs(os.Args)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	multiplexer.Multiplexer(config)
+	multiplexer.Multiplexer(multiplexerConfig)
 }
