@@ -2,8 +2,8 @@ package integration_tests
 
 import (
 	"mjpeg_multiplexer/src/aggregator"
-	"mjpeg_multiplexer/src/config"
 	"mjpeg_multiplexer/src/connection"
+	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/multiplexer"
 	"os"
 	"testing"
@@ -24,7 +24,7 @@ func TestRedBlueMerge(t *testing.T) {
 	SimpleServer("8098", BlueFrame())
 
 	go func() {
-		multiplexer.Multiplexer(config.MultiplexerConfig{
+		multiplexer.Multiplexer(global.MultiplexerConfig{
 			InputLocations: []connection.Input{connection.NewInputHTTP("localhost:8097"), connection.NewInputHTTP("localhost:8098")},
 			Output:         connection.NewOutputFile(FILE_NAME_OUTPUT),
 			Aggregator:     &aggregator.AggregatorGrid{Row: 1, Col: 2},

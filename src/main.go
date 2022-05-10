@@ -4,7 +4,7 @@ import (
 	"io"
 	"log"
 	"mjpeg_multiplexer/src/args"
-	"mjpeg_multiplexer/src/config"
+	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/multiplexer"
 	"net/http"
 	_ "net/http/pprof"
@@ -32,7 +32,7 @@ func profile() {
 }
 
 func SetupInitialConfig() {
-	config.Config = config.GlobalConfig{
+	global.Config = global.GlobalConfig{
 		Authentications: map[string]string{},
 		LogTime:         false,
 		MaxWidth:        -1,

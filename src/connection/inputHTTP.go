@@ -5,8 +5,8 @@ import (
 	"bytes"
 	"io"
 	"log"
-	"mjpeg_multiplexer/src/config"
 	"mjpeg_multiplexer/src/customErrors"
+	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/mjpeg"
 	"net"
 	"strconv"
@@ -56,7 +56,7 @@ func (source *InputHTTP) sendHeader() error {
 	}
 
 	// Also send the authentication if available
-	if payload, ok := config.Config.Authentications[source.url]; ok {
+	if payload, ok := global.Config.Authentications[source.url]; ok {
 		_, err = source.connection.Write([]byte(authentication + payload + delim))
 		if err != nil {
 			return &customErrors.ErrHttpWriteHeader{IP: source.connection.LocalAddr().String()}

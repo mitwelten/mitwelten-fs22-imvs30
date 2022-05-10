@@ -1,4 +1,4 @@
-package config
+package global
 
 type GlobalConfig struct {
 	Authentications map[string]string

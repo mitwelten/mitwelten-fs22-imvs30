@@ -6,6 +6,7 @@ import (
 	"mjpeg_multiplexer/src/aggregator"
 	"mjpeg_multiplexer/src/connection"
 	"mjpeg_multiplexer/src/customErrors"
+	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/multiplexer"
 	"os"
 	"strconv"
@@ -17,9 +18,12 @@ const (
 	OutputUsage            = "Use -output to determine output mode. 'file' or 'stream' possible."
 	OutputFileNameUsage    = "filename used to save input to file"
 	OutputStreamPortUsage  = "port used for output stream"
+	OutputWidthUsage       = "output width"
+	OutputHeigthUsage      = "output height"
 	ModeUsage              = "Method, how the output will be mixed. 'grid' is possible. "
 	GridUsage              = "Number of rows and columns for the grid. format: '<row> <col>'"
 	CredentialsUsage       = "credentials file can be specified"
+	LogTimeUsage           = "Use -log_time=true to enable logging time"
 	InputLocationSeparator = " "
 )
 
@@ -64,9 +68,12 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	outputPtr := CommandLine.String("output", "", OutputUsage) // file oder stream
 	outputFileNamePtr := CommandLine.String("output_filename", "", OutputFileNameUsage)
 	outputStreamPortPtr := CommandLine.String("output_port", "", OutputStreamPortUsage)
+	outputWidthPtr := CommandLine.Int("output_width", -1, OutputWidthUsage)
+	outputHeightPtr := CommandLine.Int("output_height", -1, OutputHeigthUsage)
 	modePtr := CommandLine.String("mode", "", ModeUsage) // grid OR motion
 	modeGridPtr := CommandLine.String("grid_dimension", "", GridUsage)
 	credentialsPtr := CommandLine.String("use_auth", "", CredentialsUsage) // grid OR motion
+	logTimePtr := CommandLine.Bool("log_time", false, LogTimeUsage)        // optional flag
 
 	//---parse the command line into the defined flags---
 	CommandLine.Parse(args[1:])
@@ -97,6 +104,11 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 		return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidArgument{Argument: *outputPtr}
 	}
 
+	if *outputWidthPtr != -1 && *outputHeightPtr != -1 {
+		global.Config.MaxWidth = *outputWidthPtr
+		global.Config.MaxHeight = *outputHeightPtr
+	}
+
 	// input parsing
 	config = parseInput(config, *inputPtr)
 
@@ -119,6 +131,11 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 		config.UseAuth = true
 	} else {
 		config.UseAuth = false
+	}
+
+	// logtime
+	if *logTimePtr {
+		global.Config.LogTime = true
 	}
 
 	// non error case, return nil

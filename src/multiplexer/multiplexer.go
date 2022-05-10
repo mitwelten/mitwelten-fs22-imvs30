@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"mjpeg_multiplexer/src/aggregator"
 	"mjpeg_multiplexer/src/communication"
-	"mjpeg_multiplexer/src/config"
 	"mjpeg_multiplexer/src/connection"
+	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/utils"
 	"sync"
 )
@@ -21,7 +21,7 @@ func Multiplexer(multiplexerConfig MultiplexerConfig) {
 	var wg sync.WaitGroup
 
 	if multiplexerConfig.UseAuth {
-		config.Config.Authentications = utils.ParseAuthenticationFile()
+		global.Config.Authentications = utils.ParseAuthenticationFile()
 	}
 
 	var frameStorage []*communication.FrameStorage

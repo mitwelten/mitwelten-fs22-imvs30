@@ -19,7 +19,7 @@ Redirect output to a file or provide output as a stream.
 
 - Output stream:
     ```
-    $ go run ./src/main.go -input "192.168.137.102:8080 192.168.137.187:8080" -output "stream" -output_port "8088" -method "grid" -grid_dimension "2 1"
+    $ go run ./src/main.go -input "192.168.137.102:8080 192.168.137.187:8080" -output "stream" -output_port "8088" -output_width 1920 -output_height 1080 -mode "grid" -grid_dimension "2 1" -log_time
     ```
 
 ## Build Automation
