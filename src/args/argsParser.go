@@ -19,6 +19,7 @@ const (
 	OutputStreamPortUsage  = "port used for output stream"
 	ModeUsage              = "Method, how the output will be mixed. 'grid' is possible. "
 	GridUsage              = "Number of rows and columns for the grid. format: '<row> <col>'"
+	CredentialsUsage       = "credentials file can be specified"
 	InputLocationSeparator = " "
 )
 
@@ -65,6 +66,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	outputStreamPortPtr := CommandLine.String("output_port", "", OutputStreamPortUsage)
 	modePtr := CommandLine.String("mode", "", ModeUsage) // grid OR motion
 	modeGridPtr := CommandLine.String("grid_dimension", "", GridUsage)
+	credentialsPtr := CommandLine.String("useAuth", "", CredentialsUsage) // grid OR motion
 
 	//---parse the command line into the defined flags---
 	CommandLine.Parse(args[1:])
@@ -110,6 +112,11 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 		config.Aggregator = &aggregator.AggregatorChange{}
 	default:
 		return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidMode{Argument: *modePtr}
+	}
+
+	// credentials
+	if len(*credentialsPtr) != 0 {
+		// todo: set config
 	}
 
 	// non error case, return nil
