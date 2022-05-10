@@ -44,7 +44,7 @@ func (frameStorage *FrameStorage) Store(frame mjpeg.MjpegFrame) {
 }
 
 // GetLatest returns the newest frame inserted into the storage
-func (frameStorage *FrameStorage) GetLatest() *mjpeg.MjpegFrame {
+func (frameStorage *FrameStorage) GetLatest() mjpeg.MjpegFrame {
 	frameStorage.mu.RLock()
 	defer frameStorage.mu.RUnlock()
 

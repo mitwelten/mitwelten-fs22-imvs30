@@ -30,9 +30,9 @@ func (buffer *RingBuffer[T]) Push(value T) {
 // }
 
 // Peek return the last value added
-func (buffer *RingBuffer[T]) Peek() *T {
+func (buffer *RingBuffer[T]) Peek() T {
 	index := (buffer.dataPointer + buffer.capacity - 1) % buffer.capacity
-	return &buffer.data[index]
+	return buffer.data[index]
 }
 
 // GetAll returns all data inside the buffer, newest data first

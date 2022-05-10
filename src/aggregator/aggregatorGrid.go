@@ -39,14 +39,14 @@ func (aggregator *AggregatorGrid) Aggregate(storages ...*communication.FrameStor
 		for {
 			condition.Wait()
 
-			var frames []*mjpeg.MjpegFrame
+			var frames []mjpeg.MjpegFrame
 
 			for i := 0; i < len(storages); i++ {
 				frame := storages[i]
 				frames = append(frames, frame.GetLatest())
 			}
 
-			var frame *mjpeg.MjpegFrame
+			var frame mjpeg.MjpegFrame
 			//do pass through on only 1 source
 			if len(storages) == 1 {
 				frame = frames[0]
@@ -65,7 +65,7 @@ func (aggregator *AggregatorGrid) Aggregate(storages ...*communication.FrameStor
 			}
 
 			if aggregator.OutputCondition != nil {
-				aggregator.OutputStorage.Store(*frame)
+				aggregator.OutputStorage.Store(frame)
 				aggregator.OutputCondition.Signal()
 			}
 		}
