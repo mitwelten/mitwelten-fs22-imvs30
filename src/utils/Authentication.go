@@ -7,10 +7,6 @@ import (
 	"os"
 )
 
-type Authentication struct {
-	Url     string
-	Payload string
-}
 type JSONAuthentication struct {
 	Url      string
 	Username string
@@ -19,7 +15,7 @@ type JSONAuthentication struct {
 
 const authenticationFileLocation = "authentication.json"
 
-func ParseAuthenticationFile() []Authentication {
+func ParseAuthenticationFile() map[string]string {
 	bytes, err := os.ReadFile(authenticationFileLocation)
 	if err != nil {
 		log.Fatalf("Can't open authentication file: %v\n", err.Error())
@@ -31,13 +27,16 @@ func ParseAuthenticationFile() []Authentication {
 		log.Fatalf("Can't parse authentication file json: %v\n", err.Error())
 	}
 
-	authentications := make([]Authentication, 0)
+	authentications := make(map[string]string)
+	keys := make([]string, 1)
 
 	for _, entry := range data {
 		auth := entry
 		payload := base64.StdEncoding.EncodeToString([]byte(auth.Username + ":" + auth.Password))
-		authentications = append(authentications, Authentication{Url: auth.Url, Payload: payload})
+		authentications[auth.Url] = payload
+		keys = append(keys, auth.Url)
 	}
-	log.Printf("Found %v authenticaion configs.\n", len(authentications))
+
+	log.Printf("Found %v authenticaion configs: %v\n", len(authentications), keys)
 	return authentications
 }

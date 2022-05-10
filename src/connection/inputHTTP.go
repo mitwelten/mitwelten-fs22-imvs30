@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"io"
 	"log"
+	"mjpeg_multiplexer/src/config"
 	"mjpeg_multiplexer/src/customErrors"
 	"mjpeg_multiplexer/src/mjpeg"
 	"net"
@@ -12,6 +13,13 @@ import (
 	"strings"
 	"time"
 )
+
+const header = "GET /?action=stream HTTP/1.1\r\n" +
+	"Host:%s\r\n"
+
+const delim = "\r\n"
+
+const authentication = "Authorization: Basic "
 
 type InputHTTP struct {
 	url                string
@@ -42,9 +50,28 @@ func (source *InputHTTP) open() error {
 func (source *InputHTTP) sendHeader() error {
 	var err error
 
-	_, err = source.connection.Write([]byte("GET /?action=stream HTTP/1.1\r\nHost:%s\r\n\r\n"))
+	_, err = source.connection.Write([]byte(header))
 	if err != nil {
 		return &customErrors.ErrHttpWriteHeader{IP: source.connection.LocalAddr().String()}
+	}
+
+	// Also send the authentication if available
+	if payload, ok := config.Config.Authentications[source.url]; ok {
+		_, err = source.connection.Write([]byte(authentication + payload + delim))
+		if err != nil {
+			return &customErrors.ErrHttpWriteHeader{IP: source.connection.LocalAddr().String()}
+		}
+	}
+
+	_, err = source.connection.Write([]byte(delim))
+	if err != nil {
+		return &customErrors.ErrHttpWriteHeader{IP: source.connection.LocalAddr().String()}
+	}
+
+	// Get the first frame to test if we have permission to access the source
+	_, err = source.ReceiveFrameFast()
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -68,6 +95,8 @@ func (source *InputHTTP) Start() error {
 func (source *InputHTTP) ReceiveFrameFast() (mjpeg.MjpegFrame, error) {
 	header, err := source.bufferedConnection.ReadString(mjpeg.JPEG_PREFIX[0])
 	if err != nil {
+		// Authenticaion may be invalid
+		log.Println(header)
 		// could not read from header
 		return mjpeg.MjpegFrame{}, err
 	}

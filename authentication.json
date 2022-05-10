@@ -1,12 +1,12 @@
 [
     {
-        "Url": "localhost:8080",
+        "Url": ":8080",
         "Username": "foo0",
         "Password": "bar0"
     },
     {
-        "Url": "localhost:8081",
-        "Username": "foo1",
-        "Password": "bar1"
+        "Url": ":8081",
+        "Username": "foo",
+        "Password": "bar"
     }
 ]

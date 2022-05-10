@@ -1,11 +1,7 @@
 package config
 
-import (
-	"mjpeg_multiplexer/src/utils"
-)
-
 type GlobalConfig struct {
-	Authentications []utils.Authentication
+	Authentications map[string]string
 }
 
 var Config GlobalConfig
