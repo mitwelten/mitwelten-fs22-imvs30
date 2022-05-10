@@ -7,6 +7,7 @@ import (
 	"github.com/pixiv/go-libjpeg/jpeg"
 	"image"
 	"image/draw"
+	"log"
 	"mjpeg_multiplexer/src/mjpeg"
 )
 
@@ -58,7 +59,7 @@ func Grid(row int, col int, frames ...mjpeg.MjpegFrame) mjpeg.MjpegFrame {
 	var nFrames = len(frames)
 
 	if nFrames > nCells {
-		panic("Too many frames")
+		log.Fatalf("Too many frames for this grid configuartion: row %v col %v, but %v frames to compute\n", row, col, len(frames))
 	}
 
 	if nFrames == 0 {

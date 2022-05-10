@@ -58,5 +58,8 @@ func main() {
 		panic(err.Error())
 	}
 
+	log.Printf("Global config: %+v\n", global.Config)
+	log.Printf("Multiplexer config: %+v\n", multiplexerConfig)
+
 	multiplexer.Multiplexer(multiplexerConfig)
 }

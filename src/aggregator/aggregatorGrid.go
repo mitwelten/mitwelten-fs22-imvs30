@@ -1,10 +1,13 @@
 package aggregator
 
 import (
+	"log"
 	"mjpeg_multiplexer/src/communication"
+	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/imageUtils"
 	"mjpeg_multiplexer/src/mjpeg"
 	"sync"
+	"time"
 )
 
 type AggregatorGrid struct {
@@ -44,10 +47,21 @@ func (aggregator *AggregatorGrid) Aggregate(storages ...*communication.FrameStor
 			}
 
 			var frame mjpeg.MjpegFrame
+			//do pass through on only 1 source
 			if len(storages) == 1 {
 				frame = frames[0]
 			} else {
+
+				var s time.Time
+				if global.Config.LogTime {
+					s = time.Now()
+				}
+
 				frame = imageUtils.Grid(aggregator.Row, aggregator.Col, frames...)
+
+				if global.Config.LogTime {
+					log.Printf("Grid with %v images: %vms\n", len(frames), time.Since(s).Milliseconds())
+				}
 			}
 
 			if aggregator.OutputCondition != nil {

@@ -2,8 +2,10 @@ package aggregator
 
 import (
 	"fmt"
+	"log"
 	"mjpeg_multiplexer/src/changeDetection"
 	"mjpeg_multiplexer/src/communication"
+	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/utils"
 	"sync"
 	"time"
@@ -62,11 +64,17 @@ func (aggregator *AggregatorChange) Aggregate(FrameStorages ...*communication.Fr
 					continue
 				}
 
-				//s := time.Now()
+				var s time.Time
+				if global.Config.LogTime {
+					s = time.Now()
+				}
+
 				score := scorer.Score(frameStorage.GetAll())
-				//fmt.Printf("Score time: %v\n", time.Since(s))
 				previousScores[i].Push(score)
 
+				if global.Config.LogTime {
+					log.Printf("AggregatorChangeDetection (index %v): %vms\n", i, time.Since(s).Milliseconds())
+				}
 			}
 
 			// change the index to the newest active frame
@@ -88,10 +96,10 @@ func (aggregator *AggregatorChange) Aggregate(FrameStorages ...*communication.Fr
 
 			if aggregator.OutputCondition != nil {
 				//fmt.Printf("update index is %d\n", frameStorageIndex)
-				//aggregator.OutputStorage.Store(FrameStorages[frameStorageIndex].GetLatest())
-				s := time.Now()
-				aggregator.OutputStorage.Store(scorer.Diff(FrameStorages[frameStorageIndex].GetAll()))
-				fmt.Printf("%v\n", time.Since(s))
+				aggregator.OutputStorage.Store(FrameStorages[frameStorageIndex].GetLatest())
+				//s := time.Now()
+				//aggregator.OutputStorage.Store(scorer.Diff(FrameStorages[frameStorageIndex].GetAll()))
+				//fmt.Printf("%v\n", time.Since(s))
 
 				/*				aggregator.OutputStorage.Store(scorer.Diff(FrameStorages[frameStorageIndex].GetAll()))
 								fmt.Printf("%v\n", time.Since(s))
