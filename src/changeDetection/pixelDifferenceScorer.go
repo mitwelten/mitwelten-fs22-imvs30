@@ -3,7 +3,6 @@ package changeDetection
 import (
 	"bytes"
 	"github.com/anthonynsimon/bild/blend"
-	"github.com/anthonynsimon/bild/blur"
 	"github.com/anthonynsimon/bild/segment"
 	"github.com/pixiv/go-libjpeg/jpeg"
 	"image"
@@ -50,8 +49,8 @@ func (s *PixelDifferenceScorer) Score(frames []mjpeg.MjpegFrame) float64 {
 func kernelPixelChangedThresholdImg(img1 image.Image, img2 image.Image) image.Image {
 	//img := image.NewGray(img1.Bounds())
 
-	img1 = blur.Box(img1, 1)
-	img2 = blur.Box(img2, 1)
+	//img1 = blur.Box(img1, 1)
+	//img2 = blur.Box(img2, 1)
 
 	imgOut := blend.Difference(img1, img2)
 	return segment.Threshold(imgOut, 20)

@@ -10,8 +10,6 @@ import (
 	"os"
 )
 
-var Config multiplexer.MultiplexerConfig
-
 const logFile string = "multiplexer.log"
 
 func setupLog() {
@@ -44,12 +42,10 @@ func main() {
 		log.Println("item", i, "is", arg)
 	}
 
-	c, err := args.ParseArgs(os.Args)
+	config, err := args.ParseArgs(os.Args)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	Config = c
-
-	multiplexer.Multiplexer(Config)
+	multiplexer.Multiplexer(config)
 }
