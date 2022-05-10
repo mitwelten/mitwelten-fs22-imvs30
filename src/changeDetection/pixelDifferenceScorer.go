@@ -1,37 +1,29 @@
 package changeDetection
 
 import (
-	"bytes"
 	"github.com/anthonynsimon/bild/blend"
 	"github.com/anthonynsimon/bild/segment"
-	"github.com/pixiv/go-libjpeg/jpeg"
 	"image"
 	"image/color"
 	"math"
+	"mjpeg_multiplexer/src/imageUtils"
 	"mjpeg_multiplexer/src/mjpeg"
 )
 
 // PixelDifferenceScorer simple pixel scorer struct
 type PixelDifferenceScorer struct{}
 
-var DecodeOptions = jpeg.DecoderOptions{ScaleTarget: image.Rectangle{}, DCTMethod: jpeg.DCTIFast, DisableFancyUpsampling: false, DisableBlockSmoothing: false}
-var EncodingOptions = jpeg.EncoderOptions{Quality: 100, OptimizeCoding: false, ProgressiveMode: false, DCTMethod: jpeg.DCTISlow}
-
 // Score implements Scorer.Score Method
 func (s *PixelDifferenceScorer) Diff(frames []mjpeg.MjpegFrame) mjpeg.MjpegFrame {
 	if len(frames) < 2 {
 		return mjpeg.MjpegFrame{Body: mjpeg.Init()}
 	}
-	img1, _ := jpeg.Decode(bytes.NewReader(frames[0].Body), &DecodeOptions)
-	img2, _ := jpeg.Decode(bytes.NewReader(frames[1].Body), &DecodeOptions)
+	img1 := imageUtils.Decode(frames[0])
+	img2 := imageUtils.Decode(frames[1])
 
-	//return kernelDiff(img1, img2) / (img1.Bounds().Dx() * img1.Bounds().Dy())
-	//img := kernelPixelChangedThresholdImgEigenblur(img1, img2)
 	img := kernelPixelChangedThresholdImg(img1, img2)
-	buff := bytes.NewBuffer([]byte{})
-	//options := jpeg.Options{Quality: 100}
-	_ = jpeg.Encode(buff, img, &EncodingOptions)
-	return mjpeg.MjpegFrame{Body: buff.Bytes()}
+
+	return imageUtils.Encode(img)
 }
 
 // Score implements Scorer.Score Method
@@ -39,10 +31,9 @@ func (s *PixelDifferenceScorer) Score(frames []mjpeg.MjpegFrame) float64 {
 	if len(frames) < 2 {
 		return -1
 	}
-	img1, _ := jpeg.Decode(bytes.NewReader(frames[0].Body), &DecodeOptions)
-	img2, _ := jpeg.Decode(bytes.NewReader(frames[1].Body), &DecodeOptions)
+	img1 := imageUtils.Decode(frames[0])
+	img2 := imageUtils.Decode(frames[1])
 
-	//return kernelDiff(img1, img2) / (img1.Bounds().Dx() * img1.Bounds().Dy())
 	return kernelPixelChangedThreshold(img1, img2) / float64(img1.Bounds().Dx()*img1.Bounds().Dy())
 }
 

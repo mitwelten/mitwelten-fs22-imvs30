@@ -2,7 +2,7 @@ package aggregator
 
 import (
 	"mjpeg_multiplexer/src/communication"
-	"mjpeg_multiplexer/src/image"
+	"mjpeg_multiplexer/src/imageUtils"
 	"mjpeg_multiplexer/src/mjpeg"
 	"sync"
 )
@@ -47,7 +47,7 @@ func (aggregator *AggregatorGrid) Aggregate(storages ...*communication.FrameStor
 			if len(storages) == 1 {
 				frame = frames[0]
 			} else {
-				frame = image.Grid(aggregator.Row, aggregator.Col, frames...)
+				frame = imageUtils.Grid(aggregator.Row, aggregator.Col, frames...)
 			}
 
 			if aggregator.OutputCondition != nil {

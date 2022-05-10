@@ -1,4 +1,4 @@
-package image
+package imageUtils
 
 // Reference: https://go.dev/blog/image-draw
 
@@ -13,30 +13,44 @@ import (
 var DecodeOptions = jpeg.DecoderOptions{ScaleTarget: image.Rectangle{}, DCTMethod: jpeg.DCTIFast, DisableFancyUpsampling: false, DisableBlockSmoothing: false}
 var EncodingOptions = jpeg.EncoderOptions{Quality: 100, OptimizeCoding: false, ProgressiveMode: false, DCTMethod: jpeg.DCTISlow}
 
-func Decode(frames ...mjpeg.MjpegFrame) []image.Image {
+func DecodeAll(frames ...mjpeg.MjpegFrame) []image.Image {
 	var images []image.Image
 	for _, frame := range frames {
-		var img, _ = jpeg.Decode(bytes.NewReader(frame.Body), &DecodeOptions)
+		var img = Decode(frame)
 		images = append(images, img)
 	}
 	return images
 }
 
-func Encode(images ...image.Image) []mjpeg.MjpegFrame {
+func Decode(frame mjpeg.MjpegFrame) image.Image {
+	img, err := jpeg.Decode(bytes.NewReader(frame.Body), &DecodeOptions)
+
+	if err != nil {
+		panic("can't decode jpg")
+	}
+
+	return img
+}
+
+func EncodeAll(images ...image.Image) []mjpeg.MjpegFrame {
 	var frames []mjpeg.MjpegFrame
 	for _, img := range images {
-		buff := bytes.NewBuffer([]byte{})
-		err := jpeg.Encode(buff, img, &EncodingOptions)
-
-		if err != nil {
-			panic("can't encode jpg")
-		}
-
-		frames = append(frames, mjpeg.MjpegFrame{Body: buff.Bytes()})
+		imageOut := Encode(img)
+		frames = append(frames, imageOut)
 	}
 
 	return frames
+}
 
+func Encode(image image.Image) mjpeg.MjpegFrame {
+	buff := bytes.NewBuffer([]byte{})
+	err := jpeg.Encode(buff, image, &EncodingOptions)
+
+	if err != nil {
+		panic("can't encode jpg")
+	}
+
+	return mjpeg.MjpegFrame{Body: buff.Bytes()}
 }
 
 func Grid(row int, col int, frames ...mjpeg.MjpegFrame) mjpeg.MjpegFrame {
@@ -50,7 +64,7 @@ func Grid(row int, col int, frames ...mjpeg.MjpegFrame) mjpeg.MjpegFrame {
 	if nFrames == 0 {
 		panic("At least one frame needed")
 	}
-	var images = Decode(frames...)
+	var images = DecodeAll(frames...)
 
 	// rectangle
 	var i0 = images[0]
@@ -73,5 +87,5 @@ func Grid(row int, col int, frames ...mjpeg.MjpegFrame) mjpeg.MjpegFrame {
 		draw.Draw(imageOut, r, images[i], image.Point{}, draw.Src)
 	}
 
-	return Encode(imageOut)[0]
+	return Encode(imageOut)
 }
