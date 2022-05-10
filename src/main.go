@@ -41,7 +41,7 @@ func SetupInitialConfig() {
 }
 
 func main() {
-	//profile()
+	profile()
 	setupLog()
 	SetupInitialConfig()
 

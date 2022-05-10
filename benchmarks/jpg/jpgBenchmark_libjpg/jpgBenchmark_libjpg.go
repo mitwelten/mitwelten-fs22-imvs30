@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-//go:embed image.jpg
+//go:embed image_big.jpg
 
 var imageData []byte
 
