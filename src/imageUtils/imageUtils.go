@@ -70,7 +70,7 @@ func Grid(row int, col int, frames ...*mjpeg.MjpegFrame) *mjpeg.MjpegFrame {
 	}
 
 	if nFrames == 0 {
-		panic("At least one frame needed")
+		log.Fatalf("At least one frame needed\n")
 	}
 	var images = DecodeAll(frames...)
 

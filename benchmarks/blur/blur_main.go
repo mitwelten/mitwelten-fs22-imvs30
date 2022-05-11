@@ -58,4 +58,6 @@ func main() {
 	end = time.Since(start).Milliseconds()
 	fmt.Printf("    Total: %v ms\n", end)
 	fmt.Printf("    Per iteration: %v ms\n", float64(end)/float64(iterations))
+
+
 }
