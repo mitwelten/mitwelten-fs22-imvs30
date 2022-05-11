@@ -8,19 +8,19 @@ import (
 )
 
 func main() {
-	iterations := 500
-
-	fmt.Printf("Standard libraray: \n")
-	jpgBenchmark_std.Decode(iterations)
-	jpgBenchmark_std.Encode(iterations)
-	jpgBenchmark_std.DecodeEncode(iterations)
-	//	_ = jpgBenchmark_std.DecodeEncodeSave()
+	iterations := 100
 
 	fmt.Printf("libjpg: \n")
 	jpgBenchmark_libjpg.Decode(iterations)
 	jpgBenchmark_libjpg.Encode(iterations)
 	jpgBenchmark_libjpg.DecodeEncode(iterations)
 	//	_ = jpgBenchmark_libjpg.DecodeEncodeSave()
+
+	fmt.Printf("Standard libraray: \n")
+	jpgBenchmark_std.Decode(iterations)
+	jpgBenchmark_std.Encode(iterations)
+	jpgBenchmark_std.DecodeEncode(iterations)
+	//	_ = jpgBenchmark_std.DecodeEncodeSave()
 }
 
 func compareDCTMethods() {

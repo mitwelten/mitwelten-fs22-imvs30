@@ -39,16 +39,18 @@ func (aggregator *AggregatorGrid) Aggregate(storages ...*communication.FrameStor
 		for {
 			condition.Wait()
 
-			var frames []mjpeg.MjpegFrame
+			var frames []*mjpeg.MjpegFrame
 
 			for i := 0; i < len(storages); i++ {
 				frame := storages[i]
-				frames = append(frames, frame.GetLatest())
+				frames = append(frames, frame.GetLatestPtr())
 			}
 
-			var frame mjpeg.MjpegFrame
+			//todo remove me
+			doPassthrough := true
+			var frame *mjpeg.MjpegFrame
 			//do pass through on only 1 source
-			if len(storages) == 1 {
+			if len(storages) == 1 && doPassthrough {
 				frame = frames[0]
 			} else {
 
@@ -65,7 +67,7 @@ func (aggregator *AggregatorGrid) Aggregate(storages ...*communication.FrameStor
 			}
 
 			if aggregator.OutputCondition != nil {
-				aggregator.OutputStorage.Store(frame)
+				aggregator.OutputStorage.StorePtr(frame)
 				aggregator.OutputCondition.Signal()
 			}
 		}

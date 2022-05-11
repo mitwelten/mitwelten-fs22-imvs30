@@ -69,7 +69,7 @@ func (aggregator *AggregatorChange) Aggregate(FrameStorages ...*communication.Fr
 					s = time.Now()
 				}
 
-				score := scorer.Score(frameStorage.GetAll())
+				score := scorer.Score(frameStorage.GetAllPtr())
 				previousScores[i].Push(score)
 
 				if global.Config.LogTime {

@@ -14,7 +14,7 @@ import (
 var DecodeOptions = jpeg.DecoderOptions{ScaleTarget: image.Rectangle{}, DCTMethod: jpeg.DCTIFast, DisableFancyUpsampling: false, DisableBlockSmoothing: false}
 var EncodingOptions = jpeg.EncoderOptions{Quality: 100, OptimizeCoding: false, ProgressiveMode: false, DCTMethod: jpeg.DCTISlow}
 
-func DecodeAll(frames ...mjpeg.MjpegFrame) []image.Image {
+func DecodeAll(frames ...*mjpeg.MjpegFrame) []image.Image {
 	var images []image.Image
 	for _, frame := range frames {
 		var img = Decode(frame)
@@ -23,9 +23,10 @@ func DecodeAll(frames ...mjpeg.MjpegFrame) []image.Image {
 	return images
 }
 
-func Decode(frame mjpeg.MjpegFrame) image.Image {
+func Decode(frame *mjpeg.MjpegFrame) image.Image {
 	if frame.Image == nil {
 		img, err := jpeg.Decode(bytes.NewReader(frame.Body), &DecodeOptions)
+		//todo: this assigns to a copy
 		frame.Image = img
 
 		if err != nil {
@@ -34,12 +35,13 @@ func Decode(frame mjpeg.MjpegFrame) image.Image {
 
 		return img
 	} else {
+		println("Yooo")
 		return frame.Image
 	}
 }
 
-func EncodeAll(images ...image.Image) []mjpeg.MjpegFrame {
-	var frames []mjpeg.MjpegFrame
+func EncodeAll(images ...image.Image) []*mjpeg.MjpegFrame {
+	var frames []*mjpeg.MjpegFrame
 	for _, img := range images {
 		imageOut := Encode(img)
 		frames = append(frames, imageOut)
@@ -48,7 +50,7 @@ func EncodeAll(images ...image.Image) []mjpeg.MjpegFrame {
 	return frames
 }
 
-func Encode(image image.Image) mjpeg.MjpegFrame {
+func Encode(image image.Image) *mjpeg.MjpegFrame {
 	buff := bytes.NewBuffer([]byte{})
 	err := jpeg.Encode(buff, image, &EncodingOptions)
 
@@ -56,10 +58,10 @@ func Encode(image image.Image) mjpeg.MjpegFrame {
 		panic("can't encode jpg")
 	}
 
-	return mjpeg.MjpegFrame{Body: buff.Bytes()}
+	return &mjpeg.MjpegFrame{Body: buff.Bytes()}
 }
 
-func Grid(row int, col int, frames ...mjpeg.MjpegFrame) mjpeg.MjpegFrame {
+func Grid(row int, col int, frames ...*mjpeg.MjpegFrame) *mjpeg.MjpegFrame {
 	var nCells = row * col
 	var nFrames = len(frames)
 

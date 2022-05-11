@@ -14,7 +14,7 @@ import (
 type PixelDifferenceScorer struct{}
 
 // Score implements Scorer.Score Method
-func (s *PixelDifferenceScorer) Diff(frames []mjpeg.MjpegFrame) mjpeg.MjpegFrame {
+func (s *PixelDifferenceScorer) Diff(frames []*mjpeg.MjpegFrame) mjpeg.MjpegFrame {
 	if len(frames) < 2 {
 		return mjpeg.MjpegFrame{Body: mjpeg.Init()}
 	}
@@ -23,11 +23,11 @@ func (s *PixelDifferenceScorer) Diff(frames []mjpeg.MjpegFrame) mjpeg.MjpegFrame
 
 	img := kernelPixelChangedThresholdImg(img1, img2)
 
-	return imageUtils.Encode(img)
+	return *imageUtils.Encode(img)
 }
 
 // Score implements Scorer.Score Method
-func (s *PixelDifferenceScorer) Score(frames []mjpeg.MjpegFrame) float64 {
+func (s *PixelDifferenceScorer) Score(frames []*mjpeg.MjpegFrame) float64 {
 	if len(frames) < 2 {
 		return -1
 	}

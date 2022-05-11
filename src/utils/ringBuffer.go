@@ -22,6 +22,15 @@ func (buffer *RingBuffer[T]) Push(value T) {
 	}
 }
 
+//Push adds a value into the RingBuffer
+func (buffer *RingBuffer[T]) PushPtr(value *T) {
+	buffer.data[buffer.dataPointer] = *value
+	buffer.dataPointer = (buffer.dataPointer + 1) % buffer.capacity
+	if buffer.nElements < buffer.capacity {
+		buffer.nElements++
+	}
+}
+
 // func (buffer *RingBuffer[T]) Pop() T {
 // 	index := (buffer.dataPointer + buffer.capacity - 1) % buffer.capacity
 // 	buffer.dataPointer = index
@@ -35,6 +44,12 @@ func (buffer *RingBuffer[T]) Peek() T {
 	return buffer.data[index]
 }
 
+// Peek return the last value added
+func (buffer *RingBuffer[T]) PeekPtr() *T {
+	index := (buffer.dataPointer + buffer.capacity - 1) % buffer.capacity
+	return &buffer.data[index]
+}
+
 // GetAll returns all data inside the buffer, newest data first
 func (buffer *RingBuffer[T]) GetAll() []T {
 	output := make([]T, buffer.nElements)
@@ -42,6 +57,19 @@ func (buffer *RingBuffer[T]) GetAll() []T {
 	index := (buffer.dataPointer + buffer.capacity - 1) % buffer.capacity
 	for i := 0; i < buffer.nElements; i++ {
 		output[i] = buffer.data[index]
+		index = (index + buffer.capacity - 1) % buffer.capacity
+	}
+
+	return output
+}
+
+// GetAll returns all data inside the buffer, newest data first
+func (buffer *RingBuffer[T]) GetAllPtr() []*T {
+	output := make([]*T, buffer.nElements)
+
+	index := (buffer.dataPointer + buffer.capacity - 1) % buffer.capacity
+	for i := 0; i < buffer.nElements; i++ {
+		output[i] = &buffer.data[index]
 		index = (index + buffer.capacity - 1) % buffer.capacity
 	}
 

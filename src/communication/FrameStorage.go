@@ -43,6 +43,19 @@ func (frameStorage *FrameStorage) Store(frame mjpeg.MjpegFrame) {
 	}
 }
 
+// Store stores a MjpegFrame into the storage
+func (frameStorage *FrameStorage) StorePtr(frame *mjpeg.MjpegFrame) {
+	frameStorage.mu.RLock()
+	defer frameStorage.mu.RUnlock()
+
+	frameStorage.buffer.PushPtr(frame)
+	frameStorage.LastUpdated = time.Now()
+
+	if frameStorage.AggregatorCondition != nil {
+		frameStorage.AggregatorCondition.Signal()
+	}
+}
+
 // GetLatest returns the newest frame inserted into the storage
 func (frameStorage *FrameStorage) GetLatest() mjpeg.MjpegFrame {
 	frameStorage.mu.RLock()
@@ -51,10 +64,26 @@ func (frameStorage *FrameStorage) GetLatest() mjpeg.MjpegFrame {
 	return frameStorage.buffer.Peek()
 }
 
+// GetLatest returns the newest frame inserted into the storage
+func (frameStorage *FrameStorage) GetLatestPtr() *mjpeg.MjpegFrame {
+	frameStorage.mu.RLock()
+	defer frameStorage.mu.RUnlock()
+
+	return frameStorage.buffer.PeekPtr()
+}
+
 // GetAll returns all frames in storage
 func (frameStorage *FrameStorage) GetAll() []mjpeg.MjpegFrame {
 	frameStorage.mu.RLock()
 	defer frameStorage.mu.RUnlock()
 
 	return frameStorage.buffer.GetAll()
+}
+
+// GetAll returns all frames in storage
+func (frameStorage *FrameStorage) GetAllPtr() []*mjpeg.MjpegFrame {
+	frameStorage.mu.RLock()
+	defer frameStorage.mu.RUnlock()
+
+	return frameStorage.buffer.GetAllPtr()
 }
