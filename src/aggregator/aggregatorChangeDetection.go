@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 	"mjpeg_multiplexer/src/changeDetection"
-	"mjpeg_multiplexer/src/communication"
 	"mjpeg_multiplexer/src/global"
+	"mjpeg_multiplexer/src/mjpeg"
 	"mjpeg_multiplexer/src/utils"
 	"sync"
 	"time"
@@ -14,7 +14,7 @@ import (
 // AggregatorChange aggregates multiple frame storages, calculates score to detect most attractive input and sets output
 type AggregatorChange struct {
 	OutputCondition *sync.Cond
-	OutputStorage   *communication.FrameStorage
+	OutputStorage   *mjpeg.FrameStorage
 }
 
 const delay = 2000 * time.Millisecond
@@ -24,12 +24,12 @@ func (aggregator *AggregatorChange) SetOutputCondition(cond *sync.Cond) {
 	aggregator.OutputCondition = cond
 }
 
-func (aggregator *AggregatorChange) GetStorage() *communication.FrameStorage {
+func (aggregator *AggregatorChange) GetStorage() *mjpeg.FrameStorage {
 	return aggregator.OutputStorage
 }
 
-func (aggregator *AggregatorChange) Aggregate(FrameStorages ...*communication.FrameStorage) {
-	aggregator.OutputStorage = communication.NewFrameStorage()
+func (aggregator *AggregatorChange) Aggregate(FrameStorages ...*mjpeg.FrameStorage) {
+	aggregator.OutputStorage = mjpeg.NewFrameStorage()
 	scorer := changeDetection.PixelDifferenceScorer{}
 
 	// init the lock and condition object to notify the aggregator when a new frame has been stored

@@ -2,7 +2,6 @@ package connection
 
 import (
 	"log"
-	"mjpeg_multiplexer/src/communication"
 	"mjpeg_multiplexer/src/mjpeg"
 	"time"
 )
@@ -29,9 +28,9 @@ func reconnectInput(input Input) {
 
 }
 
-func ListenToInput(input Input) *communication.FrameStorage {
+func ListenToInput(input Input) *mjpeg.FrameStorage {
 
-	frameData := communication.NewFrameStorage()
+	frameData := mjpeg.NewFrameStorage()
 
 	go func() {
 		for {

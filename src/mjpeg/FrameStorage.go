@@ -1,7 +1,6 @@
-package communication
+package mjpeg
 
 import (
-	"mjpeg_multiplexer/src/mjpeg"
 	"mjpeg_multiplexer/src/utils"
 	"sync"
 	"time"
@@ -13,17 +12,17 @@ const nOfStoredFrames = 5
 type FrameStorage struct {
 	mu                  sync.RWMutex
 	AggregatorCondition *sync.Cond
-	buffer              utils.RingBuffer[mjpeg.MjpegFrame]
+	buffer              utils.RingBuffer[MjpegFrame]
 	LastUpdated         time.Time
 }
 
 // NewFrameStorage FrameStorage ctor
 func NewFrameStorage() *FrameStorage {
-	frame := mjpeg.MjpegFrame{}
-	frame.Body = mjpeg.Init()
+	frame := MjpegFrame{}
+	frame.Body = Init()
 
 	frameStorage := FrameStorage{}
-	frameStorage.buffer = utils.NewRingBuffer[mjpeg.MjpegFrame](nOfStoredFrames)
+	frameStorage.buffer = utils.NewRingBuffer[MjpegFrame](nOfStoredFrames)
 	frameStorage.buffer.Push(frame)
 	frameStorage.LastUpdated = time.Now()
 
@@ -31,7 +30,7 @@ func NewFrameStorage() *FrameStorage {
 }
 
 // Store stores a MjpegFrame into the storage
-func (frameStorage *FrameStorage) Store(frame mjpeg.MjpegFrame) {
+func (frameStorage *FrameStorage) Store(frame MjpegFrame) {
 	frameStorage.mu.RLock()
 	defer frameStorage.mu.RUnlock()
 
@@ -44,7 +43,7 @@ func (frameStorage *FrameStorage) Store(frame mjpeg.MjpegFrame) {
 }
 
 // Store stores a MjpegFrame into the storage
-func (frameStorage *FrameStorage) StorePtr(frame *mjpeg.MjpegFrame) {
+func (frameStorage *FrameStorage) StorePtr(frame *MjpegFrame) {
 	frameStorage.mu.RLock()
 	defer frameStorage.mu.RUnlock()
 
@@ -57,7 +56,7 @@ func (frameStorage *FrameStorage) StorePtr(frame *mjpeg.MjpegFrame) {
 }
 
 // GetLatest returns the newest frame inserted into the storage
-func (frameStorage *FrameStorage) GetLatest() mjpeg.MjpegFrame {
+func (frameStorage *FrameStorage) GetLatest() MjpegFrame {
 	frameStorage.mu.RLock()
 	defer frameStorage.mu.RUnlock()
 
@@ -65,7 +64,7 @@ func (frameStorage *FrameStorage) GetLatest() mjpeg.MjpegFrame {
 }
 
 // GetLatest returns the newest frame inserted into the storage
-func (frameStorage *FrameStorage) GetLatestPtr() *mjpeg.MjpegFrame {
+func (frameStorage *FrameStorage) GetLatestPtr() *MjpegFrame {
 	frameStorage.mu.RLock()
 	defer frameStorage.mu.RUnlock()
 
@@ -73,7 +72,7 @@ func (frameStorage *FrameStorage) GetLatestPtr() *mjpeg.MjpegFrame {
 }
 
 // GetAll returns all frames in storage
-func (frameStorage *FrameStorage) GetAll() []mjpeg.MjpegFrame {
+func (frameStorage *FrameStorage) GetAll() []MjpegFrame {
 	frameStorage.mu.RLock()
 	defer frameStorage.mu.RUnlock()
 
@@ -81,7 +80,7 @@ func (frameStorage *FrameStorage) GetAll() []mjpeg.MjpegFrame {
 }
 
 // GetAll returns all frames in storage
-func (frameStorage *FrameStorage) GetAllPtr() []*mjpeg.MjpegFrame {
+func (frameStorage *FrameStorage) GetAllPtr() []*MjpegFrame {
 	frameStorage.mu.RLock()
 	defer frameStorage.mu.RUnlock()
 

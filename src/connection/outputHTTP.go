@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 	"mjpeg_multiplexer/src/aggregator"
-	"mjpeg_multiplexer/src/communication"
 	"mjpeg_multiplexer/src/mjpeg"
 	"net"
 	"strconv"
@@ -157,7 +156,7 @@ func (output OutputHTTP) Run(aggregator aggregator.Aggregator) {
 	condition := sync.NewCond(&lock)
 	aggregator.SetOutputCondition(condition)
 
-	go func(storage_ *communication.FrameStorage) {
+	go func(storage_ *mjpeg.FrameStorage) {
 		var previousFrame mjpeg.MjpegFrame
 		for {
 			condition.Wait()

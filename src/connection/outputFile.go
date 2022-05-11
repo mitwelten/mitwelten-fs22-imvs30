@@ -3,7 +3,6 @@ package connection
 import (
 	"log"
 	"mjpeg_multiplexer/src/aggregator"
-	"mjpeg_multiplexer/src/communication"
 	"mjpeg_multiplexer/src/customErrors"
 	"mjpeg_multiplexer/src/mjpeg"
 	"os"
@@ -33,7 +32,7 @@ func (output OutputFile) SendFrame(frame mjpeg.MjpegFrame) error {
 }
 
 func (output OutputFile) Run(aggregator aggregator.Aggregator) {
-	go func(storage_ *communication.FrameStorage) {
+	go func(storage_ *mjpeg.FrameStorage) {
 		for {
 			frame := storage_.GetLatest()
 			err := output.SendFrame(frame)

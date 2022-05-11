@@ -2,7 +2,6 @@ package aggregator
 
 import (
 	"log"
-	"mjpeg_multiplexer/src/communication"
 	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/imageUtils"
 	"mjpeg_multiplexer/src/mjpeg"
@@ -13,19 +12,19 @@ import (
 type AggregatorGrid struct {
 	Row             int
 	Col             int
-	OutputStorage   *communication.FrameStorage
+	OutputStorage   *mjpeg.FrameStorage
 	OutputCondition *sync.Cond
 }
 
 func (aggregator *AggregatorGrid) SetOutputCondition(cond *sync.Cond) {
 	aggregator.OutputCondition = cond
 }
-func (aggregator *AggregatorGrid) GetStorage() *communication.FrameStorage {
+func (aggregator *AggregatorGrid) GetStorage() *mjpeg.FrameStorage {
 	return aggregator.OutputStorage
 }
 
-func (aggregator *AggregatorGrid) Aggregate(storages ...*communication.FrameStorage) {
-	aggregator.OutputStorage = communication.NewFrameStorage()
+func (aggregator *AggregatorGrid) Aggregate(storages ...*mjpeg.FrameStorage) {
+	aggregator.OutputStorage = mjpeg.NewFrameStorage()
 
 	// init the lock and condition object to notify the aggregator when a new frame has been stored
 	lock := sync.Mutex{}

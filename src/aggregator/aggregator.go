@@ -1,7 +1,7 @@
 package aggregator
 
 import (
-	"mjpeg_multiplexer/src/communication"
+	"mjpeg_multiplexer/src/mjpeg"
 	"sync"
 )
 
@@ -9,7 +9,7 @@ import (
 // takes multiple frameStorages (one frame storage for each input Connection) and
 // aggregates them to one frameStorage
 type Aggregator interface {
-	Aggregate(channels ...*communication.FrameStorage)
-	GetStorage() *communication.FrameStorage
+	Aggregate(channels ...*mjpeg.FrameStorage)
+	GetStorage() *mjpeg.FrameStorage
 	SetOutputCondition(cond *sync.Cond)
 }
