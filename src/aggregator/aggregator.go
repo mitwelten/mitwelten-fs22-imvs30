@@ -25,6 +25,7 @@ type AggregatorData struct {
 
 func Aggregate(aggregatorPtr *Aggregator, storages ...*mjpeg.FrameStorage) {
 	aggregator := *aggregatorPtr
+	aggregator.Setup(storages...)
 	aggregatorData := aggregator.GetAggregatorData()
 	aggregatorData.OutputStorage = mjpeg.NewFrameStorage()
 	condition := setupCondition(storages...)
@@ -32,20 +33,23 @@ func Aggregate(aggregatorPtr *Aggregator, storages ...*mjpeg.FrameStorage) {
 		for {
 			condition.Wait()
 
+			// start time
+			var s time.Time
+			if global.Config.LogTime {
+				s = time.Now()
+			}
+
+			// get frame
 			var frame *mjpeg.MjpegFrame
 			if aggregatorData.passthrough && len(storages) == 1 {
 				frame = storages[0].GetLatestPtr()
 			} else {
-				var s time.Time
-				if global.Config.LogTime {
-					s = time.Now()
-				}
-
 				frame = aggregator.aggregate(storages...)
+			}
 
-				if global.Config.LogTime {
-					log.Printf("Aggregate with %v images: %vms\n", len(storages), time.Since(s).Milliseconds())
-				}
+			// stop time
+			if global.Config.LogTime {
+				log.Printf("Aggregate with %v images: %vms\n", len(storages), time.Since(s).Milliseconds())
 			}
 
 			outputCondition := aggregatorData.OutputStorage
