@@ -24,7 +24,7 @@ Redirect output to a file or provide output as a stream.
     
     Usage:
     multiplexer motion input <URLs> output <PORT> [options]
-    multiplexer grid grid_dimension <GRID_ROWS> <GRID_COLUMNS> input <URLs> output <PORT> [options]
+    multiplexer grid --grid_dimension <GRID_ROWS> <GRID_COLUMNS> input <URLs> output <PORT> [options]
     multiplexer -h | --help
     multiplexer --version
     
@@ -43,7 +43,7 @@ Redirect output to a file or provide output as a stream.
 
 - Output stream (grid):
     ```
-    $ go run ./src/main.go grid grid_dimension 2 1 input localhost:8080,localhost:8080 output 8088 --log_time --use_auth --input_framerate 10 --output_framerate 10 
+    $ go run ./src/main.go grid --grid_dimension 2 1 input localhost:8080,localhost:8080 output 8088 --log_time --use_auth --input_framerate 10 --output_framerate 10 
     ```
 
 - Output stream (motion):

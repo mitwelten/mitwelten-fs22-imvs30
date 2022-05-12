@@ -18,7 +18,7 @@ const (
 var (
 	usage = `Usage:
   multiplexer (motion) (input) URL (output) PORT [options]
-  multiplexer (grid) (grid_dimension GRID_Y GRID_X) (input) URL (output) PORT [options] 
+  multiplexer (grid) (--grid_dimension GRID_Y GRID_X) (input) URL (output) PORT [options] 
   multiplexer -h | --help
   multiplexer --version
 
@@ -111,7 +111,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 		global.Config.LogTime = true
 	}
 
-	// minInputDelay
+	// InputRates
 	global.Config.InputFramerate = inputFramerate
 	global.Config.OutputFramerate = outputFramerate
 
