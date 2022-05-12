@@ -29,9 +29,16 @@ func Aggregate(aggregatorPtr *Aggregator, storages ...*mjpeg.FrameStorage) {
 	aggregatorData := aggregator.GetAggregatorData()
 	aggregatorData.OutputStorage = mjpeg.NewFrameStorage()
 	condition := setupCondition(storages...)
+
+	lastUpdate := time.Unix(0, 0)
+
 	go func() {
 		for {
 			condition.Wait()
+
+			if global.Config.OutputFramerate != -1 && time.Since(lastUpdate).Seconds() < (1.0/global.Config.OutputFramerate) {
+				continue
+			}
 
 			// start time
 			var s time.Time
@@ -57,6 +64,7 @@ func Aggregate(aggregatorPtr *Aggregator, storages ...*mjpeg.FrameStorage) {
 				aggregatorData.OutputStorage.StorePtr(frame)
 				aggregatorData.OutputCondition.Signal()
 			}
+			lastUpdate = time.Now()
 		}
 	}()
 
