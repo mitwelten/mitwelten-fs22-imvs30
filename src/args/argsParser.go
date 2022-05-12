@@ -11,7 +11,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 )
 
 const (
@@ -77,7 +76,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	modeGridPtr := CommandLine.String("grid_dimension", "", GridUsage)
 	credentialsPtr := CommandLine.String("use_auth", "", CredentialsUsage)          // grid OR motion
 	logTimePtr := CommandLine.Bool("log_time", false, LogTimeUsage)                 // optional flag
-	inputDelayPtr := CommandLine.Int("min_input_delay", 0, MinInputDelay)           // optional flag
+	inputDelayPtr := CommandLine.Float64("min_input_delay", 0, MinInputDelay)       // optional flag
 	outputFrameRate := CommandLine.Float64("output_framerate", -1, OutputFramerate) // optional flag
 
 	//---parse the command line into the defined flags---
@@ -144,7 +143,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	}
 
 	// minInputDelay
-	global.Config.MinimumInputDelay = time.Duration(*inputDelayPtr) * time.Millisecond
+	global.Config.InputFramerate = *inputDelayPtr
 
 	// output framerate
 	global.Config.OutputFramerate = *outputFrameRate

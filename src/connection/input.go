@@ -36,7 +36,7 @@ func ListenToInput(input Input) *mjpeg.FrameStorage {
 	lastReceive := time.Unix(0, 0)
 	go func() {
 		for {
-			if time.Since(lastReceive) < global.Config.MinimumInputDelay {
+			if time.Since(lastReceive).Seconds() < (1.0 / global.Config.InputFramerate) {
 				//todo optimize: This always reads and parses a full frame. Is a more efficient alternative possible and useful?
 				_, _ = input.ReceiveFrameFast()
 				continue
