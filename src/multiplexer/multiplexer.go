@@ -37,7 +37,7 @@ func Multiplexer(multiplexerConfig MultiplexerConfig) {
 		frameStorage = append(frameStorage, frameData)
 	}
 
-	multiplexerConfig.Aggregator.Aggregate(frameStorage...)
+	aggregator.Aggregate(&multiplexerConfig.Aggregator, frameStorage...)
 
 	wg.Add(1)
 	multiplexerConfig.Output.Run(multiplexerConfig.Aggregator)

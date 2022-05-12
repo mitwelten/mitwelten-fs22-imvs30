@@ -7,108 +7,83 @@ import (
 	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/mjpeg"
 	"mjpeg_multiplexer/src/utils"
-	"sync"
 	"time"
 )
 
 // AggregatorChange aggregates multiple frame storages, calculates score to detect most attractive input and sets output
 type AggregatorChange struct {
-	OutputCondition *sync.Cond
-	OutputStorage   *mjpeg.FrameStorage
+	data              AggregatorData
+	scorer            changeDetection.PixelDifferenceScorer
+	previousScores    []utils.RingBuffer[float64]
+	frameStorageIndex int
+	lastScoreUpdate   time.Time
+	lastFrameUpdate   time.Time
 }
 
 const delay = 2000 * time.Millisecond
 const nPreviousScores = 20
 
-func (aggregator *AggregatorChange) SetOutputCondition(cond *sync.Cond) {
-	aggregator.OutputCondition = cond
-}
+func (aggregator *AggregatorChange) Setup(storages ...*mjpeg.FrameStorage) {
+	aggregator.data.passthrough = true
+	aggregator.scorer = changeDetection.PixelDifferenceScorer{}
+	aggregator.previousScores = make([]utils.RingBuffer[float64], len(storages))
 
-func (aggregator *AggregatorChange) GetStorage() *mjpeg.FrameStorage {
-	return aggregator.OutputStorage
-}
-
-func (aggregator *AggregatorChange) Aggregate(FrameStorages ...*mjpeg.FrameStorage) {
-	aggregator.OutputStorage = mjpeg.NewFrameStorage()
-	scorer := changeDetection.PixelDifferenceScorer{}
-
-	// init the lock and condition object to notify the aggregator when a new frame has been stored
-	lock := sync.Mutex{}
-	lock.Lock()
-	condition := sync.NewCond(&lock)
-
-	// buffer for the average change values - one for each storage
-	previousScores := make([]utils.RingBuffer[float64], len(FrameStorages))
-
-	for i, el := range FrameStorages {
-		// set the condition for the wakeup signal
-		el.AggregatorCondition = condition
-
+	for i, _ := range storages {
 		// init the buffers for the average change scores
-		previousScores[i] = utils.NewRingBuffer[float64](nPreviousScores)
+		aggregator.previousScores[i] = utils.NewRingBuffer[float64](nPreviousScores)
 	}
 
-	frameStorageIndex := -1
+	aggregator.frameStorageIndex = -1
 
-	lastScoreUpdate := time.Now()
-	lastFrameUpdate := time.Now()
+	aggregator.lastScoreUpdate = time.Now()
+	aggregator.lastFrameUpdate = time.Now()
 
-	go func() {
-		for {
-			condition.Wait()
+}
 
-			// calculate the new scores if the storage was updated
-			for i := 0; i < len(FrameStorages); i++ {
-				frameStorage := FrameStorages[i]
-				if frameStorage.LastUpdated.Before(lastFrameUpdate) {
-					continue
-				}
+func (aggregator *AggregatorChange) GetAggregatorData() *AggregatorData {
+	return &aggregator.data
+}
 
-				var s time.Time
-				if global.Config.LogTime {
-					s = time.Now()
-				}
-
-				score := scorer.Score(frameStorage.GetAllPtr())
-				previousScores[i].Push(score)
-
-				if global.Config.LogTime {
-					log.Printf("AggregatorChangeDetection (index %v): %vms\n", i, time.Since(s).Milliseconds())
-				}
-			}
-
-			// change the index to the newest active frame
-			if frameStorageIndex == -1 || time.Since(lastScoreUpdate) > delay {
-				scores := make([]float64, len(previousScores))
-				for i, el := range previousScores {
-					data, size := el.GetData()
-					if size == 0 {
-						continue
-					}
-					scores[i] = averageScore(*data, size)
-					fmt.Printf("Frame %v scores: %v\n", i, data)
-				}
-
-				frameStorageIndex, _ = argmax(scores)
-				fmt.Printf("Biggest score index is %d\n", frameStorageIndex)
-				lastScoreUpdate = time.Now()
-			}
-
-			if aggregator.OutputCondition != nil {
-				//fmt.Printf("update index is %d\n", frameStorageIndex)
-				aggregator.OutputStorage.Store(FrameStorages[frameStorageIndex].GetLatest())
-				//s := time.Now()
-				//aggregator.OutputStorage.Store(scorer.Diff(FrameStorages[frameStorageIndex].GetAll()))
-				//fmt.Printf("%v\n", time.Since(s))
-
-				/*				aggregator.OutputStorage.Store(scorer.Diff(FrameStorages[frameStorageIndex].GetAll()))
-								fmt.Printf("%v\n", time.Since(s))
-				*/
-				aggregator.OutputCondition.Signal()
-			}
-			lastFrameUpdate = time.Now()
+func (aggregator *AggregatorChange) aggregate(FrameStorages ...*mjpeg.FrameStorage) *mjpeg.MjpegFrame {
+	// calculate the new scores if the storage was updated
+	for i := 0; i < len(FrameStorages); i++ {
+		frameStorage := FrameStorages[i]
+		if frameStorage.LastUpdated.Before(aggregator.lastFrameUpdate) {
+			continue
 		}
-	}()
+
+		var s time.Time
+		if global.Config.LogTime {
+			s = time.Now()
+		}
+
+		score := aggregator.scorer.Score(frameStorage.GetAllPtr())
+		aggregator.previousScores[i].Push(score)
+
+		if global.Config.LogTime {
+			log.Printf("AggregatorChangeDetection (index %v): %vms\n", i, time.Since(s).Milliseconds())
+		}
+	}
+
+	// change the index to the newest active frame
+	if aggregator.frameStorageIndex == -1 || time.Since(aggregator.lastScoreUpdate) > delay {
+		scores := make([]float64, len(aggregator.previousScores))
+		for i, el := range aggregator.previousScores {
+			data, size := el.GetData()
+			if size == 0 {
+				continue
+			}
+			scores[i] = averageScore(*data, size)
+			fmt.Printf("Frame %v scores: %v\n", i, data)
+		}
+
+		aggregator.frameStorageIndex, _ = argmax(scores)
+		fmt.Printf("Biggest score index is %d\n", aggregator.frameStorageIndex)
+		aggregator.lastScoreUpdate = time.Now()
+	}
+
+	return FrameStorages[aggregator.frameStorageIndex].GetLatestPtr()
+	//return aggregator.scorer.Diff(FrameStorages[aggregator.frameStorageIndex].GetAll()))
 }
 
 func averageScore(arr []float64, size int) float64 {

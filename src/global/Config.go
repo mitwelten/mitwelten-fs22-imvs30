@@ -1,7 +1,5 @@
 package global
 
-import "time"
-
 type GlobalConfig struct {
 	// pair of url strings and the base64 encoded 'username:password'
 	Authentications map[string]string
@@ -11,7 +9,9 @@ type GlobalConfig struct {
 	MaxWidth  int
 	MaxHeight int
 	// Minimum amount of time to wait between 2 consecutive reads from the inputs
-	MinimumInputDelay time.Duration
+	InputFramerate float64
+	// max framerate for the output
+	OutputFramerate float64
 }
 
 var Config GlobalConfig

@@ -9,7 +9,6 @@ import (
 	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/multiplexer"
 	"strings"
-	"time"
 )
 
 const (
@@ -24,13 +23,15 @@ var (
   multiplexer --version
 
 Options:
-  -h --help             Shows this screen.
-  --input_framerate=n   input framerate in fps [default: -1]
-  --output_framerate=n  output framerate in fps[default: -1]
-  --use_auth   	        Use Authentication
-  --log_time	        Log Time verbose
-  --verbose             Shows details.
-  --version             Shows version.`
+  -h --help              Shows this screen.
+  --input_framerate=n    input framerate in fps [default: -1]
+  --output_framerate=n   output framerate in fps[default: -1]
+  --output_max_width=n   output width in pixel [default: -1]
+  --output_max_height=n  output height in pixel [default: -1]  
+  --use_auth   	         Use Authentication
+  --log_time	         Log Time verbose
+  --verbose              Shows details.
+  --version              Shows version.`
 )
 
 // parseInput parses input URLS derived from command line arguments
@@ -58,16 +59,16 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	// mode
 	grid, _ := arguments.Bool("grid")
 	//_, _ := arguments.Bool("motion") // could be used later in a switch statement
-	grid_x, _ := arguments.Int("GRID_X")
-	grid_y, _ := arguments.Int("GRID_Y")
+	gridX, _ := arguments.Int("GRID_X")
+	gridY, _ := arguments.Int("GRID_Y")
 
 	// options
-	input_framerate, _ := arguments.Int("--input_framerate")
-	output_framerate, _ := arguments.Int("--output_framerate")
-	output_width, _ := arguments.Int("--output_height")
-	output_height, _ := arguments.Int("--output_width")
-	use_auth, _ := arguments.Bool("--use_auth")
-	log_time, _ := arguments.Bool("--log_time")
+	inputFramerate, _ := arguments.Float64("--input_framerate")
+	outputFramerate, _ := arguments.Float64("--output_max_framerate")
+	outputWidth, _ := arguments.Int("--output_max_height")
+	outputHeight, _ := arguments.Int("--output_width")
+	useAuth, _ := arguments.Bool("--use_auth")
+	logTime, _ := arguments.Bool("--log_time")
 
 	// global config
 
@@ -83,14 +84,14 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	// disabled: output file
 	// config.Output = connection.NewOutputFile(outputFileNamePtr)
 
-	if output_width != -1 && output_height != -1 {
-		global.Config.MaxWidth = output_width
-		global.Config.MaxHeight = output_height
+	if outputWidth != -1 && outputHeight != -1 {
+		global.Config.MaxWidth = outputWidth
+		global.Config.MaxHeight = outputHeight
 	}
 
 	// mode
 	if grid {
-		config.Aggregator = &aggregator.AggregatorGrid{Row: grid_y, Col: grid_x}
+		config.Aggregator = &aggregator.AggregatorGrid{Row: gridY, Col: gridX}
 	} else {
 		config.Aggregator = &aggregator.AggregatorChange{}
 	}
@@ -98,19 +99,20 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	//	return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidMode{Argument: *modePtr}
 
 	// credentials
-	if use_auth {
+	if useAuth {
 		config.UseAuth = true
 	} else {
 		config.UseAuth = false
 	}
 
 	// logtime
-	if log_time {
+	if logTime {
 		global.Config.LogTime = true
 	}
 
 	// minInputDelay
-	global.Config.MinimumInputDelay = time.Duration(input_framerate) * time.Millisecond
+	global.Config.InputFramerate = inputFramerate
+	global.Config.OutputFramerate = outputFramerate
 
 	// non error case, return nil
 	return config, nil

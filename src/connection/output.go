@@ -6,6 +6,6 @@ import (
 )
 
 type Output interface {
-	SendFrame(frame mjpeg.MjpegFrame) error
+	SendFrame(frame *mjpeg.MjpegFrame) error
 	Run(aggregator aggregator.Aggregator)
 }

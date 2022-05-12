@@ -11,14 +11,14 @@ import (
 )
 
 type OutputHTTP struct {
-	lastFrame mjpeg.MjpegFrame
+	lastFrame    *mjpeg.MjpegFrame
+	clients      []ClientConnection
+	clientsMutex *sync.RWMutex
+	aggregator   aggregator.Aggregator
 }
 
-var clients = make([]ClientConnection, 0)
-var clientsMutex sync.RWMutex
-
 type ClientConnection struct {
-	channel    chan mjpeg.MjpegFrame
+	channel    chan *mjpeg.MjpegFrame
 	Connection net.Conn
 	isClosed   bool
 }
@@ -36,12 +36,64 @@ var HEADER = "HTTP/1.1 200 OK\r\n" +
 
 var DELIM = "\r\n--boundarydonotcross\r\n"
 
-func remove(client ClientConnection) {
+func NewOutputHTTP(port string) (Output, error) {
+	listener, err := net.Listen("tcp", ":"+port)
+
+	if err != nil {
+		return &OutputHTTP{}, errors.New("can't open socket")
+	}
+
+	output := OutputHTTP{}
+	output.clients = make([]ClientConnection, 0)
+	output.clientsMutex = &sync.RWMutex{}
+
+	go func() {
+		for {
+			conn, err := listener.Accept()
+			log.Println(conn.RemoteAddr().String(), " connected!")
+
+			if err != nil {
+				log.Println("Invalid Connection")
+				continue
+			}
+
+			client := ClientConnection{make(chan *mjpeg.MjpegFrame), conn, false}
+
+			output.clientsMutex.Lock()
+			output.clients = append(output.clients, client)
+			if len(output.clients) == 1 && output.aggregator != nil {
+				output.aggregator.GetAggregatorData().Enabled = true
+				log.Printf("Client connected, starting aggregator\n")
+			}
+			output.clientsMutex.Unlock()
+
+			go output.serve(client)
+		}
+	}()
+
+	return &output, nil
+}
+
+func (output *OutputHTTP) SendFrame(frame *mjpeg.MjpegFrame) error {
+	defer output.clientsMutex.RUnlock()
+	output.clientsMutex.RLock()
+
+	for _, client := range output.clients {
+		select {
+		case client.channel <- frame:
+		default:
+		}
+	}
+
+	return nil
+}
+
+func (output *OutputHTTP) remove(client ClientConnection) {
 	//remove this SimpleServer from the list of clients
-	for i, s := range clients {
+	for i, s := range output.clients {
 		if client == s {
 			//remove this client from the client list
-			clients = append(clients[:i], clients[i+1:]...)
+			output.clients = append(output.clients[:i], output.clients[i+1:]...)
 			break
 		}
 	}
@@ -51,10 +103,14 @@ func (output *OutputHTTP) serve(client ClientConnection) {
 	// On disconnect, close connection and cleanup
 	defer func(client_ ClientConnection) {
 		//safely remove client from client list and close its channel
-		clientsMutex.Lock()
-		remove(client_)
+		output.clientsMutex.Lock()
+		output.remove(client_)
 		close(client_.channel)
-		clientsMutex.Unlock()
+		if len(output.clients) == 0 && output.aggregator != nil {
+			output.aggregator.GetAggregatorData().Enabled = false
+			log.Printf("No more clients, stopping aggregator\n")
+		}
+		output.clientsMutex.Unlock()
 
 		err := client_.Connection.Close()
 		if err != nil {
@@ -70,14 +126,16 @@ func (output *OutputHTTP) serve(client ClientConnection) {
 		return
 	}
 
-	// Send the cached frame to the client
-	_ = client.SendFrame(output.lastFrame)
+	if output.lastFrame != nil {
+		// Send the cached frame to the client
+		_ = client.SendFrame(output.lastFrame)
 
-	// Know issue in chromium: Chromium's stream always lags one frame behind, to show the first frame immediately it is sent twice here
-	// reference: chromium bug tracker issue #527446
-	// status: open
-	// link: https://bugs.chromium.org/p/chromium/issues/detail?id=527446
-	_ = client.SendFrame(output.lastFrame)
+		// Know issue in chromium: Chromium's stream always lags one frame behind, to show the first frame immediately it is sent twice here
+		// reference: chromium bug tracker issue #527446
+		// status: open
+		// link: https://bugs.chromium.org/p/chromium/issues/detail?id=527446
+		_ = client.SendFrame(output.lastFrame)
+	}
 
 	// Send all receive frames
 	for {
@@ -91,7 +149,7 @@ func (output *OutputHTTP) serve(client ClientConnection) {
 		}
 	}
 }
-func (client ClientConnection) SendHeader() error {
+func (client *ClientConnection) SendHeader() error {
 	var header = HEADER
 	_, err := client.Connection.Write([]byte(header))
 	if err != nil {
@@ -99,7 +157,7 @@ func (client ClientConnection) SendHeader() error {
 	}
 	return nil
 }
-func (client ClientConnection) SendFrame(frame mjpeg.MjpegFrame) error {
+func (client *ClientConnection) SendFrame(frame *mjpeg.MjpegFrame) error {
 	//Format must be not be changed, else it will not work on some browsers!
 	var header = "Content-Type: image/jpg\r\n" +
 		"Content-Length: " + strconv.Itoa(len(frame.Body)) + "\r\n" +
@@ -117,77 +175,26 @@ func (client ClientConnection) SendFrame(frame mjpeg.MjpegFrame) error {
 	return nil
 }
 
-func NewOutputHTTP(port string) (Output, error) {
-	//todo this is trash
-	listener, err := net.Listen("tcp", ":"+port)
-
-	if err != nil {
-		return &OutputHTTP{}, errors.New("can't open socket")
-	}
-
-	output := &OutputHTTP{}
-	go func() {
-		for {
-			conn, err := listener.Accept()
-			log.Println(conn.RemoteAddr().String(), " connected!")
-
-			if err != nil {
-				log.Println("Invalid Connection")
-				continue
-			}
-
-			client := ClientConnection{make(chan mjpeg.MjpegFrame), conn, false}
-
-			clientsMutex.Lock()
-			clients = append(clients, client)
-			clientsMutex.Unlock()
-
-			go output.serve(client)
-		}
-	}()
-
-	return output, nil
-}
-
-func (output *OutputHTTP) SendFrame(frame mjpeg.MjpegFrame) error {
-	defer clientsMutex.RUnlock()
-	clientsMutex.RLock()
-
-	for _, client := range clients {
-		select {
-		case client.channel <- frame:
-		default:
-		}
-	}
-
-	return nil
-}
-
 func (output *OutputHTTP) Run(aggregator aggregator.Aggregator) {
+	output.aggregator = aggregator
 
 	lock := sync.Mutex{}
 	lock.Lock()
 	condition := sync.NewCond(&lock)
-	aggregator.SetOutputCondition(condition)
+
+	aggregator.GetAggregatorData().OutputCondition = condition
 
 	go func(storage_ *mjpeg.FrameStorage) {
 		for {
 			condition.Wait()
-			frame := storage_.GetLatest()
 
-			/*
-				if reflect.DeepEqual(frame, previousFrame) {
-					continue
-				}
-			*/
-
+			frame := storage_.GetLatestPtr()
 			output.lastFrame = frame
-
 			err := output.SendFrame(frame)
 			if err != nil {
 				log.Printf("Error while trying to send frame to output: %s\n", err.Error())
 				continue
 			}
 		}
-	}(aggregator.GetStorage())
+	}(aggregator.GetAggregatorData().OutputStorage)
 }

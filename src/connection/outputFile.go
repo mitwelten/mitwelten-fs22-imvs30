@@ -12,12 +12,12 @@ type OutputFile struct {
 	filePath string
 }
 
-func NewOutputFile(filePath string) (sink OutputFile) {
-	return OutputFile{filePath}
+func NewOutputFile(filePath string) Output {
+	return &OutputFile{filePath}
 }
 
 // SendFrame todo TEST: check if file has been created and matches
-func (output OutputFile) SendFrame(frame mjpeg.MjpegFrame) error {
+func (output *OutputFile) SendFrame(frame *mjpeg.MjpegFrame) error {
 	fh, err := os.OpenFile(output.filePath, os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		log.Println("error: cannot write to file")
@@ -31,10 +31,10 @@ func (output OutputFile) SendFrame(frame mjpeg.MjpegFrame) error {
 	return nil
 }
 
-func (output OutputFile) Run(aggregator aggregator.Aggregator) {
+func (output *OutputFile) Run(aggregator aggregator.Aggregator) {
 	go func(storage_ *mjpeg.FrameStorage) {
 		for {
-			frame := storage_.GetLatest()
+			frame := storage_.GetLatestPtr()
 			err := output.SendFrame(frame)
 			if err != nil {
 				log.Println("error: while trying to send frame to output")
@@ -42,5 +42,5 @@ func (output OutputFile) Run(aggregator aggregator.Aggregator) {
 				continue
 			}
 		}
-	}(aggregator.GetStorage())
+	}(aggregator.GetAggregatorData().OutputStorage)
 }
