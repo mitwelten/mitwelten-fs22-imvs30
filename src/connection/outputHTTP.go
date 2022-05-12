@@ -11,6 +11,7 @@ import (
 )
 
 type OutputHTTP struct {
+	lastFrame mjpeg.MjpegFrame
 }
 
 var clients = make([]ClientConnection, 0)
@@ -33,7 +34,7 @@ var HEADER = "HTTP/1.1 200 OK\r\n" +
 	"\r\n" +
 	"--boundarydonotcross\r\n"
 
-var DELIM = "\r\n----boundarydonotcross\r\n"
+var DELIM = "\r\n--boundarydonotcross\r\n"
 
 func remove(client ClientConnection) {
 	//remove this SimpleServer from the list of clients
@@ -46,10 +47,10 @@ func remove(client ClientConnection) {
 	}
 }
 
-func serve(client ClientConnection) {
+func (output *OutputHTTP) serve(client ClientConnection) {
+	// On disconnect, close connection and cleanup
 	defer func(client_ ClientConnection) {
 		//safely remove client from client list and close its channel
-
 		clientsMutex.Lock()
 		remove(client_)
 		close(client_.channel)
@@ -61,6 +62,7 @@ func serve(client ClientConnection) {
 		}
 	}(client)
 
+	// Send the stream header
 	var err = client.SendHeader()
 	if err != nil {
 		log.Println("error when sending header to " + client.Connection.LocalAddr().String() + ", closing Connection")
@@ -68,6 +70,16 @@ func serve(client ClientConnection) {
 		return
 	}
 
+	// Send the cached frame to the client
+	_ = client.SendFrame(output.lastFrame)
+
+	// Know issue in chromium: Chromium's stream always lags one frame behind, to show the first frame immediately it is sent twice here
+	// reference: chromium bug tracker issue #527446
+	// status: open
+	// link: https://bugs.chromium.org/p/chromium/issues/detail?id=527446
+	_ = client.SendFrame(output.lastFrame)
+
+	// Send all receive frames
 	for {
 		var frame = <-client.channel
 		var err = client.SendFrame(frame)
@@ -88,12 +100,12 @@ func (client ClientConnection) SendHeader() error {
 	return nil
 }
 func (client ClientConnection) SendFrame(frame mjpeg.MjpegFrame) error {
-	//Format must be not be change, else it will not work on some browsers!
+	//Format must be not be changed, else it will not work on some browsers!
 	var header = "Content-Type: image/jpg\r\n" +
 		"Content-Length: " + strconv.Itoa(len(frame.Body)) + "\r\n" +
 		"\r\n"
 
-	var data = []byte(header)
+	data := []byte(header)
 	data = append(data, frame.Body...)
 	data = append(data, []byte(DELIM)...)
 
@@ -108,10 +120,12 @@ func (client ClientConnection) SendFrame(frame mjpeg.MjpegFrame) error {
 func NewOutputHTTP(port string) (Output, error) {
 	//todo this is trash
 	listener, err := net.Listen("tcp", ":"+port)
+
 	if err != nil {
-		return OutputHTTP{}, errors.New("can't open socket")
+		return &OutputHTTP{}, errors.New("can't open socket")
 	}
 
+	output := &OutputHTTP{}
 	go func() {
 		for {
 			conn, err := listener.Accept()
@@ -128,14 +142,14 @@ func NewOutputHTTP(port string) (Output, error) {
 			clients = append(clients, client)
 			clientsMutex.Unlock()
 
-			go serve(client)
+			go output.serve(client)
 		}
 	}()
 
-	return OutputHTTP{}, nil
+	return output, nil
 }
 
-func (output OutputHTTP) SendFrame(frame mjpeg.MjpegFrame) error {
+func (output *OutputHTTP) SendFrame(frame mjpeg.MjpegFrame) error {
 	defer clientsMutex.RUnlock()
 	clientsMutex.RLock()
 
@@ -149,7 +163,7 @@ func (output OutputHTTP) SendFrame(frame mjpeg.MjpegFrame) error {
 	return nil
 }
 
-func (output OutputHTTP) Run(aggregator aggregator.Aggregator) {
+func (output *OutputHTTP) Run(aggregator aggregator.Aggregator) {
 
 	lock := sync.Mutex{}
 	lock.Lock()
@@ -157,19 +171,19 @@ func (output OutputHTTP) Run(aggregator aggregator.Aggregator) {
 	aggregator.SetOutputCondition(condition)
 
 	go func(storage_ *mjpeg.FrameStorage) {
-		var previousFrame mjpeg.MjpegFrame
 		for {
 			condition.Wait()
 			frame := storage_.GetLatest()
 
-			/*			// TODO this thread is always busy waiting - consider using channels / notify solution
-						if reflect.DeepEqual(frame, previousFrame) {
-							continue
-						}
+			/*
+				if reflect.DeepEqual(frame, previousFrame) {
+					continue
+				}
 			*/
-			previousFrame = frame
 
-			err := output.SendFrame(previousFrame)
+			output.lastFrame = frame
+
+			err := output.SendFrame(frame)
 			if err != nil {
 				log.Printf("Error while trying to send frame to output: %s\n", err.Error())
 				continue

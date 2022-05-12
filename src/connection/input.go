@@ -33,7 +33,7 @@ func ListenToInput(input Input) *mjpeg.FrameStorage {
 
 	frameData := mjpeg.NewFrameStorage()
 
-	lastReceive := time.Now()
+	lastReceive := time.Unix(0, 0)
 	go func() {
 		for {
 			if time.Since(lastReceive) < global.Config.MinimumInputDelay {
