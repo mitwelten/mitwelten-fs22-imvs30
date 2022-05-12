@@ -66,8 +66,8 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	// options
 	inputFramerate, _ := arguments.Float64("--input_framerate")
 	outputFramerate, _ := arguments.Float64("--output_framerate")
-	outputWidth, _ := arguments.Int("--output_max_height")
-	outputHeight, _ := arguments.Int("--output_width")
+	outputMaxWidth, _ := arguments.Int("--output_max_width")
+	outputMaxHeight, _ := arguments.Int("--output_max_height")
 	useAuth, _ := arguments.Bool("--use_auth")
 	logTime, _ := arguments.Bool("--log_time")
 
@@ -92,9 +92,9 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	// disabled: output file
 	// config.Output = connection.NewOutputFile(outputFileNamePtr)
 
-	if outputWidth != -1 && outputHeight != -1 {
-		global.Config.MaxWidth = outputWidth
-		global.Config.MaxHeight = outputHeight
+	if outputMaxWidth != -1 && outputMaxHeight != -1 {
+		global.Config.MaxWidth = outputMaxWidth
+		global.Config.MaxHeight = outputMaxHeight
 	}
 
 	//	return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidMode{Argument: *modePtr}
