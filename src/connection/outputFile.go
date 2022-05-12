@@ -42,5 +42,5 @@ func (output OutputFile) Run(aggregator aggregator.Aggregator) {
 				continue
 			}
 		}
-	}(aggregator.GetStorage())
+	}(aggregator.GetAggregatorData().OutputStorage)
 }

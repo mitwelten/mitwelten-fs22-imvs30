@@ -21,6 +21,7 @@ const (
 	OutputStreamPortUsage  = "port used for output stream"
 	OutputWidthUsage       = "output width"
 	OutputHeigthUsage      = "output height"
+	OutputFramerate        = "output framerate"
 	ModeUsage              = "Method, how the output will be mixed. 'grid' is possible. "
 	GridUsage              = "Number of rows and columns for the grid. format: '<row> <col>'"
 	CredentialsUsage       = "credentials file can be specified"
@@ -74,9 +75,10 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	outputHeightPtr := CommandLine.Int("output_height", -1, OutputHeigthUsage)
 	modePtr := CommandLine.String("mode", "", ModeUsage) // grid OR motion
 	modeGridPtr := CommandLine.String("grid_dimension", "", GridUsage)
-	credentialsPtr := CommandLine.String("use_auth", "", CredentialsUsage) // grid OR motion
-	logTimePtr := CommandLine.Bool("log_time", false, LogTimeUsage)        // optional flag
-	inputDelayPtr := CommandLine.Int("min_input_delay", 0, MinInputDelay)  // optional flag
+	credentialsPtr := CommandLine.String("use_auth", "", CredentialsUsage)      // grid OR motion
+	logTimePtr := CommandLine.Bool("log_time", false, LogTimeUsage)             // optional flag
+	inputDelayPtr := CommandLine.Int("min_input_delay", 0, MinInputDelay)       // optional flag
+	outputFrameRate := CommandLine.Int("output_framerate", -1, OutputFramerate) // optional flag
 
 	//---parse the command line into the defined flags---
 	CommandLine.Parse(args[1:])
@@ -143,6 +145,9 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 
 	// minInputDelay
 	global.Config.MinimumInputDelay = time.Duration(*inputDelayPtr) * time.Millisecond
+
+	// output framerate
+	global.Config.OutputFramerate = *outputFrameRate
 
 	// non error case, return nil
 	return config, nil

@@ -12,6 +12,8 @@ type GlobalConfig struct {
 	MaxHeight int
 	// Minimum amount of time to wait between 2 consecutive reads from the inputs
 	MinimumInputDelay time.Duration
+
+	OutputFramerate int
 }
 
 var Config GlobalConfig

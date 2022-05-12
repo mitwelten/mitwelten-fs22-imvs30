@@ -168,7 +168,8 @@ func (output *OutputHTTP) Run(aggregator aggregator.Aggregator) {
 	lock := sync.Mutex{}
 	lock.Lock()
 	condition := sync.NewCond(&lock)
-	aggregator.SetOutputCondition(condition)
+
+	aggregator.GetAggregatorData().OutputCondition = condition
 
 	go func(storage_ *mjpeg.FrameStorage) {
 		for {
@@ -189,5 +190,5 @@ func (output *OutputHTTP) Run(aggregator aggregator.Aggregator) {
 				continue
 			}
 		}
-	}(aggregator.GetStorage())
+	}(aggregator.GetAggregatorData().OutputStorage)
 }
