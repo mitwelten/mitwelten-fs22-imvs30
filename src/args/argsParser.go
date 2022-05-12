@@ -76,8 +76,15 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	// inputURL parsing
 	config = parseInputUrls(config, input)
 
+	// mode
+	if grid {
+		config.Aggregator = &aggregator.AggregatorGrid{Row: gridY, Col: gridX}
+	} else {
+		config.Aggregator = &aggregator.AggregatorChange{}
+	}
+
 	// output stream
-	config.Output, err = connection.NewOutputHTTP(port)
+	config.Output, err = connection.NewOutputHTTP(port, config.Aggregator)
 	if err != nil {
 		return multiplexer.MultiplexerConfig{}, &customErrors.ErrHttpOpenOutputSocket{}
 	}
@@ -88,13 +95,6 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	if outputWidth != -1 && outputHeight != -1 {
 		global.Config.MaxWidth = outputWidth
 		global.Config.MaxHeight = outputHeight
-	}
-
-	// mode
-	if grid {
-		config.Aggregator = &aggregator.AggregatorGrid{Row: gridY, Col: gridX}
-	} else {
-		config.Aggregator = &aggregator.AggregatorChange{}
 	}
 
 	//	return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidMode{Argument: *modePtr}
