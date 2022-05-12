@@ -15,6 +15,7 @@ type OutputHTTP struct {
 	clients      []ClientConnection
 	clientsMutex *sync.RWMutex
 	aggregator   aggregator.Aggregator
+	condition    *sync.Cond
 }
 
 type ClientConnection struct {
@@ -45,6 +46,12 @@ func NewOutputHTTP(port string, aggregator aggregator.Aggregator) (Output, error
 
 	output := OutputHTTP{}
 	output.aggregator = aggregator
+
+	lock := sync.Mutex{}
+	lock.Lock()
+	output.condition = sync.NewCond(&lock)
+	output.aggregator.GetAggregatorData().OutputCondition = output.condition
+
 	output.clients = make([]ClientConnection, 0)
 	output.clientsMutex = &sync.RWMutex{}
 
@@ -177,15 +184,9 @@ func (client *ClientConnection) SendFrame(frame *mjpeg.MjpegFrame) error {
 }
 
 func (output *OutputHTTP) Run() {
-	lock := sync.Mutex{}
-	lock.Lock()
-	condition := sync.NewCond(&lock)
-
-	output.aggregator.GetAggregatorData().OutputCondition = condition
-
 	go func(storage_ *mjpeg.FrameStorage) {
 		for {
-			condition.Wait()
+			output.condition.Wait()
 
 			frame := storage_.GetLatestPtr()
 			output.lastFrame = frame
