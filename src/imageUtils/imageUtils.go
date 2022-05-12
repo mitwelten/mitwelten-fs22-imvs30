@@ -98,7 +98,7 @@ func Grid(row int, col int, frames ...*mjpeg.MjpegFrame) *mjpeg.MjpegFrame {
 		}
 
 		if global.Config.MaxHeight != -1 {
-			deltaH = height / global.Config.MaxWidth
+			deltaH = height / global.Config.MaxHeight
 		}
 
 		targetWidth := (width / deltaW) / col

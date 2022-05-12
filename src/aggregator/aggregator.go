@@ -38,7 +38,6 @@ func Aggregate(aggregatorPtr *Aggregator, storages ...*mjpeg.FrameStorage) {
 			condition.Wait()
 
 			if !aggregator.GetAggregatorData().Enabled {
-				println("disabled")
 				time.Sleep(1 * time.Second)
 				continue
 			}
