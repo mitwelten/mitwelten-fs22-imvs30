@@ -25,6 +25,7 @@ type InputHTTP struct {
 	url                string
 	connection         net.Conn
 	bufferedConnection *bufio.Reader
+	buffer             []byte
 }
 
 // NewInputHTTP todo TEST: Test this function by creating an input and checking if it runs
@@ -39,6 +40,7 @@ func (source *InputHTTP) open() error {
 	var err error
 	source.connection, err = net.DialTimeout("tcp", source.url, 3*time.Second)
 	source.bufferedConnection = bufio.NewReader(source.connection)
+	source.buffer = make([]byte, 1024)
 
 	if err != nil {
 		return &customErrors.ErrHttpOpenInputSocketDial{IP: source.url}
@@ -117,7 +119,6 @@ func (source *InputHTTP) ReceiveFrameFast() (mjpeg.MjpegFrame, error) {
 		}
 		length++
 	}
-	//Content-Length: 301
 	contentLengthStart := startIndex + len(field)
 	contentLengthEnd := contentLengthStart + length
 	contentLength, err := strconv.Atoi(header[contentLengthStart:contentLengthEnd])

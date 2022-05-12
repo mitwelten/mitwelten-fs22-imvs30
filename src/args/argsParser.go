@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -25,6 +26,7 @@ const (
 	CredentialsUsage       = "credentials file can be specified"
 	LogTimeUsage           = "Use -log_time=true to enable logging time"
 	InputLocationSeparator = " "
+	MinInputDelay          = "minimum input delay in ms"
 )
 
 // parseGrid parses grid dimensions from command line arguments
@@ -74,6 +76,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	modeGridPtr := CommandLine.String("grid_dimension", "", GridUsage)
 	credentialsPtr := CommandLine.String("use_auth", "", CredentialsUsage) // grid OR motion
 	logTimePtr := CommandLine.Bool("log_time", false, LogTimeUsage)        // optional flag
+	inputDelayPtr := CommandLine.Int("min_input_delay", 0, MinInputDelay)  // optional flag
 
 	//---parse the command line into the defined flags---
 	CommandLine.Parse(args[1:])
@@ -137,6 +140,9 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	if *logTimePtr {
 		global.Config.LogTime = true
 	}
+
+	// minInputDelay
+	global.Config.MinimumInputDelay = time.Duration(*inputDelayPtr) * time.Millisecond
 
 	// non error case, return nil
 	return config, nil

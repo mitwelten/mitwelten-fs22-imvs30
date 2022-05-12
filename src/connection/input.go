@@ -2,6 +2,7 @@ package connection
 
 import (
 	"log"
+	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/mjpeg"
 	"time"
 )
@@ -32,8 +33,15 @@ func ListenToInput(input Input) *mjpeg.FrameStorage {
 
 	frameData := mjpeg.NewFrameStorage()
 
+	lastReceive := time.Now()
 	go func() {
 		for {
+			if time.Since(lastReceive) < global.Config.MinimumInputDelay {
+				//todo optimize: This always reads and parses a full frame. Is a more efficient alternative possible and useful?
+				_, _ = input.ReceiveFrameFast()
+				continue
+			}
+			lastReceive = time.Now()
 			var frame, err = input.ReceiveFrameFast()
 			if err != nil {
 				log.Printf("error %s\n", err.Error())
