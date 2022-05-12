@@ -9,11 +9,12 @@ import (
 )
 
 type OutputFile struct {
-	filePath string
+	filePath   string
+	aggregator aggregator.Aggregator
 }
 
-func NewOutputFile(filePath string) Output {
-	return &OutputFile{filePath}
+func NewOutputFile(filePath string, aggregator aggregator.Aggregator) Output {
+	return &OutputFile{filePath, aggregator}
 }
 
 // SendFrame todo TEST: check if file has been created and matches
@@ -31,7 +32,7 @@ func (output *OutputFile) SendFrame(frame *mjpeg.MjpegFrame) error {
 	return nil
 }
 
-func (output *OutputFile) Run(aggregator aggregator.Aggregator) {
+func (output *OutputFile) Run() {
 	go func(storage_ *mjpeg.FrameStorage) {
 		for {
 			frame := storage_.GetLatestPtr()
@@ -42,5 +43,5 @@ func (output *OutputFile) Run(aggregator aggregator.Aggregator) {
 				continue
 			}
 		}
-	}(aggregator.GetAggregatorData().OutputStorage)
+	}(output.aggregator.GetAggregatorData().OutputStorage)
 }

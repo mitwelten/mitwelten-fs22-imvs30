@@ -87,34 +87,6 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	if len(*inputPtr) == 0 || len(*outputPtr) == 0 || len(*modePtr) == 0 {
 		return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserUnfulfilledMinArguments{}
 	}
-	// output: stream
-	if strings.Compare(*outputPtr, "stream") == 0 {
-		if len(*outputStreamPortPtr) == 0 {
-			return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidOutputPort{}
-		} else {
-			config.Output, err = connection.NewOutputHTTP(*outputStreamPortPtr)
-			if err != nil {
-				return multiplexer.MultiplexerConfig{}, &customErrors.ErrHttpOpenOutputSocket{}
-			}
-		}
-		// or output: file
-	} else if strings.Compare(*outputPtr, "file") == 0 {
-		if len(*outputFileNamePtr) == 0 {
-			return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidOutputFilename{}
-		} else {
-			config.Output = connection.NewOutputFile(*outputFileNamePtr)
-		}
-	} else {
-		return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidArgument{Argument: *outputPtr}
-	}
-
-	if *outputWidthPtr != -1 && *outputHeightPtr != -1 {
-		global.Config.MaxWidth = *outputWidthPtr
-		global.Config.MaxHeight = *outputHeightPtr
-	}
-
-	// input parsing
-	config = parseInput(config, *inputPtr)
 
 	// mode
 	switch *modePtr {
@@ -129,6 +101,35 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	default:
 		return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidMode{Argument: *modePtr}
 	}
+
+	// output: stream
+	if strings.Compare(*outputPtr, "stream") == 0 {
+		if len(*outputStreamPortPtr) == 0 {
+			return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidOutputPort{}
+		} else {
+			config.Output, err = connection.NewOutputHTTP(*outputStreamPortPtr, config.Aggregator)
+			if err != nil {
+				return multiplexer.MultiplexerConfig{}, &customErrors.ErrHttpOpenOutputSocket{}
+			}
+		}
+		// or output: file
+	} else if strings.Compare(*outputPtr, "file") == 0 {
+		if len(*outputFileNamePtr) == 0 {
+			return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidOutputFilename{}
+		} else {
+			config.Output = connection.NewOutputFile(*outputFileNamePtr, config.Aggregator)
+		}
+	} else {
+		return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidArgument{Argument: *outputPtr}
+	}
+
+	if *outputWidthPtr != -1 || *outputHeightPtr != -1 {
+		global.Config.MaxWidth = *outputWidthPtr
+		global.Config.MaxHeight = *outputHeightPtr
+	}
+
+	// input parsing
+	config = parseInput(config, *inputPtr)
 
 	// credentials
 	if len(*credentialsPtr) != 0 {

@@ -36,7 +36,7 @@ var HEADER = "HTTP/1.1 200 OK\r\n" +
 
 var DELIM = "\r\n--boundarydonotcross\r\n"
 
-func NewOutputHTTP(port string) (Output, error) {
+func NewOutputHTTP(port string, aggregator aggregator.Aggregator) (Output, error) {
 	listener, err := net.Listen("tcp", ":"+port)
 
 	if err != nil {
@@ -44,6 +44,7 @@ func NewOutputHTTP(port string) (Output, error) {
 	}
 
 	output := OutputHTTP{}
+	output.aggregator = aggregator
 	output.clients = make([]ClientConnection, 0)
 	output.clientsMutex = &sync.RWMutex{}
 
@@ -175,14 +176,12 @@ func (client *ClientConnection) SendFrame(frame *mjpeg.MjpegFrame) error {
 	return nil
 }
 
-func (output *OutputHTTP) Run(aggregator aggregator.Aggregator) {
-	output.aggregator = aggregator
-
+func (output *OutputHTTP) Run() {
 	lock := sync.Mutex{}
 	lock.Lock()
 	condition := sync.NewCond(&lock)
 
-	aggregator.GetAggregatorData().OutputCondition = condition
+	output.aggregator.GetAggregatorData().OutputCondition = condition
 
 	go func(storage_ *mjpeg.FrameStorage) {
 		for {
@@ -196,5 +195,5 @@ func (output *OutputHTTP) Run(aggregator aggregator.Aggregator) {
 				continue
 			}
 		}
-	}(aggregator.GetAggregatorData().OutputStorage)
+	}(output.aggregator.GetAggregatorData().OutputStorage)
 }

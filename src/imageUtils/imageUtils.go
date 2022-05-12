@@ -5,9 +5,10 @@ package imageUtils
 import (
 	"bytes"
 	"github.com/pixiv/go-libjpeg/jpeg"
+	"golang.org/x/image/draw"
 	"image"
-	"image/draw"
 	"log"
+	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/mjpeg"
 )
 
@@ -35,7 +36,6 @@ func Decode(frame *mjpeg.MjpegFrame) image.Image {
 
 		return img
 	} else {
-		println("Yooo")
 		return frame.Image
 	}
 }
@@ -74,6 +74,45 @@ func Grid(row int, col int, frames ...*mjpeg.MjpegFrame) *mjpeg.MjpegFrame {
 	}
 	var images = DecodeAll(frames...)
 
+	//calculate the final grid size
+	height := 0
+	width := 0
+	for i := 0; i < nCells; i++ {
+		var row_ = i / col
+		var col_ = i % col
+		if row_ == 0 {
+			width += images[i].Bounds().Dx()
+		}
+		if col_ == 0 {
+			height += images[i].Bounds().Dy()
+		}
+	}
+
+	// check the max width and height
+	if (global.Config.MaxHeight != -1 && global.Config.MaxHeight < height) || (global.Config.MaxWidth != -1 && global.Config.MaxWidth < width) {
+		deltaW := 1
+		deltaH := 1
+
+		if global.Config.MaxWidth != -1 {
+			deltaW = width / global.Config.MaxWidth
+		}
+
+		if global.Config.MaxHeight != -1 {
+			deltaH = height / global.Config.MaxWidth
+		}
+
+		targetWidth := (width / deltaW) / col
+		targetHeight := (height / deltaH) / row
+
+		// resize all images if needed
+		for i, _ := range images {
+			if images[i].Bounds().Dx() != targetWidth || images[i].Bounds().Dy() != targetHeight {
+				images[i] = Resize(images[i], targetWidth, targetHeight)
+				frames[i].Image = images[i]
+			}
+		}
+	}
+
 	// rectangle
 	var i0 = images[0]
 	var pointMax = image.Point{X: i0.Bounds().Dx() * col, Y: i0.Bounds().Dy() * row}
@@ -96,4 +135,10 @@ func Grid(row int, col int, frames ...*mjpeg.MjpegFrame) *mjpeg.MjpegFrame {
 	}
 
 	return Encode(imageOut)
+}
+
+func Resize(img image.Image, width int, height int) image.Image {
+	dst := image.NewRGBA(image.Rect(0, 0, width, height))
+	draw.NearestNeighbor.Scale(dst, dst.Rect, img, img.Bounds(), draw.Over, nil)
+	return dst
 }
