@@ -100,16 +100,10 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	//	return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidMode{Argument: *modePtr}
 
 	// credentials
-	if useAuth {
-		config.UseAuth = true
-	} else {
-		config.UseAuth = false
-	}
+	config.UseAuth = useAuth
 
 	// logtime
-	if logTime {
-		global.Config.LogTime = true
-	}
+	global.Config.LogTime = logTime
 
 	// InputRates
 	global.Config.InputFramerate = inputFramerate
