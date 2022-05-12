@@ -42,6 +42,7 @@ func parseInputUrls(config multiplexer.MultiplexerConfig, inputStr string) multi
 		conns = append(conns, connection.NewInputHTTP(s))
 	}
 	config.InputLocations = conns
+
 	return config
 }
 
@@ -64,7 +65,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 
 	// options
 	inputFramerate, _ := arguments.Float64("--input_framerate")
-	outputFramerate, _ := arguments.Float64("--output_max_framerate")
+	outputFramerate, _ := arguments.Float64("--output_framerate")
 	outputWidth, _ := arguments.Int("--output_max_height")
 	outputHeight, _ := arguments.Int("--output_width")
 	useAuth, _ := arguments.Bool("--use_auth")
