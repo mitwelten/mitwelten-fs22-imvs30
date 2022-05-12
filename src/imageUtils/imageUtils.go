@@ -81,10 +81,18 @@ func Grid(row int, col int, frames ...*mjpeg.MjpegFrame) *mjpeg.MjpegFrame {
 		var row_ = i / col
 		var col_ = i % col
 		if row_ == 0 {
-			width += images[i].Bounds().Dx()
+			if frames[i].Resized {
+				width += frames[i].OriginalWidth
+			} else {
+				width += images[i].Bounds().Dx()
+			}
 		}
 		if col_ == 0 {
-			height += images[i].Bounds().Dy()
+			if frames[i].Resized {
+				height += frames[i].OriginalHeight
+			} else {
+				height += images[i].Bounds().Dy()
+			}
 		}
 	}
 
@@ -107,6 +115,10 @@ func Grid(row int, col int, frames ...*mjpeg.MjpegFrame) *mjpeg.MjpegFrame {
 		// resize all images if needed
 		for i, _ := range images {
 			if images[i].Bounds().Dx() != targetWidth || images[i].Bounds().Dy() != targetHeight {
+				frames[i].OriginalWidth = images[i].Bounds().Dx()
+				frames[i].OriginalHeight = images[i].Bounds().Dy()
+				frames[i].Resized = true
+
 				images[i] = Resize(images[i], targetWidth, targetHeight)
 				frames[i].Image = images[i]
 			}
