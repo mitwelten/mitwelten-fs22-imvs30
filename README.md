@@ -51,6 +51,11 @@ Redirect output to a file or provide output as a stream.
     $ go run ./src/main.go motion input localhost:8080,localhost:8080 output 8088 --log_time --use_auth --input_framerate 10 --output_framerate 10  
     ```
 
+- Output stream (carousel):
+    ```
+    $ go run ./src/main.go carousel --duration 5 input localhost:8080,localhost:8080 output 8088 --log_time --use_auth --input_framerate 10 --output_framerate 10  
+    ```
+
 ## Build Automation
 We use [Go release Action](https://github.com/wangyoucao577/go-release-action) to automatically publish Go binaries to Github Release Assets through Github Action. 
 
