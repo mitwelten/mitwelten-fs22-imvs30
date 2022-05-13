@@ -90,7 +90,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	} else if carousel {
 		config.Aggregator = &aggregator.AggregatorCarousel{Duration: time.Duration(carouselDuration) * time.Second}
 	} else if panel {
-		//todo: add new panel aggr
+		config.Aggregator = &aggregator.AggregatorPanel{}
 	} else {
 		return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidArgument{}
 	}
@@ -104,7 +104,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	// disabled: output file
 	// config.Output = connection.NewOutputFile(outputFileNamePtr)
 
-	if outputMaxWidth != -1 && outputMaxHeight != -1 {
+	if outputMaxWidth != -1 || outputMaxHeight != -1 {
 		global.Config.MaxWidth = outputMaxWidth
 		global.Config.MaxHeight = outputMaxHeight
 	}

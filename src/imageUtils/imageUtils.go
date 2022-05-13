@@ -16,6 +16,69 @@ import (
 var DecodeOptions = jpeg.DecoderOptions{ScaleTarget: image.Rectangle{}, DCTMethod: jpeg.DCTIFast, DisableFancyUpsampling: false, DisableBlockSmoothing: false}
 var EncodingOptions = jpeg.EncoderOptions{Quality: 100, OptimizeCoding: false, ProgressiveMode: false, DCTMethod: jpeg.DCTISlow}
 
+type PanelLayout struct {
+	FirstWidth  float64
+	FirstHeight float64
+
+	ChildrenWidth  float64
+	ChildrenHeight float64
+
+	ChildrenPositions []utils.FloatPoint
+}
+
+var Slots3 = PanelLayout{
+	FirstWidth:     float64(2) / 3.0,
+	FirstHeight:    1,
+	ChildrenWidth:  float64(1) / 3,
+	ChildrenHeight: float64(1) / 2,
+	ChildrenPositions: []utils.FloatPoint{
+		{X: float64(2) / 3, Y: 0},
+		{X: float64(2) / 3, Y: float64(1) / 2},
+	},
+}
+
+var Slots4 = PanelLayout{
+	FirstWidth:     float64(3) / 4.0,
+	FirstHeight:    1,
+	ChildrenWidth:  float64(1) / 4,
+	ChildrenHeight: float64(1) / 3,
+	ChildrenPositions: []utils.FloatPoint{
+		{X: float64(3) / 4, Y: 0},
+		{X: float64(3) / 4, Y: float64(1) / 3},
+		{X: float64(3) / 4, Y: float64(2) / 3},
+	},
+}
+
+var Slots6 = PanelLayout{
+	FirstWidth:     float64(2) / 3.0,
+	FirstHeight:    float64(2) / 3.0,
+	ChildrenWidth:  float64(1) / 3,
+	ChildrenHeight: float64(1) / 3,
+	ChildrenPositions: []utils.FloatPoint{
+		{X: 0, Y: float64(2) / 3},
+		{X: float64(1) / 3, Y: float64(2) / 3},
+		{X: float64(2) / 3, Y: float64(2) / 3},
+		{X: float64(2) / 3, Y: float64(1) / 3},
+		{X: float64(2) / 3, Y: 0},
+	},
+}
+
+var Slots8 = PanelLayout{
+	FirstWidth:     float64(3) / 4.0,
+	FirstHeight:    float64(3) / 4.0,
+	ChildrenWidth:  float64(1) / 4,
+	ChildrenHeight: float64(1) / 4,
+	ChildrenPositions: []utils.FloatPoint{
+		{X: 0, Y: float64(3) / 4},
+		{X: float64(1) / 4, Y: float64(3) / 4},
+		{X: float64(2) / 4, Y: float64(3) / 4},
+		{X: float64(3) / 4, Y: float64(3) / 4},
+		{X: float64(3) / 4, Y: float64(2) / 4},
+		{X: float64(3) / 4, Y: float64(1) / 4},
+		{X: float64(3) / 4, Y: 0},
+	},
+}
+
 func DecodeAll(frames ...*mjpeg.MjpegFrame) []image.Image {
 	var images []image.Image
 	for _, frame := range frames {
@@ -60,6 +123,49 @@ func Encode(image image.Image) *mjpeg.MjpegFrame {
 	}
 
 	return &mjpeg.MjpegFrame{Body: buff.Bytes()}
+}
+
+func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFrame {
+	var frames []*mjpeg.MjpegFrame
+	for i := 0; i < len(storages); i++ {
+		frames = append(frames, storages[i].GetLatestPtr())
+	}
+	var images = DecodeAll(frames...)
+
+	firstWidthInitial, firstHeightInitial, _ := GetFrameStorageSize(storages[0])
+
+	totalWidth := int(float64(firstWidthInitial) / layout.FirstWidth)
+	totalHeight := int(float64(firstHeightInitial) / layout.FirstHeight)
+
+	if global.Config.MaxWidth != -1 {
+		totalWidth = utils.Min(totalWidth, global.Config.MaxWidth)
+	}
+
+	if global.Config.MaxHeight != -1 {
+		totalHeight = utils.Min(totalHeight, global.Config.MaxHeight)
+	}
+
+	//output img
+	rectangle := image.Rectangle{Max: image.Point{X: totalWidth, Y: totalHeight}}
+	imageOut := image.NewRGBA(rectangle)
+
+	//main character image
+	sp := image.Point{}
+	r := image.Rectangle{Min: sp, Max: image.Point{X: int(float64(totalWidth) * layout.FirstWidth), Y: int(float64(totalHeight) * layout.FirstHeight)}}
+	draw.NearestNeighbor.Scale(imageOut, r, images[startIndex], images[startIndex].Bounds(), draw.Over, nil)
+
+	for i, child := range layout.ChildrenPositions {
+		if i+1 >= len(storages) {
+			break
+		}
+		index := (startIndex + i + 1) % len(storages)
+		sp = image.Point{X: int(float64(totalWidth) * child.X), Y: int(float64(totalHeight) * child.Y)}
+		delta := image.Point{X: int(float64(totalWidth) * layout.ChildrenWidth), Y: int(float64(totalHeight) * layout.ChildrenHeight)}
+		r = image.Rectangle{Min: sp, Max: sp.Add(delta)}
+		draw.NearestNeighbor.Scale(imageOut, r, images[index], images[index].Bounds(), draw.Over, nil)
+	}
+
+	return Encode(imageOut)
 }
 
 func Grid(row int, col int, frames ...*mjpeg.MjpegFrame) *mjpeg.MjpegFrame {
