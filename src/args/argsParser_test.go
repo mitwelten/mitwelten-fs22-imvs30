@@ -26,17 +26,6 @@ func TestBasicGridCommand(t *testing.T) {
 	}
 }
 
-func TestFileCommandShouldNotCrash(t *testing.T) {
-	// given
-	argsMockGrid = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "-output", "file", "-output_filename", "out.jpg", "-mode", "grid", "-grid_dimension", "1 2"}
-
-	// then
-	_, err := ParseArgs(argsMockGrid)
-	if err != nil {
-		t.Errorf("Error thrown")
-	}
-}
-
 func TestShouldFailWithNotFulfillingMinArguments(t *testing.T) {
 	// given
 	argsMockGrid = []string{"main.exe", "-input", "192.168.137.216:8080 192.168.137.59:8080", "stream", "-mode", "grid", "-grid_dimension", "1 2"}
