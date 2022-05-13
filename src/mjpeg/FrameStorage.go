@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-const nOfStoredFrames = 5
+const nOfStoredFrames = 1
 
 // FrameStorage stores multiple MJPEG frames
 type FrameStorage struct {
@@ -14,6 +14,35 @@ type FrameStorage struct {
 	AggregatorCondition *sync.Cond
 	buffer              utils.RingBuffer[MjpegFrame]
 	LastUpdated         time.Time
+
+	imageWidth  int
+	imageHeight int
+	active      bool
+}
+
+func (frameStorage *FrameStorage) GetActive() bool {
+	frameStorage.mu.RLock()
+	defer frameStorage.mu.RUnlock()
+	return frameStorage.active
+}
+
+func (frameStorage *FrameStorage) SetActive(active bool) {
+	frameStorage.mu.Lock()
+	defer frameStorage.mu.Unlock()
+	frameStorage.active = active
+}
+
+func (frameStorage *FrameStorage) GetImageSize() (int, int) {
+	frameStorage.mu.RLock()
+	defer frameStorage.mu.RUnlock()
+	return frameStorage.imageWidth, frameStorage.imageHeight
+}
+
+func (frameStorage *FrameStorage) SetImageSize(width, height int) {
+	frameStorage.mu.Lock()
+	defer frameStorage.mu.Unlock()
+	frameStorage.imageWidth = width
+	frameStorage.imageHeight = height
 }
 
 // NewFrameStorage FrameStorage ctor
@@ -25,6 +54,9 @@ func NewFrameStorage() *FrameStorage {
 	frameStorage.buffer = utils.NewRingBuffer[MjpegFrame](nOfStoredFrames)
 	frameStorage.buffer.Push(frame)
 	frameStorage.LastUpdated = time.Now()
+	frameStorage.imageWidth = -1
+	frameStorage.imageHeight = -1
+	frameStorage.active = true
 
 	return &frameStorage
 }

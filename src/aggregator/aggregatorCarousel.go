@@ -1,6 +1,7 @@
 package aggregator
 
 import (
+	"mjpeg_multiplexer/src/imageUtils"
 	"mjpeg_multiplexer/src/mjpeg"
 	"time"
 )
@@ -29,5 +30,6 @@ func (aggregator *AggregatorCarousel) aggregate(storages ...*mjpeg.FrameStorage)
 		aggregator.currentIndex = (aggregator.currentIndex + 1) % len(storages)
 		aggregator.lastSwitch = time.Now()
 	}
-	return storages[aggregator.currentIndex].GetLatestPtr()
+
+	return imageUtils.Transform(storages[aggregator.currentIndex])
 }
