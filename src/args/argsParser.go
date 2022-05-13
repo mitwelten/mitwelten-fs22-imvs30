@@ -9,6 +9,7 @@ import (
 	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/multiplexer"
 	"strings"
+	"time"
 )
 
 const (
@@ -64,8 +65,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	gridX, _ := arguments.Int("GRID_X")
 	gridY, _ := arguments.Int("GRID_Y")
 	carousel, _ := arguments.Bool("carousel")
-	carousel_duration, _ := arguments.Float64("CAROUSEL_DURATION") // in seconds
-	println(carousel_duration)
+	carouselDuration, _ := arguments.Float64("CAROUSEL_DURATION") // in seconds
 	// options
 	inputFramerate, _ := arguments.Float64("--input_framerate")
 	outputFramerate, _ := arguments.Float64("--output_framerate")
@@ -85,7 +85,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	} else if motion {
 		config.Aggregator = &aggregator.AggregatorChange{}
 	} else if carousel {
-		//todo: add new aggr
+		config.Aggregator = &aggregator.AggregatorCarousel{Duration: time.Duration(carouselDuration) * time.Second}
 	} else {
 		return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidArgument{}
 	}
