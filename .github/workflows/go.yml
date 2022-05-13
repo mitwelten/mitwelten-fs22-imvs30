@@ -18,7 +18,7 @@ jobs:
           xgo_version: latest
           go_version: 1.18
           dest: build
-          pkg: main
+          pkg: src
           prefix: multiplexer
           targets: linux/arm64
           v: true
