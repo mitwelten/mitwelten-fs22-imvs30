@@ -9,6 +9,7 @@ import (
 type AggregatorPanel struct {
 	data         AggregatorData
 	layout       imageUtils.PanelLayout
+	CycleFrames  bool
 	Duration     time.Duration
 	lastSwitch   time.Time
 	currentIndex int
@@ -37,7 +38,7 @@ func (aggregator *AggregatorPanel) GetAggregatorData() *AggregatorData {
 }
 
 func (aggregator *AggregatorPanel) aggregate(storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFrame {
-	if time.Since(aggregator.lastSwitch) > aggregator.Duration {
+	if aggregator.CycleFrames && time.Since(aggregator.lastSwitch) > aggregator.Duration {
 		aggregator.currentIndex = (aggregator.currentIndex + 1) % len(storages)
 		aggregator.lastSwitch = time.Now()
 	}
