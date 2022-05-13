@@ -91,7 +91,6 @@ func DecodeAll(frames ...*mjpeg.MjpegFrame) []image.Image {
 func Decode(frame *mjpeg.MjpegFrame) image.Image {
 	if frame.Image == nil {
 		img, err := jpeg.Decode(bytes.NewReader(frame.Body), &DecodeOptions)
-		//todo: this assigns to a copy
 		frame.Image = img
 
 		if err != nil {
@@ -126,6 +125,7 @@ func Encode(image image.Image) *mjpeg.MjpegFrame {
 }
 
 func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFrame {
+	//todo optimize by caching the result and painting over it?
 	var frames []*mjpeg.MjpegFrame
 	for i := 0; i < len(storages); i++ {
 		frames = append(frames, storages[i].GetLatestPtr())
