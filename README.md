@@ -18,13 +18,14 @@ tbd: directly from github release..
     ```
 ## Usage
 
-The script can be parameterised and has two main purposes:
-Redirect output to a file or provide output as a stream.
+This script can be parameterised and has different modes. First argument determines the mode.
 
     
     Usage:
     multiplexer motion input <URLs> output <PORT> [options]
     multiplexer grid --grid_dimension <GRID_ROWS> <GRID_COLUMNS> input <URLs> output <PORT> [options]
+    multiplexer carousel --duration <CAROUSEL_DURATION> input <URLs> output <PORT> [options]
+    multiplexer panel input <URLs> output <PORT> [options]
     multiplexer -h | --help
     multiplexer --version
     
@@ -54,6 +55,11 @@ Redirect output to a file or provide output as a stream.
 - Output stream (carousel):
     ```
     $ go run ./src/main.go carousel --duration 5 input localhost:8080,localhost:8080 output 8088 --log_time --use_auth --input_framerate 10 --output_framerate 10  
+    ```
+
+- Output stream (panel):
+    ```
+    $ go run ./src/main.go panel input localhost:8080,localhost:8080 output 8088 --log_time --use_auth --input_framerate 10 --output_framerate 10  
     ```
 
 ## Build Automation
