@@ -25,7 +25,7 @@ This script can be parameterised and has different modes. First argument determi
     multiplexer motion input <URLs> output <PORT> [options]
     multiplexer grid --grid_dimension <GRID_ROWS> <GRID_COLUMNS> input <URLs> output <PORT> [options]
     multiplexer carousel --duration <CAROUSEL_DURATION> input <URLs> output <PORT> [options]
-    multiplexer panel input <URLs> output <PORT> [options]
+    multiplexer panel --cycle --duration <CYCLE_DURATION> input <URLs> output <PORT> [options]
     multiplexer -h | --help
     multiplexer --version
     
@@ -44,7 +44,7 @@ This script can be parameterised and has different modes. First argument determi
 
 - Output stream (grid):
     ```
-    $ go run ./src/main.go grid --grid_dimension 2 1 input localhost:8080,localhost:8080 output 8088 --log_time --use_auth --input_framerate 10 --output_framerate 10 
+    $ go run ./src/main.go grid --dimension 2 1 input localhost:8080,localhost:8080 output 8088 --log_time --use_auth --input_framerate 10 --output_framerate 10 
     ```
 
 - Output stream (motion):
@@ -60,6 +60,16 @@ This script can be parameterised and has different modes. First argument determi
 - Output stream (panel):
     ```
     $ go run ./src/main.go panel input localhost:8080,localhost:8080 output 8088 --log_time --use_auth --input_framerate 10 --output_framerate 10  
+    ```
+
+- Output stream (panel-cycling):
+    ```
+    $ go run ./src/main.go panel --cycle input localhost:8080,localhost:8080 output 8088 --log_time --use_auth --input_framerate 10 --output_framerate 10  
+    ```
+
+- Output stream (panel-cycling with custom duration [in seconds]):
+    ```
+    $ go run ./src/main.go panel --cycle --duration 10 input localhost:8080,localhost:8080 output 8088 --log_time --use_auth --input_framerate 10 --output_framerate 10  
     ```
 
 ## Build Automation

@@ -1,25 +1,27 @@
-name: Go
+name: Go build and test
 
 on:
   push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
 
 jobs:
-
-  build:
+  xgo:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with:
-        go-version: 1.18
-
-    - name: Build
-      run: go build -v ./...
-
-    - name: Test
-      run: go test -v -timeout 30s ./...
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      -
+        name: Build
+        uses: crazy-max/ghaction-xgo@v1
+        with:
+          xgo_version: latest
+          go_version: 1.18
+          dest: build
+          prefix: multiplexer
+          targets: linux/arm64
+          v: true
+          x: true
+          race: false
+          ldflags: -s -w
+          buildmode: default
