@@ -19,9 +19,9 @@ const (
 var (
 	usage = `Usage:
   multiplexer (motion) (input) URL (output) PORT [options]
-  multiplexer (grid) (--grid_dimension GRID_Y GRID_X) (input) URL (output) PORT [options] 
-  multiplexer (carousel) (--duration CAROUSEL_DURATION) (input) URL (output) PORT [options]
-  multiplexer (panel) (input) URL (output) PORT [options]  
+  multiplexer (grid) (--dimension GRID_Y GRID_X) (input) URL (output) PORT [options] 
+  multiplexer (carousel) (--duration DURATION) (input) URL (output) PORT [options]
+  multiplexer (panel) [--cycle] [--duration DURATION] (input) URL (output) PORT [options]  
   multiplexer -h | --help
   multiplexer --version
 
@@ -64,10 +64,12 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	grid, _ := arguments.Bool("grid")
 	motion, _ := arguments.Bool("motion")
 	panel, _ := arguments.Bool("panel")
+	carousel, _ := arguments.Bool("carousel")
+	// mode options
 	gridX, _ := arguments.Int("GRID_X")
 	gridY, _ := arguments.Int("GRID_Y")
-	carousel, _ := arguments.Bool("carousel")
-	carouselDuration, _ := arguments.Float64("CAROUSEL_DURATION") // in seconds
+	duration, _ := arguments.Float64("DURATION")  // carousel or panel-cycle duration in seconds
+	carouselCycle, _ := arguments.Bool("--cycle") // carousel cycle, default false
 
 	// options
 	inputFramerate, _ := arguments.Float64("--input_framerate")
@@ -88,7 +90,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	} else if motion {
 		config.Aggregator = &aggregator.AggregatorChange{}
 	} else if carousel {
-		config.Aggregator = &aggregator.AggregatorCarousel{Duration: time.Duration(carouselDuration) * time.Second}
+		config.Aggregator = &aggregator.AggregatorCarousel{Duration: time.Duration(duration) * time.Second}
 	} else if panel {
 		config.Aggregator = &aggregator.AggregatorPanel{}
 	} else {
