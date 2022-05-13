@@ -21,6 +21,7 @@ var (
   multiplexer (motion) (input) URL (output) PORT [options]
   multiplexer (grid) (--grid_dimension GRID_Y GRID_X) (input) URL (output) PORT [options] 
   multiplexer (carousel) (--duration CAROUSEL_DURATION) (input) URL (output) PORT [options]
+  multiplexer (panel) (input) URL (output) PORT [options]  
   multiplexer -h | --help
   multiplexer --version
 
@@ -61,11 +62,13 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 
 	// mode
 	grid, _ := arguments.Bool("grid")
-	motion, _ := arguments.Bool("motion") // could be used later in a switch statement
+	motion, _ := arguments.Bool("motion")
+	panel, _ := arguments.Bool("panel")
 	gridX, _ := arguments.Int("GRID_X")
 	gridY, _ := arguments.Int("GRID_Y")
 	carousel, _ := arguments.Bool("carousel")
 	carouselDuration, _ := arguments.Float64("CAROUSEL_DURATION") // in seconds
+
 	// options
 	inputFramerate, _ := arguments.Float64("--input_framerate")
 	outputFramerate, _ := arguments.Float64("--output_framerate")
@@ -86,6 +89,8 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 		config.Aggregator = &aggregator.AggregatorChange{}
 	} else if carousel {
 		config.Aggregator = &aggregator.AggregatorCarousel{Duration: time.Duration(carouselDuration) * time.Second}
+	} else if panel {
+		//todo: add new panel aggr
 	} else {
 		return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidArgument{}
 	}
