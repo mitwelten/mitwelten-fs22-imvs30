@@ -115,7 +115,9 @@ func EncodeAll(images ...image.Image) []*mjpeg.MjpegFrame {
 
 func Encode(image image.Image) *mjpeg.MjpegFrame {
 	buff := bytes.NewBuffer([]byte{})
-	err := jpeg.Encode(buff, image, &EncodingOptions)
+	config := EncodingOptions
+	config.Quality = global.Config.EncodeQuality
+	err := jpeg.Encode(buff, image, &config)
 
 	if err != nil {
 		panic("can't encode jpg")

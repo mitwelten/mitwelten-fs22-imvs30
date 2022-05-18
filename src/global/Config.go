@@ -12,6 +12,8 @@ type GlobalConfig struct {
 	InputFramerate float64
 	// max framerate for the output
 	OutputFramerate float64
+	// quality for jpeg encoding
+	EncodeQuality int
 }
 
 var Config GlobalConfig

@@ -37,6 +37,7 @@ func SetupInitialConfig() {
 		LogTime:         false,
 		MaxWidth:        -1,
 		MaxHeight:       -1,
+		EncodeQuality:   90,
 	}
 }
 
