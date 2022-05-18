@@ -26,3 +26,5 @@ jobs:
           race: false
           ldflags: -s -w
           buildmode: default
+      - name: Check build dir
+        run: ls -lR build
