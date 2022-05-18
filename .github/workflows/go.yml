@@ -17,7 +17,7 @@ jobs:
         with:
           xgo_version: latest
           go_version: 1.18
-          dest: ./build
+          dest: build
           pkg: src
           prefix: multiplexer
           targets: linux/arm64
@@ -29,5 +29,5 @@ jobs:
       - name: Check build dir
         run: ls -lR ./
       - name: Check build dir
-        run: find ./ -name 'build'
+        run: find / -name 'build'
       
