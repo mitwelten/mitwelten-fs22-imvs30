@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: install dependecies
-        run: sudo apt-get install -y libjpeg62-turbo-dev
+        run: sudo apt-get install -y libjpeg-turbo8-dev
         
       - name: Checkout
         uses: actions/checkout@v2
