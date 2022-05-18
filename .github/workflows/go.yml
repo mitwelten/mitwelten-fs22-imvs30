@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: install dependecies
-        run: apt-get install -y libjpeg-dev
+        run: sudo apt-get install -y libjpeg-dev
       - name: Checkout
         uses: actions/checkout@v2
       - name: Build
