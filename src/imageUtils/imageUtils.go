@@ -282,6 +282,7 @@ func GetFrameStorageSize(input *mjpeg.FrameStorage) (int, int, image.Image) {
 func Transform(input *mjpeg.FrameStorage) *mjpeg.MjpegFrame {
 	width, height, img := GetFrameStorageSize(input)
 
+	// with default settings (no resize, no quality change) the image doesn't need to be decoded and encoded at all
 	if !global.ImageSettingsChanged() {
 		return input.GetLatestPtr()
 	}
@@ -306,6 +307,7 @@ func Transform(input *mjpeg.FrameStorage) *mjpeg.MjpegFrame {
 		return Encode(resized)
 	}
 
-	// else just return the original frame
-	return input.GetLatestPtr()
+	// Else just decode and encode to adjust the quality
+	return Encode(Decode(input.GetLatestPtr()))
+
 }
