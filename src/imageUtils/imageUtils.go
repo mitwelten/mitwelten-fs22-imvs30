@@ -282,8 +282,7 @@ func GetFrameStorageSize(input *mjpeg.FrameStorage) (int, int, image.Image) {
 func Transform(input *mjpeg.FrameStorage) *mjpeg.MjpegFrame {
 	width, height, img := GetFrameStorageSize(input)
 
-	if global.Config.MaxWidth == -1 && global.Config.MaxHeight == -1 {
-		// no global maxHeight or maxWidth set
+	if !global.ImageSettingsChanged() {
 		return input.GetLatestPtr()
 	}
 
@@ -293,7 +292,17 @@ func Transform(input *mjpeg.FrameStorage) *mjpeg.MjpegFrame {
 			img = Decode(input.GetLatestPtr())
 		}
 
-		resized := Resize(img, utils.Min(width, global.Config.MaxWidth), utils.Min(height, global.Config.MaxHeight))
+		outputWidth := width
+		if global.Config.MaxWidth != -1 && global.Config.MaxWidth < width {
+			outputWidth = global.Config.MaxWidth
+		}
+
+		outputHeight := height
+		if global.Config.MaxHeight != -1 && global.Config.MaxHeight < height {
+			outputHeight = global.Config.MaxHeight
+		}
+
+		resized := Resize(img, outputWidth, outputHeight)
 		return Encode(resized)
 	}
 

@@ -17,3 +17,20 @@ type GlobalConfig struct {
 }
 
 var Config GlobalConfig
+
+func initialConfig() GlobalConfig {
+	return GlobalConfig{
+		Authentications: map[string]string{},
+		LogTime:         false,
+		MaxWidth:        -1,
+		MaxHeight:       -1,
+		EncodeQuality:   90,
+	}
+}
+func SetupInitialConfig() {
+	Config = initialConfig()
+}
+
+func ImageSettingsChanged() bool {
+	return (Config.MaxHeight != -1) || (Config.MaxWidth != -1) || Config.EncodeQuality != 90
+}

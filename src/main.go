@@ -31,20 +31,10 @@ func profile() {
 	//view with `go tool pprof http://localhost:6060/debug/pprof/profile\?seconds\=30`
 }
 
-func SetupInitialConfig() {
-	global.Config = global.GlobalConfig{
-		Authentications: map[string]string{},
-		LogTime:         false,
-		MaxWidth:        -1,
-		MaxHeight:       -1,
-		EncodeQuality:   90,
-	}
-}
-
 func main() {
 	profile()
 	setupLog()
-	SetupInitialConfig()
+	global.SetupInitialConfig()
 
 	log.Println("Running the MJPEG-multiFLEXer")
 	log.Println("parsing args...")
