@@ -8,16 +8,23 @@ jobs:
   xgo:
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
+      - name: install dependecies
+        run: apt-get install -y libjpeg-dev
+      - name: Checkout
         uses: actions/checkout@v2
-      - name: Generate build files
-        uses: thatisuday/go-cross-build@v1
+      - name: Build
+        uses: crazy-max/ghaction-xgo@v1
         with:
-            platforms: 'linux/arm64'
-            package: 'src/main.go'
-            compress: 'false'
-            dest: 'dist'
-            name: 'multiFLEXer'
+          xgo_version: latest
+          go_version: 1.18
+          dest: ./build
+          pkg: src
+          prefix: multiplexer
+          targets: linux/arm64
+          v: true
+          x: true
+          race: false
+          ldflags: -s -w
+          buildmode: default
       - name: Check build dir
         run: ls -lR ./
