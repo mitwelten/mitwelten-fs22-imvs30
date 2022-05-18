@@ -14,6 +14,8 @@ type GlobalConfig struct {
 	OutputFramerate float64
 	// quality for jpeg encoding
 	EncodeQuality int
+
+	Margin int
 }
 
 var Config GlobalConfig
@@ -25,6 +27,7 @@ func initialConfig() GlobalConfig {
 		MaxWidth:        -1,
 		MaxHeight:       -1,
 		EncodeQuality:   100,
+		Margin:          0,
 	}
 }
 func SetupInitialConfig() {
@@ -32,5 +35,5 @@ func SetupInitialConfig() {
 }
 
 func DecodingNecessary() bool {
-	return (Config.MaxHeight != -1) || (Config.MaxWidth != -1) || Config.EncodeQuality != 100
+	return Config.MaxHeight != -1 || Config.MaxWidth != -1 || Config.EncodeQuality != 100
 }

@@ -243,6 +243,8 @@ func Grid(row int, col int, frames ...*mjpeg.MjpegFrame) *mjpeg.MjpegFrame {
 	// image
 	var imageOut = image.NewRGBA(rectangle)
 
+	var marginStartPoints []image.Point
+
 	for i := 0; i < nCells; i++ {
 		var row_ = i / col
 		var col_ = i % col
@@ -252,8 +254,33 @@ func Grid(row int, col int, frames ...*mjpeg.MjpegFrame) *mjpeg.MjpegFrame {
 		}
 
 		var sp = image.Point{X: i0.Bounds().Dx() * col_, Y: i0.Bounds().Dy() * row_}
+		//grid lines:
+
+		if row_ == 0 || col_ == 0 {
+			marginStartPoints = append(marginStartPoints, sp)
+		}
+
 		var r = image.Rectangle{Min: sp, Max: sp.Add(images[i].Bounds().Size())}
 		draw.Draw(imageOut, r, images[i], image.Point{}, draw.Src)
+	}
+
+	// draw grid lines
+	borderVertical := image.Rectangle{Min: image.Point{X: -global.Config.Margin / 2}, Max: image.Point{X: global.Config.Margin / 2, Y: imageOut.Bounds().Dy()}}
+	borderHorizontal := image.Rectangle{Min: image.Point{Y: -global.Config.Margin / 2}, Max: image.Point{X: imageOut.Bounds().Dx(), Y: global.Config.Margin / 2}}
+	for i, p := range marginStartPoints {
+		//ignore first point to avoid border lines
+		if i == 0 {
+			continue
+		}
+
+		if p.Y == 0 {
+			//vertical
+			draw.Draw(imageOut, borderVertical.Add(p), image.Black, image.Point{}, draw.Src)
+		} else if p.X == 0 {
+			draw.Draw(imageOut, borderHorizontal.Add(p), image.Black, image.Point{}, draw.Src)
+		} else {
+			panic("not possible!")
+		}
 	}
 
 	return Encode(imageOut)

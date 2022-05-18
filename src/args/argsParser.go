@@ -32,8 +32,9 @@ Options:
   --output_max_width=n   output width in pixel [default: -1]
   --output_max_height=n  output height in pixel [default: -1]
   --output_quality=n     output jpeg quality in percentage [default: 100]
-  --use_auth   	         Use Authentication
-  --log_time	         Log Time verbose
+  --border=n             number of black pixels between each image [default: 0]
+  --use_auth             Use Authentication
+  --log_time             Log Time verbose
   --verbose              Shows details.
   --version              Shows version.`
 )
@@ -81,6 +82,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	outputMaxWidth, _ := arguments.Int("--output_max_width")
 	outputMaxHeight, _ := arguments.Int("--output_max_height")
 	outputQuality, _ := arguments.Int("--output_quality")
+	outputMargin, _ := arguments.Int("--border")
 	useAuth, _ := arguments.Bool("--use_auth")
 	logTime, _ := arguments.Bool("--log_time")
 
@@ -130,6 +132,9 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 
 	// quality
 	global.Config.EncodeQuality = outputQuality
+
+	// border
+	global.Config.Margin = outputMargin
 
 	// non error case, return nil
 	return config, nil
