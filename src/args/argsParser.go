@@ -27,6 +27,7 @@ var (
 
 Options:
   -h --help              Shows this screen.
+  --duration=n           frame duration [default: 10]
   --input_framerate=n    input framerate in fps [default: -1]
   --output_framerate=n   output framerate in fps[default: -1]
   --output_max_width=n   output width in pixel [default: -1]
@@ -71,10 +72,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	gridX, _ := arguments.Int("GRID_X")
 	gridY, _ := arguments.Int("GRID_Y")
 	duration, _ := arguments.Float64("DURATION") // carousel or panel-cycle duration in seconds
-	//todo bizzeli hässlich
-	if duration == 0 {
-		duration = 10
-	}
+
 	carouselCycle, _ := arguments.Bool("--cycle") // carousel cycle, default false
 	// options
 	inputFramerate, _ := arguments.Float64("--input_framerate")
