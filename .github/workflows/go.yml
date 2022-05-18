@@ -27,4 +27,4 @@ jobs:
           ldflags: -s -w
           buildmode: default
       - name: Check build dir
-        run: ls -lR build
+        run: ls -lR
