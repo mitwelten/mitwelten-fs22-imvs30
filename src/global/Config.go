@@ -24,7 +24,7 @@ func initialConfig() GlobalConfig {
 		LogTime:         false,
 		MaxWidth:        -1,
 		MaxHeight:       -1,
-		EncodeQuality:   90,
+		EncodeQuality:   100,
 	}
 }
 func SetupInitialConfig() {
@@ -32,5 +32,5 @@ func SetupInitialConfig() {
 }
 
 func ImageSettingsChanged() bool {
-	return (Config.MaxHeight != -1) || (Config.MaxWidth != -1) || Config.EncodeQuality != 90
+	return (Config.MaxHeight != -1) || (Config.MaxWidth != -1) || Config.EncodeQuality != 100
 }

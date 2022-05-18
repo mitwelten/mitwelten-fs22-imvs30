@@ -31,7 +31,7 @@ Options:
   --output_framerate=n   output framerate in fps[default: -1]
   --output_max_width=n   output width in pixel [default: -1]
   --output_max_height=n  output height in pixel [default: -1]
-  --output_quality=n     output jpeg quality in percentage [default: 90]
+  --output_quality=n     output jpeg quality in percentage [default: 100]
   --use_auth   	         Use Authentication
   --log_time	         Log Time verbose
   --verbose              Shows details.
