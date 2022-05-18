@@ -30,7 +30,8 @@ Options:
   --input_framerate=n    input framerate in fps [default: -1]
   --output_framerate=n   output framerate in fps[default: -1]
   --output_max_width=n   output width in pixel [default: -1]
-  --output_max_height=n  output height in pixel [default: -1]  
+  --output_max_height=n  output height in pixel [default: -1]
+  --output_quality=n     output jpeg quality in percentage [default: 90]
   --use_auth   	         Use Authentication
   --log_time	         Log Time verbose
   --verbose              Shows details.
@@ -79,6 +80,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	outputFramerate, _ := arguments.Float64("--output_framerate")
 	outputMaxWidth, _ := arguments.Int("--output_max_width")
 	outputMaxHeight, _ := arguments.Int("--output_max_height")
+	outputQuality, _ := arguments.Int("--output_quality")
 	useAuth, _ := arguments.Bool("--use_auth")
 	logTime, _ := arguments.Bool("--log_time")
 
@@ -125,6 +127,9 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	// InputRates
 	global.Config.InputFramerate = inputFramerate
 	global.Config.OutputFramerate = outputFramerate
+
+	// quality
+	global.Config.EncodeQuality = outputQuality
 
 	// non error case, return nil
 	return config, nil
