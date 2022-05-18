@@ -8,16 +8,18 @@ jobs:
   xgo:
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
+      - name: install dependecies
+        run: sudo apt-get install -y libjpeg-turbo8-dev
+        
+      - name: Checkout
         uses: actions/checkout@v2
-      -
-        name: Build
-        uses: crazy-max/ghaction-xgo@v1
+        
+      - name: Build
+        uses: TobiasKunzFHNW/ghaction-xgo@master
         with:
           xgo_version: latest
           go_version: 1.18
-          dest: build
+          dest: ./build
           pkg: src
           prefix: multiplexer
           targets: linux/arm64
@@ -26,3 +28,8 @@ jobs:
           race: false
           ldflags: -s -w
           buildmode: default
+      - name: Check build dir
+        run: ls -l /usr/lib/
+        
+      - name: Check build dir
+        run: ls -l /usr/lib64/
