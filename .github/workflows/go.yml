@@ -9,9 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: install dependecies
-        run: sudo apt-get install -y libjpeg-dev
+        run: sudo apt-get install -y libjpeg62-turbo-dev
+        
       - name: Checkout
         uses: actions/checkout@v2
+        
       - name: Build
         uses: crazy-max/ghaction-xgo@v1
         with:
@@ -27,4 +29,7 @@ jobs:
           ldflags: -s -w
           buildmode: default
       - name: Check build dir
-        run: ls -lR ./
+        run: ls -l /usr/lib/libjpeg.so
+        
+      - name: Check build dir
+        run: ls -l /usr/lib64/libjpeg.so
