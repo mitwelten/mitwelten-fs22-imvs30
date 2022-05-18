@@ -29,7 +29,7 @@ jobs:
           ldflags: -s -w
           buildmode: default
       - name: Check build dir
-        run: ls -l /usr/lib/libjpeg.so
+        run: ls -l /usr/lib/
         
       - name: Check build dir
-        run: ls -l /usr/lib64/libjpeg.so
+        run: ls -l /usr/lib64/
