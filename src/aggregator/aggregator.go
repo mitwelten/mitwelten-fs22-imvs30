@@ -54,7 +54,7 @@ func Aggregate(aggregatorPtr *Aggregator, storages ...*mjpeg.FrameStorage) {
 
 			// get frame
 			var frame *mjpeg.MjpegFrame
-			if aggregatorData.passthrough && len(storages) == 1 {
+			if aggregatorData.passthrough && len(storages) == 1 && !global.DecodingNecessary() {
 				frame = storages[0].GetLatestPtr()
 			} else {
 				frame = aggregator.aggregate(storages...)

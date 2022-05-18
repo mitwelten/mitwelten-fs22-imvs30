@@ -31,6 +31,6 @@ func SetupInitialConfig() {
 	Config = initialConfig()
 }
 
-func ImageSettingsChanged() bool {
+func DecodingNecessary() bool {
 	return (Config.MaxHeight != -1) || (Config.MaxWidth != -1) || Config.EncodeQuality != 100
 }
