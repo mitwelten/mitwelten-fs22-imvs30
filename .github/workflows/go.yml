@@ -11,23 +11,13 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v2
-      -
-        name: Build
-        uses: crazy-max/ghaction-xgo@v1
+      - name: Generate build files
+        uses: thatisuday/go-cross-build@v1
         with:
-          xgo_version: latest
-          go_version: 1.18
-          dest: build
-          pkg: src
-          prefix: multiplexer
-          targets: linux/arm64
-          v: true
-          x: true
-          race: false
-          ldflags: -s -w
-          buildmode: default
+            platforms: 'linux/arm64'
+            package: 'src'
+            compress: 'false'
+            dest: 'dist'
+            name: 'multiFLEXer'
       - name: Check build dir
         run: ls -lR ./
-      - name: Check build dir
-        run: find / -name 'build'
-      
