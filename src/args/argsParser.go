@@ -8,6 +8,7 @@ import (
 	"mjpeg_multiplexer/src/customErrors"
 	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/multiplexer"
+	"os"
 	"strings"
 	"time"
 )
@@ -52,11 +53,22 @@ func parseInputUrls(config multiplexer.MultiplexerConfig, inputStr string) multi
 	return config
 }
 
+var printUsage = func(err error, usage_ string) {
+	fmt.Println(usage)
+	os.Exit(0)
+}
+
 // ParseArgs parses all arguments derived from command line
 func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) {
+	// init custom handler to print full usage on error
+	parser := &docopt.Parser{
+		HelpHandler:  printUsage,
+		OptionsFirst: false,
+	}
+	arguments, err := parser.ParseArgs(usage, nil, "")
 
 	// parse all arguments and save them to vars
-	arguments, _ := docopt.ParseDoc(usage)
+	//arguments, _ := docopt.ParseDoc(usage)
 	fmt.Println(arguments)
 
 	// mandatory
