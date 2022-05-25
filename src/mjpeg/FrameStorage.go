@@ -47,8 +47,7 @@ func (frameStorage *FrameStorage) SetImageSize(width, height int) {
 
 // NewFrameStorage FrameStorage ctor
 func NewFrameStorage() *FrameStorage {
-	frame := MjpegFrame{}
-	frame.Body = Init()
+	frame := NewMJPEGFrame()
 
 	frameStorage := FrameStorage{}
 	frameStorage.buffer = utils.NewRingBuffer[MjpegFrame](nOfStoredFrames)

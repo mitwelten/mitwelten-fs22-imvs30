@@ -37,6 +37,7 @@ func Aggregate(aggregatorPtr *Aggregator, storages ...*mjpeg.FrameStorage) {
 		for {
 			condition.Wait()
 
+			//todo wait with a condition here?
 			if !aggregator.GetAggregatorData().Enabled {
 				time.Sleep(1 * time.Second)
 				continue

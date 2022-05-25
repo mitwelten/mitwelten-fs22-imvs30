@@ -139,13 +139,7 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 	totalWidth := int(float64(firstWidthInitial) / layout.FirstWidth)
 	totalHeight := int(float64(firstHeightInitial) / layout.FirstHeight)
 
-	if global.Config.MaxWidth != -1 {
-		totalWidth = utils.Min(totalWidth, global.Config.MaxWidth)
-	}
-
-	if global.Config.MaxHeight != -1 {
-		totalHeight = utils.Min(totalHeight, global.Config.MaxHeight)
-	}
+	totalWidth, totalHeight = GetFinalImageSize(totalWidth, totalHeight)
 
 	//output img
 	rectangle := image.Rectangle{Max: image.Point{X: totalWidth, Y: totalHeight}}
@@ -206,8 +200,7 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 		deltaH = totalHeight / global.Config.MaxHeight
 	}
 
-	totalWidth = totalWidth / deltaW
-	totalHeight = totalHeight / deltaH
+	totalWidth, totalHeight = GetFinalImageSize(totalWidth/deltaW, totalHeight/deltaH)
 
 	cellWidth = totalWidth / nCols
 	cellHeight = totalHeight / nRows
@@ -269,6 +262,7 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 	return Encode(imageOut)
 }
 
+//ResizeStorage resizes and image and saved the resized image to the storage
 func ResizeStorage(frame *mjpeg.MjpegFrame, img image.Image, width int, height int) image.Image {
 	frame.OriginalWidth = img.Bounds().Dx()
 	frame.OriginalHeight = img.Bounds().Dy()
@@ -276,10 +270,35 @@ func ResizeStorage(frame *mjpeg.MjpegFrame, img image.Image, width int, height i
 
 	return Resize(img, width, height)
 }
+
+//Resize resizes an image
 func Resize(img image.Image, width int, height int) image.Image {
 	dst := image.NewRGBA(image.Rect(0, 0, width, height))
 	draw.NearestNeighbor.Scale(dst, dst.Rect, img, img.Bounds(), draw.Over, nil)
 	return dst
+}
+
+//GetFinalImageSize returns the size of the image in regard to the globally set MaxWidth and MinWidth
+func GetFinalImageSize(currentWidth int, currentHeight int) (int, int) {
+	if global.Config.MaxWidth != -1 && global.Config.MaxHeight != -1 {
+		// both dimensions may be resized to the desired size
+		currentWidth = utils.Min(currentWidth, global.Config.MaxWidth)
+		currentHeight = utils.Min(currentHeight, global.Config.MaxHeight)
+	} else if global.Config.MaxWidth != -1 && global.Config.MaxHeight == -1 {
+		// reduce width and scale height
+		if currentWidth > global.Config.MaxWidth {
+			currentHeight = int(float64(currentHeight) * (float64(global.Config.MaxWidth) / float64(currentWidth)))
+			currentWidth = global.Config.MaxWidth
+		}
+	} else if global.Config.MaxWidth == -1 && global.Config.MaxHeight != -1 {
+		// reduce height and scale width
+		if currentHeight > global.Config.MaxHeight {
+			currentWidth = int(float64(currentWidth) * (float64(global.Config.MaxHeight) / float64(currentHeight)))
+			currentHeight = global.Config.MaxHeight
+		}
+	}
+
+	return currentWidth, currentHeight
 }
 
 func GetFrameStorageSize(input *mjpeg.FrameStorage) (int, int, image.Image) {
@@ -289,14 +308,20 @@ func GetFrameStorageSize(input *mjpeg.FrameStorage) (int, int, image.Image) {
 	var img image.Image = nil
 	if width == -1 || height == -1 {
 		img = Decode(input.GetLatestPtr())
-		input.SetImageSize(img.Bounds().Dx(), img.Bounds().Dy())
 		width = img.Bounds().Dx()
 		height = img.Bounds().Dy()
+
+		// store the result, but only if it's not the empty image
+		if !input.GetLatestPtr().Empty {
+			input.SetImageSize(img.Bounds().Dx(), img.Bounds().Dy())
+		}
 	}
 	return width, height, img
 }
 
 func Transform(input *mjpeg.FrameStorage) *mjpeg.MjpegFrame {
+	// todo more caching here?
+
 	width, height, img := GetFrameStorageSize(input)
 
 	// with default settings (no resize, no quality change) the image doesn't need to be decoded and encoded at all
@@ -310,17 +335,9 @@ func Transform(input *mjpeg.FrameStorage) *mjpeg.MjpegFrame {
 			img = Decode(input.GetLatestPtr())
 		}
 
-		outputWidth := width
-		if global.Config.MaxWidth != -1 && global.Config.MaxWidth < width {
-			outputWidth = global.Config.MaxWidth
-		}
+		outputWidth, outputHeight := GetFinalImageSize(width, height)
 
-		outputHeight := height
-		if global.Config.MaxHeight != -1 && global.Config.MaxHeight < height {
-			outputHeight = global.Config.MaxHeight
-		}
-
-		resized := Resize(img, outputWidth, outputHeight)
+		resized := ResizeStorage(input.GetLatestPtr(), img, outputWidth, outputHeight)
 		return Encode(resized)
 	}
 

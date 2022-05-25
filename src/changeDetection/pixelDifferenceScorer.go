@@ -16,7 +16,7 @@ type PixelDifferenceScorer struct{}
 // Score implements Scorer.Score Method
 func (s *PixelDifferenceScorer) Diff(frames []*mjpeg.MjpegFrame) mjpeg.MjpegFrame {
 	if len(frames) < 2 {
-		return mjpeg.MjpegFrame{Body: mjpeg.Init()}
+		return mjpeg.NewMJPEGFrame()
 	}
 	img1 := imageUtils.Decode(frames[0])
 	img2 := imageUtils.Decode(frames[1])
