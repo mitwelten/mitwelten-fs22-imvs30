@@ -75,11 +75,11 @@ func vips_merge(iterations int, encode bool) {
 
 func baumarkt_merge(iterations int, encode bool) {
 	fmt.Printf("    Number of runs: %v\n", iterations)
-	start := time.Now()
 
+	img1, _ := jpeg.Decode(bytes.NewReader(imageData), &DecodeOptions)
+	img2, _ := jpeg.Decode(bytes.NewReader(imageData), &DecodeOptions)
+	start := time.Now()
 	for i := 0; i < iterations; i++ {
-		img1, _ := jpeg.Decode(bytes.NewReader(imageData), &DecodeOptions)
-		img2, _ := jpeg.Decode(bytes.NewReader(imageData), &DecodeOptions)
 
 		image1 := image.NewRGBA(image.Rect(0, 0, 800, 600))
 		image2 := image.NewRGBA(image.Rect(0, 0, 800, 600))
@@ -132,11 +132,11 @@ func main() {
 	iterations := 50
 	govips.LoggingSettings(nil, govips.LogLevelCritical)
 
-	fmt.Printf("vips\n")
-	vips_merge(iterations, true)
+	//fmt.Printf("vips\n")
+	//vips_merge(iterations, true)
 
 	fmt.Printf("baumarkt\n")
-	baumarkt_merge(iterations, true)
+	baumarkt_merge(iterations, false)
 
 	// =========================
 

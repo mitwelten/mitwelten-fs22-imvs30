@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-//go:embed image_big.jpg
+//go:embed image_real.jpg
 var imageData []byte
 
 func Encode(iterations int) {

@@ -20,8 +20,8 @@ var (
 	usage = `Usage:
   multiplexer (motion) (input) URL (output) PORT [options]
   multiplexer (grid) (--dimension GRID_Y GRID_X) (input) URL (output) PORT [options] 
-  multiplexer (carousel) (--duration DURATION) (input) URL (output) PORT [options]
-  multiplexer (panel) [--cycle] [--duration DURATION] (input) URL (output) PORT [options]  
+  multiplexer (carousel) (input) URL (output) PORT [options]
+  multiplexer (panel) [--cycle] (input) URL (output) PORT [options]  
   multiplexer -h | --help
   multiplexer --version
 
@@ -71,7 +71,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	// mode options
 	gridX, _ := arguments.Int("GRID_X")
 	gridY, _ := arguments.Int("GRID_Y")
-	duration, _ := arguments.Float64("DURATION") // carousel or panel-cycle duration in seconds
+	duration, _ := arguments.Int("--duration") // carousel or panel-cycle duration in seconds
 
 	carouselCycle, _ := arguments.Bool("--cycle") // carousel cycle, default false
 	// options

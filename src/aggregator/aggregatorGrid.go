@@ -28,12 +28,5 @@ func (aggregator *AggregatorGrid) GetAggregatorData() *AggregatorData {
 }
 
 func (aggregator *AggregatorGrid) aggregate(storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFrame {
-	var frames []*mjpeg.MjpegFrame
-
-	for i := 0; i < len(storages); i++ {
-		frame := storages[i]
-		frames = append(frames, frame.GetLatestPtr())
-	}
-
-	return imageUtils.Grid(aggregator.Row, aggregator.Col, frames...)
+	return imageUtils.Grid(aggregator.Row, aggregator.Col, storages...)
 }

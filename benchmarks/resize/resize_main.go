@@ -6,12 +6,13 @@ import (
 	"fmt"
 	govips "github.com/davidbyttow/govips/v2/vips"
 	"github.com/discord/lilliput"
-	"github.com/h2non/bimg"
 	"github.com/pixiv/go-libjpeg/jpeg"
 	"github.com/vipsimage/vips"
 	"golang.org/x/image/draw"
+	"log"
+	"net/http"
+	_ "net/http/pprof"
 	"path/filepath"
-
 	//"golang.org/x/image/draw"
 	"image"
 	"time"
@@ -20,7 +21,7 @@ import (
 //go:embed image_real.jpg
 var imageData []byte
 var DecodeOptions = jpeg.DecoderOptions{ScaleTarget: image.Rectangle{}, DCTMethod: jpeg.DCTIFast, DisableFancyUpsampling: true, DisableBlockSmoothing: true}
-var EncodingOptions = jpeg.EncoderOptions{Quality: 100, OptimizeCoding: false, ProgressiveMode: false, DCTMethod: jpeg.DCTISlow}
+var EncodingOptions = jpeg.EncoderOptions{Quality: 90, OptimizeCoding: false, ProgressiveMode: false, DCTMethod: jpeg.DCTISlow}
 
 func resizeLilliPut(origName, newName string) {
 	decoder, _ := lilliput.NewDecoder(imageData)
@@ -49,7 +50,9 @@ func resizeLilliPut(origName, newName string) {
 }
 
 func main() {
-
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
 	/*	img := vips.NewFromBuffer(imageData, "")
 		_ = img.ThumbnailImage(410)
 
@@ -69,7 +72,14 @@ func main() {
 
 		img, _ := govips.NewThumbnailWithSizeFromBuffer(imageData, 1920, 1080, govips.InterestingNone, govips.SizeForce)
 
-		_, _, _ = img.ExportJpeg(nil)
+		/*		p := govips.NewJpegExportParams()
+				p.OptimizeCoding = false
+				p.OptimizeScans = false
+				p.StripMetadata = true
+				p.Interlace = false
+				_, _, _ = img.ExportJpeg(p)
+		*/
+		img.ExportJpeg(nil)
 		//ioutil.WriteFile("govips.jpg", buff, 0644)
 	}
 
@@ -85,9 +95,10 @@ func main() {
 
 	for i := 0; i < iterations; i++ {
 		//_, _ = bimg.NewImage(imageData).ForceResize(410, 308)
-
-		newImage, _ := bimg.NewImage(imageData).Resize(800, 600)
-		bimg.Write("new.jpg", newImage)
+		/*
+			newImage, _ := bimg.NewImageFromBuffer(imageData).Resize(800, 600)
+			bimg.Write("new.jpg", newImage)
+		*/
 	}
 	end = time.Since(start).Milliseconds()
 	fmt.Printf("    Total: %v ms\n", end)

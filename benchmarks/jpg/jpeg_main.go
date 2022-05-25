@@ -8,40 +8,42 @@ import (
 )
 
 func main() {
-	iterations := 100
 
+	iterations := 100
 	fmt.Printf("libjpg: \n")
 	jpgBenchmark_libjpg.Decode(iterations)
 	jpgBenchmark_libjpg.Encode(iterations)
-	jpgBenchmark_libjpg.DecodeEncode(iterations)
+	//jpgBenchmark_libjpg.DecodeEncode(iterations)
 	//	_ = jpgBenchmark_libjpg.DecodeEncodeSave()
 
 	fmt.Printf("Standard libraray: \n")
 	jpgBenchmark_std.Decode(iterations)
 	jpgBenchmark_std.Encode(iterations)
-	jpgBenchmark_std.DecodeEncode(iterations)
+	//jpgBenchmark_std.DecodeEncode(iterations)
 	//	_ = jpgBenchmark_std.DecodeEncodeSave()
+
 }
 
 func compareDCTMethods() {
-	iterations := 500
+	iterations := 100
+	jpgBenchmark_libjpg.Decode(20)
 
 	fmt.Printf("libjpg DCTIFast: \n")
 	jpgBenchmark_libjpg.EncodingOptions.DCTMethod = jpeg.DCTIFast
 	jpgBenchmark_libjpg.DecodeOptions.DCTMethod = jpeg.DCTIFast
-	jpgBenchmark_libjpg.Encode(iterations)
+	//jpgBenchmark_libjpg.Encode(iterations)
 	jpgBenchmark_libjpg.Decode(iterations)
 
 	fmt.Printf("libjpg DCTFloat: \n")
 	jpgBenchmark_libjpg.EncodingOptions.DCTMethod = jpeg.DCTFloat
 	jpgBenchmark_libjpg.DecodeOptions.DCTMethod = jpeg.DCTFloat
-	jpgBenchmark_libjpg.Encode(iterations)
+	//jpgBenchmark_libjpg.Encode(iterations)
 	jpgBenchmark_libjpg.Decode(iterations)
 
 	fmt.Printf("libjpg DCTISlow: \n")
 	jpgBenchmark_libjpg.EncodingOptions.DCTMethod = jpeg.DCTISlow
 	jpgBenchmark_libjpg.DecodeOptions.DCTMethod = jpeg.DCTISlow
-	jpgBenchmark_libjpg.Encode(iterations)
+	//jpgBenchmark_libjpg.Encode(iterations)
 	jpgBenchmark_libjpg.Decode(iterations)
 
 }

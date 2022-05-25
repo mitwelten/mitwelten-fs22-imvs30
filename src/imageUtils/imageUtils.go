@@ -170,57 +170,43 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 	return Encode(imageOut)
 }
 
-func Grid(row int, col int, frames ...*mjpeg.MjpegFrame) *mjpeg.MjpegFrame {
-	var nCells = row * col
-	var nFrames = len(frames)
+func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFrame {
+	var nCells = nRows * nCols
+	var nFrames = len(storages)
 
 	if nFrames > nCells {
-		log.Fatalf("Too many frames for this grid configuartion: row %v col %v, but %v frames to compute\n", row, col, len(frames))
+		log.Fatalf("Too many frames for this grid configuartion: nRows %v nCols %v, but %v frames to compute\n", nRows, nCols, len(storages))
 	}
 
 	if nFrames == 0 {
 		log.Fatalf("At least one frame needed\n")
 	}
-	var images = DecodeAll(frames...)
 
-	//calculate the final grid size
-	//todo invalid in certain cases
-	height := 0
-	width := 0
-	for i := 0; i < nCells; i++ {
-		var row_ = i / col
-		var col_ = i % col
-		if row_ == 0 {
-			if frames[i].Resized {
-				width += frames[i].OriginalWidth
-			} else {
-				width += images[i].Bounds().Dx()
-			}
-		}
-		if col_ == 0 {
-			if frames[i].Resized {
-				height += frames[i].OriginalHeight
-			} else {
-				height += images[i].Bounds().Dy()
-			}
-		}
+	var frames []*mjpeg.MjpegFrame
+	for i := 0; i < len(storages); i++ {
+		frames = append(frames, storages[i].GetLatestPtr())
 	}
 
-	// check the max width and height
-	if (global.Config.MaxHeight != -1 && global.Config.MaxHeight < height) || (global.Config.MaxWidth != -1 && global.Config.MaxWidth < width) {
+	var images = DecodeAll(frames...)
+	firstWidthInitial, firstHeightInitial, _ := GetFrameStorageSize(storages[0])
+	totalWidth := firstWidthInitial * nCols
+	totalHeight := firstHeightInitial * nRows
+
+	// check the max totalWidth and totalHeight
+	if (global.Config.MaxHeight != -1 && global.Config.MaxHeight < totalHeight) || (global.Config.MaxWidth != -1 && global.Config.MaxWidth < totalWidth) {
 		deltaW := 1
 		deltaH := 1
 
 		if global.Config.MaxWidth != -1 {
-			deltaW = width / global.Config.MaxWidth
+			deltaW = totalWidth / global.Config.MaxWidth
 		}
 
 		if global.Config.MaxHeight != -1 {
-			deltaH = height / global.Config.MaxHeight
+			deltaH = totalHeight / global.Config.MaxHeight
 		}
 
-		targetWidth := (width / deltaW) / col
-		targetHeight := (height / deltaH) / row
+		targetWidth := (totalWidth / deltaW) / nCols
+		targetHeight := (totalHeight / deltaH) / nRows
 
 		// resize all images if needed
 		for i, _ := range images {
@@ -237,7 +223,7 @@ func Grid(row int, col int, frames ...*mjpeg.MjpegFrame) *mjpeg.MjpegFrame {
 
 	// rectangle
 	var i0 = images[0]
-	var pointMax = image.Point{X: i0.Bounds().Dx() * col, Y: i0.Bounds().Dy() * row}
+	var pointMax = image.Point{X: i0.Bounds().Dx() * nCols, Y: i0.Bounds().Dy() * nRows}
 	var rectangle = image.Rectangle{Min: image.Point{}, Max: pointMax}
 
 	// image
@@ -246,8 +232,8 @@ func Grid(row int, col int, frames ...*mjpeg.MjpegFrame) *mjpeg.MjpegFrame {
 	var marginStartPoints []image.Point
 
 	for i := 0; i < nCells; i++ {
-		var row_ = i / col
-		var col_ = i % col
+		var row_ = i / nCols
+		var col_ = i % nCols
 
 		if i >= nFrames {
 			break
@@ -276,10 +262,9 @@ func Grid(row int, col int, frames ...*mjpeg.MjpegFrame) *mjpeg.MjpegFrame {
 		if p.Y == 0 {
 			//vertical
 			draw.Draw(imageOut, borderVertical.Add(p), image.Black, image.Point{}, draw.Src)
-		} else if p.X == 0 {
-			draw.Draw(imageOut, borderHorizontal.Add(p), image.Black, image.Point{}, draw.Src)
 		} else {
-			panic("not possible!")
+			//horizontal
+			draw.Draw(imageOut, borderHorizontal.Add(p), image.Black, image.Point{}, draw.Src)
 		}
 	}
 

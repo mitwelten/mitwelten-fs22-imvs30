@@ -18,6 +18,8 @@ github.com/esimov/stackblur-go v1.1.0/go.mod h1:7PcTPCHHKStxbZvBkUlQJjRclqjnXtQ0
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/h2non/bimg v1.1.9 h1:WH20Nxko9l/HFm4kZCA3Phbgu2cbHvYzxwxn9YROEGg=
 github.com/h2non/bimg v1.1.9/go.mod h1:R3+UiYwkK4rQl6KVFTOFJHitgLbZXBZNFh2cv3AEbp8=
+github.com/h2non/bimg/v2 v2.0.0-20220228115642-ffae160b966d h1:yrZujraZaAJSFVB88FJI6LbRuLdEtShM9WXmOgT+7Cc=
+github.com/h2non/bimg/v2 v2.0.0-20220228115642-ffae160b966d/go.mod h1:eVE5gqbM/jX13f+1hqSrCTe9ECcw3RiFBB5ksMuOXwo=
 github.com/hashicorp/hcl v1.0.0/go.mod h1:E5yfLk+7swimpb2L/Alb/PJmXilQ/rhwaUYs4T20WEQ=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
