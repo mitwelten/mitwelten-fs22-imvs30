@@ -73,7 +73,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	gridY, _ := arguments.Int("GRID_Y")
 	duration, _ := arguments.Int("--duration") // carousel or panel-cycle duration in seconds
 
-	carouselCycle, _ := arguments.Bool("--cycle") // carousel cycle, default false
+	panelCycle, _ := arguments.Bool("--cycle") // panel cycle, default false
 	// options
 	inputFramerate, _ := arguments.Float64("--input_framerate")
 	outputFramerate, _ := arguments.Float64("--output_framerate")
@@ -97,7 +97,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	} else if carousel {
 		config.Aggregator = &aggregator.AggregatorCarousel{Duration: time.Duration(duration) * time.Second}
 	} else if panel {
-		config.Aggregator = &aggregator.AggregatorPanel{Duration: time.Duration(duration) * time.Second, CycleFrames: carouselCycle}
+		config.Aggregator = &aggregator.AggregatorPanel{Duration: time.Duration(duration) * time.Second, CycleFrames: panelCycle}
 	} else {
 		return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidArgument{}
 	}
