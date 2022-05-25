@@ -20,8 +20,8 @@ var (
 	usage = `Usage:
   multiplexer (motion) (input) URL (output) PORT [options]
   multiplexer (grid) (--dimension GRID_Y GRID_X) (input) URL (output) PORT [options] 
-  multiplexer (carousel) (input) URL (output) PORT [options]
-  multiplexer (panel) [--cycle] (input) URL (output) PORT [options]  
+  multiplexer (carousel) (--duration DURATION) (input) URL (output) PORT [options]
+  multiplexer (panel) [--cycle] [--duration DURATION] (input) URL (output) PORT [options]  
   multiplexer -h | --help
   multiplexer --version
 
