@@ -11,7 +11,7 @@ var FRAME_DELIM = []byte("--boundarydonotcross\r\n")
 
 type MjpegFrame struct {
 	Body           []byte
-	Image          image.Image
+	CachedImage    image.Image
 	Resized        bool
 	OriginalHeight int
 	OriginalWidth  int

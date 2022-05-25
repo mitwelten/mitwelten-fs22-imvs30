@@ -89,9 +89,9 @@ func DecodeAll(frames ...*mjpeg.MjpegFrame) []image.Image {
 }
 
 func Decode(frame *mjpeg.MjpegFrame) image.Image {
-	if frame.Image == nil {
+	if frame.CachedImage == nil {
 		img, err := jpeg.Decode(bytes.NewReader(frame.Body), &DecodeOptions)
-		frame.Image = img
+		frame.CachedImage = img
 
 		if err != nil {
 			panic("can't decode jpg")
@@ -99,7 +99,7 @@ func Decode(frame *mjpeg.MjpegFrame) image.Image {
 
 		return img
 	} else {
-		return frame.Image
+		return frame.CachedImage
 	}
 }
 
@@ -192,38 +192,36 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 	totalWidth := firstWidthInitial * nCols
 	totalHeight := firstHeightInitial * nRows
 
+	var cellWidth int
+	var cellHeight int
 	// check the max totalWidth and totalHeight
-	if (global.Config.MaxHeight != -1 && global.Config.MaxHeight < totalHeight) || (global.Config.MaxWidth != -1 && global.Config.MaxWidth < totalWidth) {
-		deltaW := 1
-		deltaH := 1
+	deltaW := 1
+	deltaH := 1
 
-		if global.Config.MaxWidth != -1 {
-			deltaW = totalWidth / global.Config.MaxWidth
-		}
+	if global.Config.MaxWidth != -1 {
+		deltaW = totalWidth / global.Config.MaxWidth
+	}
 
-		if global.Config.MaxHeight != -1 {
-			deltaH = totalHeight / global.Config.MaxHeight
-		}
+	if global.Config.MaxHeight != -1 {
+		deltaH = totalHeight / global.Config.MaxHeight
+	}
 
-		targetWidth := (totalWidth / deltaW) / nCols
-		targetHeight := (totalHeight / deltaH) / nRows
+	totalWidth = totalWidth / deltaW
+	totalHeight = totalHeight / deltaH
 
-		// resize all images if needed
-		for i, _ := range images {
-			if images[i].Bounds().Dx() != targetWidth || images[i].Bounds().Dy() != targetHeight {
-				frames[i].OriginalWidth = images[i].Bounds().Dx()
-				frames[i].OriginalHeight = images[i].Bounds().Dy()
-				frames[i].Resized = true
+	cellWidth = totalWidth / nCols
+	cellHeight = totalHeight / nRows
 
-				images[i] = Resize(images[i], targetWidth, targetHeight)
-				frames[i].Image = images[i]
-			}
+	// resize all images if needed
+	for i, _ := range images {
+		if images[i].Bounds().Dx() != cellWidth || images[i].Bounds().Dy() != cellHeight {
+			images[i] = ResizeStorage(frames[i], images[i], cellWidth, cellHeight)
+			frames[i].CachedImage = images[i]
 		}
 	}
 
 	// rectangle
-	var i0 = images[0]
-	var pointMax = image.Point{X: i0.Bounds().Dx() * nCols, Y: i0.Bounds().Dy() * nRows}
+	var pointMax = image.Point{X: totalWidth, Y: totalHeight}
 	var rectangle = image.Rectangle{Min: image.Point{}, Max: pointMax}
 
 	// image
@@ -239,7 +237,7 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 			break
 		}
 
-		var sp = image.Point{X: i0.Bounds().Dx() * col_, Y: i0.Bounds().Dy() * row_}
+		var sp = image.Point{X: cellWidth * col_, Y: cellHeight * row_}
 		//grid lines:
 
 		if row_ == 0 || col_ == 0 {
@@ -271,6 +269,13 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 	return Encode(imageOut)
 }
 
+func ResizeStorage(frame *mjpeg.MjpegFrame, img image.Image, width int, height int) image.Image {
+	frame.OriginalWidth = img.Bounds().Dx()
+	frame.OriginalHeight = img.Bounds().Dy()
+	frame.Resized = true
+
+	return Resize(img, width, height)
+}
 func Resize(img image.Image, width int, height int) image.Image {
 	dst := image.NewRGBA(image.Rect(0, 0, width, height))
 	draw.NearestNeighbor.Scale(dst, dst.Rect, img, img.Bounds(), draw.Over, nil)
