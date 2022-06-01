@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"math"
 	"mjpeg_multiplexer/src/imageUtils"
+	"strconv"
 	"time"
 )
 
@@ -45,21 +46,21 @@ func FrameDifferenceImage(img1 image.Image, img2 image.Image) image.Image {
 	/*	img1 = imageUtils.Resize(img1, 100, 100)
 		img2 = imageUtils.Resize(img2, 100, 100)
 	*/
-	timestamp := time.Now().Format(time.Stamp)
+	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
 
 	buff := bytes.NewBuffer([]byte{})
 	_ = jpeg.Encode(buff, img1, nil)
-	_ = ioutil.WriteFile("temp/img1"+timestamp+".jpg", buff.Bytes(), 0644)
+	_ = ioutil.WriteFile("temp/"+timestamp+"img1.jpg", buff.Bytes(), 0644)
 
 	buff = bytes.NewBuffer([]byte{})
 	_ = jpeg.Encode(buff, img2, nil)
-	_ = ioutil.WriteFile("temp/img2"+timestamp+".jpg", buff.Bytes(), 0644)
+	_ = ioutil.WriteFile("temp/"+timestamp+"img2.jpg", buff.Bytes(), 0644)
 
 	img3 := kernelPixelChangedThresholdImage(img1, img2)
 
 	buff = bytes.NewBuffer([]byte{})
 	_ = jpeg.Encode(buff, img3, nil)
-	_ = ioutil.WriteFile("temp/img3"+timestamp+".jpg", buff.Bytes(), 0644)
+	_ = ioutil.WriteFile("temp/"+timestamp+"img3.jpg", buff.Bytes(), 0644)
 
 	return img3
 }

@@ -1,12 +1,15 @@
 package aggregator
 
 import (
+	"log"
 	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/imageUtils"
 	"mjpeg_multiplexer/src/mjpeg"
 	"mjpeg_multiplexer/src/motionDetection"
 	"time"
 )
+
+const minWaitBetweenChanges = 2000 * time.Millisecond
 
 type AggregatorCarousel struct {
 	data           AggregatorData
@@ -31,17 +34,19 @@ func (aggregator *AggregatorCarousel) GetAggregatorData() *AggregatorData {
 
 func (aggregator *AggregatorCarousel) aggregate(storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFrame {
 	//todo what about images with different resolutions? Downscale to the smallest? Use the OutputMaxWidth config?
+	newIndex := aggregator.motionDetector.GetMostActiveIndex()
+	if newIndex == -1 && time.Since(aggregator.lastSwitch) >= aggregator.Duration {
+		// duration update
+		aggregator.currentIndex = (aggregator.currentIndex + 1) % len(storages)
+		log.Printf("Switched due to DURATION\n")
+		aggregator.lastSwitch = time.Now()
+	} else if newIndex != -1 && time.Since(aggregator.lastSwitch) >= minWaitBetweenChanges {
+		//  motion update
+		aggregator.currentIndex = newIndex
+		log.Printf("Switched due to MOTION\n")
+		aggregator.lastSwitch = time.Now()
+	}
 
-	/*
-		if time.Since(aggregator.lastSwitch) > aggregator.Duration {
-			aggregator.currentIndex = (aggregator.currentIndex + 1) % len(storages)
-			aggregator.lastSwitch = time.Now()
-		}
-
-	*/
-
-	/*	aggregator.currentIndex = aggregator.motionDetector.GetMostActiveIndex()
-		return imageUtils.Transform(storages[aggregator.currentIndex])
-	*/
-	return imageUtils.Encode(aggregator.motionDetector.GetMostActiveImage())
+	return imageUtils.Transform(storages[aggregator.currentIndex])
+	//return imageUtils.Encode(aggregator.motionDetector.GetMostActiveImage())
 }

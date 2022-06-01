@@ -17,14 +17,15 @@ type MotionDetector struct {
 }
 
 const updateDelay = 1000 * time.Millisecond
-const nPreviousScores = 5
+const minScore = 0.001
+const nPreviousScores = 3
 
 func NewMotionDetector(storages ...*mjpeg.FrameStorage) *MotionDetector {
 	motionDetector := MotionDetector{}
 	motionDetector.storages = storages
 	motionDetector.previousScores = make([]utils.RingBuffer[float64], len(storages))
 
-	for i, _ := range storages {
+	for i := range storages {
 		// init the buffers for the average change scores
 		motionDetector.previousScores[i] = utils.NewRingBuffer[float64](nPreviousScores)
 	}
@@ -41,6 +42,7 @@ func (motionDetector *MotionDetector) UpdateScores() {
 
 	for i, storage := range motionDetector.storages {
 		if len(storage.GetAllPtr()) >= 2 {
+			//todo cache last frame to reuse it next second?
 			score := FrameDifferenceScore(imageUtils.Decode(storage.GetAllPtr()[0]), imageUtils.Decode(storage.GetAllPtr()[1]))
 			motionDetector.previousScores[i].Push(score)
 		}
@@ -49,15 +51,9 @@ func (motionDetector *MotionDetector) UpdateScores() {
 	motionDetector.lastScoreUpdate = time.Now()
 }
 
-func (motionDetector *MotionDetector) GetMostActiveImage() image.Image {
-	index := motionDetector.GetMostActiveIndex()
-
-	return FrameDifferenceImage(imageUtils.Decode(motionDetector.storages[index].GetAllPtr()[0]), imageUtils.Decode(motionDetector.storages[index].GetAllPtr()[1]))
-
-}
-
 func (motionDetector *MotionDetector) GetMostActiveIndex() int {
 	motionDetector.UpdateScores()
+
 	scores := make([]float64, len(motionDetector.previousScores))
 	for i, el := range motionDetector.previousScores {
 		data, size := el.GetData()
@@ -65,11 +61,17 @@ func (motionDetector *MotionDetector) GetMostActiveIndex() int {
 			continue
 		}
 		scores[i] = averageScore(*data, size)
-		fmt.Printf("Frame %v scores: %v\n", i, scores[i])
+		//fmt.Printf("Frame %v scores: %v\n", i, scores[i])
 	}
 
-	index, _ := argmax(scores)
-	return index
+	index, score := argmax(scores)
+	fmt.Printf("Best score: %v from index %v\n", score, index)
+
+	if score >= minScore {
+		return index
+	} else {
+		return -1
+	}
 }
 
 func averageScore(arr []float64, size int) float64 {
@@ -93,4 +95,12 @@ func argmax(data []float64) (int, float64) {
 		}
 	}
 	return maxIndex, max
+}
+
+func (motionDetector *MotionDetector) GetMostActiveImage() image.Image {
+
+	index := motionDetector.GetMostActiveIndex()
+
+	return FrameDifferenceImage(imageUtils.Decode(motionDetector.storages[index].GetAllPtr()[0]), imageUtils.Decode(motionDetector.storages[index].GetAllPtr()[4]))
+
 }
