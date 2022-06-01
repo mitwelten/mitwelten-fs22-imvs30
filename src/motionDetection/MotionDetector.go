@@ -1,7 +1,6 @@
 package motionDetection
 
 import (
-	"fmt"
 	"image"
 	"mjpeg_multiplexer/src/imageUtils"
 	"mjpeg_multiplexer/src/mjpeg"
@@ -65,7 +64,7 @@ func (motionDetector *MotionDetector) GetMostActiveIndex() int {
 	}
 
 	index, score := argmax(scores)
-	fmt.Printf("Best score: %v from index %v\n", score, index)
+	//fmt.Printf("Best score: %v from index %v\n", score, index)
 
 	if score >= minScore {
 		return index
