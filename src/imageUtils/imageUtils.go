@@ -217,8 +217,8 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 	// resize all images if needed
 	for i, _ := range images {
 		if images[i].Bounds().Dx() != cellWidth || images[i].Bounds().Dy() != cellHeight {
-			images[i] = ResizeStorage(frames[i], images[i], cellWidth, cellHeight)
-			frames[i].CachedImage = images[i]
+			images[i] = Resize(images[i], cellWidth, cellHeight)
+			//frames[i].CachedImage = images[i]
 		}
 	}
 

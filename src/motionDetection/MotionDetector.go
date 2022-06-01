@@ -3,15 +3,15 @@ package motionDetection
 import (
 	"fmt"
 	"image"
+	"mjpeg_multiplexer/src/imageUtils"
 	"mjpeg_multiplexer/src/mjpeg"
 	"mjpeg_multiplexer/src/utils"
 	"time"
 )
 
-// MotionDetection aggregates multiple frame storages, calculates score to detect most attractive input and sets output
-type MotionDetection struct {
+// MotionDetector aggregates multiple frame storages, calculates score to detect most attractive input and sets output
+type MotionDetector struct {
 	storages        []*mjpeg.FrameStorage
-	previousImages  []utils.RingBuffer[image.Image]
 	previousScores  []utils.RingBuffer[float64]
 	lastScoreUpdate time.Time
 }
@@ -19,38 +19,45 @@ type MotionDetection struct {
 const updateDelay = 1000 * time.Millisecond
 const nPreviousScores = 5
 
-func (motionDetector *MotionDetection) Setup(storages ...*mjpeg.FrameStorage) {
+func NewMotionDetector(storages ...*mjpeg.FrameStorage) *MotionDetector {
+	motionDetector := MotionDetector{}
 	motionDetector.storages = storages
-	motionDetector.previousImages = make([]utils.RingBuffer[image.Image], len(storages))
 	motionDetector.previousScores = make([]utils.RingBuffer[float64], len(storages))
 
 	for i, _ := range storages {
 		// init the buffers for the average change scores
-		motionDetector.previousImages[i] = utils.NewRingBuffer[image.Image](nPreviousScores)
 		motionDetector.previousScores[i] = utils.NewRingBuffer[float64](nPreviousScores)
 	}
 
 	motionDetector.lastScoreUpdate = time.Now()
 
+	return &motionDetector
 }
 
-func (motionDetector *MotionDetection) UpdateScores(images ...image.Image) {
+func (motionDetector *MotionDetector) UpdateScores() {
 	if time.Since(motionDetector.lastScoreUpdate) < updateDelay {
 		return
 	}
 
-	for i, img := range images {
-		if len(motionDetector.previousImages[i].GetAllPtr()) != 0 {
-			score := FrameDifferenceScore(motionDetector.previousImages[i].Peek(), img)
+	for i, storage := range motionDetector.storages {
+		if len(storage.GetAllPtr()) >= 2 {
+			score := FrameDifferenceScore(imageUtils.Decode(storage.GetAllPtr()[0]), imageUtils.Decode(storage.GetAllPtr()[1]))
 			motionDetector.previousScores[i].Push(score)
 		}
-		motionDetector.previousImages[i].Push(img)
 	}
 
 	motionDetector.lastScoreUpdate = time.Now()
 }
 
-func (motionDetector *MotionDetection) GetMostActiveIndex() int {
+func (motionDetector *MotionDetector) GetMostActiveImage() image.Image {
+	index := motionDetector.GetMostActiveIndex()
+
+	return FrameDifferenceImage(imageUtils.Decode(motionDetector.storages[index].GetAllPtr()[0]), imageUtils.Decode(motionDetector.storages[index].GetAllPtr()[1]))
+
+}
+
+func (motionDetector *MotionDetector) GetMostActiveIndex() int {
+	motionDetector.UpdateScores()
 	scores := make([]float64, len(motionDetector.previousScores))
 	for i, el := range motionDetector.previousScores {
 		data, size := el.GetData()
@@ -58,7 +65,7 @@ func (motionDetector *MotionDetection) GetMostActiveIndex() int {
 			continue
 		}
 		scores[i] = averageScore(*data, size)
-		fmt.Printf("Frame %v scores: %v\n", i, data)
+		fmt.Printf("Frame %v scores: %v\n", i, scores[i])
 	}
 
 	index, _ := argmax(scores)
