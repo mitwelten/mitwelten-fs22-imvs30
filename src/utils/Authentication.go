@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"log"
+	"mjpeg_multiplexer/src/global"
 	"os"
 )
 
@@ -15,7 +16,15 @@ type JSONAuthentication struct {
 
 const authenticationFileLocation = "authentication.json"
 
-func ParseAuthenticationFile() map[string]string {
+func findInputConfigIndex(url string) int {
+	for i, el := range global.Config.InputConfigs {
+		if el.Url == url {
+			return i
+		}
+	}
+	return -1
+}
+func ParseAuthenticationFile() {
 	bytes, err := os.ReadFile(authenticationFileLocation)
 	if err != nil {
 		log.Fatalf("Can't open authentication file: %v\n", err.Error())
@@ -27,16 +36,14 @@ func ParseAuthenticationFile() map[string]string {
 		log.Fatalf("Can't parse authentication file json: %v\n", err.Error())
 	}
 
-	authentications := make(map[string]string)
-	keys := make([]string, 1)
-
 	for _, entry := range data {
 		auth := entry
 		payload := base64.StdEncoding.EncodeToString([]byte(auth.Username + ":" + auth.Password))
-		authentications[auth.Url] = payload
-		keys = append(keys, auth.Url)
-	}
 
-	log.Printf("Found %v authenticaion configs: %v\n", len(authentications), keys)
-	return authentications
+		index := findInputConfigIndex(auth.Url)
+		if index == -1 {
+			continue
+		}
+		global.Config.InputConfigs[index].Authentication = payload
+	}
 }

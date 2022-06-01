@@ -4,14 +4,23 @@ package imageUtils
 
 import (
 	"bytes"
+	_ "embed"
+	"github.com/golang/freetype"
+	"github.com/golang/freetype/truetype"
 	"github.com/pixiv/go-libjpeg/jpeg"
 	"golang.org/x/image/draw"
+	"golang.org/x/image/font"
+	"golang.org/x/image/math/fixed"
 	"image"
+	"image/color"
 	"log"
 	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/mjpeg"
 	"mjpeg_multiplexer/src/utils"
 )
+
+//go:embed arial.ttf
+var arial []byte
 
 var DecodeOptions = jpeg.DecoderOptions{ScaleTarget: image.Rectangle{}, DCTMethod: jpeg.DCTIFast, DisableFancyUpsampling: false, DisableBlockSmoothing: false}
 var EncodingOptions = jpeg.EncoderOptions{Quality: 100, OptimizeCoding: false, ProgressiveMode: false, DCTMethod: jpeg.DCTISlow}
@@ -241,21 +250,50 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 		draw.Draw(imageOut, r, images[i], image.Point{}, draw.Src)
 	}
 
-	// draw grid lines
-	borderVertical := image.Rectangle{Min: image.Point{X: -global.Config.Margin / 2}, Max: image.Point{X: global.Config.Margin / 2, Y: imageOut.Bounds().Dy()}}
-	borderHorizontal := image.Rectangle{Min: image.Point{Y: -global.Config.Margin / 2}, Max: image.Point{X: imageOut.Bounds().Dx(), Y: global.Config.Margin / 2}}
-	for i, p := range marginStartPoints {
-		//ignore first point to avoid border lines
-		if i == 0 {
-			continue
-		}
+	//place labels
+	if global.Config.ShowInputLabel {
 
-		if p.Y == 0 {
-			//vertical
-			draw.Draw(imageOut, borderVertical.Add(p), image.Black, image.Point{}, draw.Src)
-		} else {
-			//horizontal
-			draw.Draw(imageOut, borderHorizontal.Add(p), image.Black, image.Point{}, draw.Src)
+		for i := 0; i < nCells; i++ {
+			var row_ = i / nCols
+			var col_ = i % nCols
+
+			if i >= nFrames {
+				break
+			}
+
+			var sp = image.Point{X: cellWidth * col_, Y: cellHeight * row_}
+			// adjust the start point relative to the border size
+			x := sp.X
+			y := sp.Y
+			if col_ != 0 {
+				x += global.Config.Border / 2
+			}
+			if row_ != 0 {
+				y += global.Config.Border / 2
+			}
+
+			addLabel(imageOut, x, y, global.Config.InputConfigs[i].Url)
+
+		}
+	}
+
+	// draw border
+	if global.Config.Border != 0 {
+		borderVertical := image.Rectangle{Min: image.Point{X: -global.Config.Border / 2}, Max: image.Point{X: global.Config.Border / 2, Y: imageOut.Bounds().Dy()}}
+		borderHorizontal := image.Rectangle{Min: image.Point{Y: -global.Config.Border / 2}, Max: image.Point{X: imageOut.Bounds().Dx(), Y: global.Config.Border / 2}}
+		for i, p := range marginStartPoints {
+			//ignore first point to avoid border lines
+			if i == 0 {
+				continue
+			}
+
+			if p.Y == 0 {
+				//vertical
+				draw.Draw(imageOut, borderVertical.Add(p), image.Black, image.Point{}, draw.Src)
+			} else {
+				//horizontal
+				draw.Draw(imageOut, borderHorizontal.Add(p), image.Black, image.Point{}, draw.Src)
+			}
 		}
 	}
 
@@ -344,4 +382,34 @@ func Transform(input *mjpeg.FrameStorage) *mjpeg.MjpegFrame {
 	// Else just decode and encode to adjust the quality
 	return Encode(Decode(input.GetLatestPtr()))
 
+}
+
+const labelSize = 36
+const padding = 8
+
+var labelSrc = image.NewUniform(color.RGBA{R: 255, G: 255, B: 255, A: 255})
+var f, _ = freetype.ParseFont(arial)
+var face = truetype.NewFace(f, &truetype.Options{
+	Size: labelSize,
+})
+
+func addLabel(img *image.RGBA, x, y int, label string) {
+	point := fixed.Point26_6{X: fixed.I(x + padding), Y: fixed.I(y + labelSize)}
+
+	d := &font.Drawer{
+		Dst:  img,
+		Src:  labelSrc,
+		Face: face,
+		Dot:  point,
+	}
+
+	textWidth := d.MeasureString(label).Round() + 2*padding
+	textHeight := labelSize + padding
+
+	// draw the black border...
+	var r = image.Rectangle{Min: image.Point{X: x, Y: y}, Max: image.Point{X: x + textWidth, Y: y + textHeight}}
+	draw.Draw(img, r, image.Black, image.Point{}, draw.Src)
+
+	// and the text
+	d.DrawString(label)
 }

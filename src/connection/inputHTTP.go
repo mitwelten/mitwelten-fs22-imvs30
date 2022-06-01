@@ -22,6 +22,7 @@ const delim = "\r\n"
 const authentication = "Authorization: Basic "
 
 type InputHTTP struct {
+	config             *global.InputConfig
 	url                string
 	connection         net.Conn
 	bufferedConnection *bufio.Reader
@@ -29,8 +30,8 @@ type InputHTTP struct {
 }
 
 // NewInputHTTP todo TEST: Test this function by creating an input and checking if it runs
-func NewInputHTTP(url string) *InputHTTP {
-	return &InputHTTP{url: url}
+func NewInputHTTP(config *global.InputConfig, url string) *InputHTTP {
+	return &InputHTTP{config: config, url: url}
 }
 
 func (source *InputHTTP) Info() string {
@@ -58,8 +59,8 @@ func (source *InputHTTP) sendHeader() error {
 	}
 
 	// Also send the authentication if available
-	if payload, ok := global.Config.Authentications[source.url]; ok {
-		_, err = source.connection.Write([]byte(authentication + payload + delim))
+	if global.Config.UseAuth && source.config.Authentication != "" {
+		_, err = source.connection.Write([]byte(authentication + source.config.Authentication + delim))
 		if err != nil {
 			return &customErrors.ErrHttpWriteHeader{IP: source.connection.LocalAddr().String()}
 		}

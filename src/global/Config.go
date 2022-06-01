@@ -1,8 +1,11 @@
 package global
 
+type InputConfig struct {
+	Url            string
+	Authentication string
+}
+
 type GlobalConfig struct {
-	// pair of url strings and the base64 encoded 'username:password'
-	Authentications map[string]string
 	// Print the time used for image operations
 	LogTime bool
 	// Maximal resolution of the resulting image, bigger images will be resized
@@ -14,20 +17,28 @@ type GlobalConfig struct {
 	OutputFramerate float64
 	// quality for jpeg encoding
 	EncodeQuality int
+	// size of border between images
+	Border int
 
-	Margin int
+	UseAuth        bool
+	ShowInputLabel bool
+	InputConfigs   []InputConfig
 }
 
 var Config GlobalConfig
 
 func initialConfig() GlobalConfig {
 	return GlobalConfig{
-		Authentications: map[string]string{},
 		LogTime:         false,
 		MaxWidth:        -1,
 		MaxHeight:       -1,
+		InputFramerate:  -1,
+		OutputFramerate: -1,
 		EncodeQuality:   100,
-		Margin:          0,
+		Border:          0,
+		UseAuth:         false,
+		ShowInputLabel:  false,
+		InputConfigs:    []InputConfig{},
 	}
 }
 func SetupInitialConfig() {

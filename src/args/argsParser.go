@@ -36,6 +36,7 @@ Options:
   --output_quality=n     output jpeg quality in percentage [default: 100]
   --border=n             number of black pixels between each image [default: 0]
   --use_auth             Use Authentication
+  --label                Show label for input streams
   --log_time             Log Time verbose
   --verbose              Shows details.
   --version              Shows version.`
@@ -44,11 +45,11 @@ Options:
 // parseInput parses input URLS derived from command line arguments
 func parseInputUrls(config multiplexer.MultiplexerConfig, inputStr string) multiplexer.MultiplexerConfig {
 	inputUrls := strings.Split(inputStr, InputLocationSeparator)
-	var conns []connection.Input
-	for _, s := range inputUrls {
-		conns = append(conns, connection.NewInputHTTP(s))
+	config.InputLocations = []connection.Input{}
+	for i, url := range inputUrls {
+		global.Config.InputConfigs = append(global.Config.InputConfigs, global.InputConfig{Url: url})
+		config.InputLocations = append(config.InputLocations, connection.NewInputHTTP(&global.Config.InputConfigs[i], url))
 	}
-	config.InputLocations = conns
 
 	return config
 }
@@ -95,6 +96,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	outputMargin, _ := arguments.Int("--border")
 	useAuth, _ := arguments.Bool("--use_auth")
 	logTime, _ := arguments.Bool("--log_time")
+	showInputLabel, _ := arguments.Bool("--label")
 
 	// global config
 
@@ -131,7 +133,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	//	return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidMode{Argument: *modePtr}
 
 	// credentials
-	config.UseAuth = useAuth
+	global.Config.UseAuth = useAuth
 
 	// logtime
 	global.Config.LogTime = logTime
@@ -144,7 +146,10 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	global.Config.EncodeQuality = outputQuality
 
 	// border
-	global.Config.Margin = outputMargin
+	global.Config.Border = outputMargin
+
+	// label
+	global.Config.ShowInputLabel = showInputLabel
 
 	// non error case, return nil
 	return config, nil

@@ -14,14 +14,13 @@ type MultiplexerConfig struct {
 	InputLocations []connection.Input
 	Output         connection.Output
 	Aggregator     aggregator.Aggregator
-	UseAuth        bool
 }
 
 func Multiplexer(multiplexerConfig MultiplexerConfig) {
 	var wg sync.WaitGroup
 
-	if multiplexerConfig.UseAuth {
-		global.Config.Authentications = utils.ParseAuthenticationFile()
+	if global.Config.UseAuth {
+		utils.ParseAuthenticationFile()
 	}
 
 	var frameStorage []*mjpeg.FrameStorage
