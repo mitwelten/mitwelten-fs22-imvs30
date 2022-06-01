@@ -9,7 +9,7 @@ import (
 )
 
 var argsMockGrid = []string{"multiplexer", "grid", "--grid_dimension", "2", "1", "input", "localhost:8080,localhost:8080", "output", "8088", "--log_time"}
-var argsMockMotion = []string{"main.exe", "motion", "input", "localhost:8080,localhost:8080", "output", "8088"}
+var argsMockMotion = []string{"main.exe", "motionDetection", "input", "localhost:8080,localhost:8080", "output", "8088"}
 var expectedInputLocations []string
 var expectedOutput connection.Output
 

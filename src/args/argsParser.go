@@ -19,7 +19,6 @@ const (
 
 var (
 	usage = `Usage:
-  multiplexer (motion) (input) URL (output) PORT [options]
   multiplexer (grid) (--dimension GRID_Y GRID_X) (input) URL (output) PORT [options] 
   multiplexer (carousel) (--duration DURATION) (input) URL (output) PORT [options]
   multiplexer (panel) [--cycle] [--duration DURATION] (input) URL (output) PORT [options]  
@@ -38,7 +37,8 @@ Options:
   --use_auth             Use Authentication
   --label                Show label for input streams
   --log_time             Log Time verbose
-  --verbose              Shows details.
+  --motion               Enables motion detection to focus the most active frame on selected mode
+  --verbose              Shows details. 
   --version              Shows version.`
 )
 
@@ -78,7 +78,6 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 
 	// mode
 	grid, _ := arguments.Bool("grid")
-	motion, _ := arguments.Bool("motion")
 	panel, _ := arguments.Bool("panel")
 	carousel, _ := arguments.Bool("carousel")
 	// mode options
@@ -97,6 +96,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	useAuth, _ := arguments.Bool("--use_auth")
 	logTime, _ := arguments.Bool("--log_time")
 	showInputLabel, _ := arguments.Bool("--label")
+	useMotion, _ := arguments.Bool("--motion")
 
 	// global config
 
@@ -106,8 +106,6 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	// mode
 	if grid {
 		config.Aggregator = &aggregator.AggregatorGrid{Row: gridY, Col: gridX}
-	} else if motion {
-		config.Aggregator = &aggregator.AggregatorChange{}
 	} else if carousel {
 		config.Aggregator = &aggregator.AggregatorCarousel{Duration: time.Duration(duration) * time.Second}
 	} else if panel {
@@ -150,6 +148,9 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 
 	// label
 	global.Config.ShowInputLabel = showInputLabel
+
+	//motion
+	global.Config.UseMotion = useMotion
 
 	// non error case, return nil
 	return config, nil

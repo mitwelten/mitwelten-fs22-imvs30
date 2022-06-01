@@ -1,4 +1,4 @@
-package changeDetection
+package motionDetection
 
 import (
 	"github.com/anthonynsimon/bild/blend"
@@ -11,10 +11,9 @@ import (
 )
 
 // PixelDifferenceScorer simple pixel scorer struct
-type PixelDifferenceScorer struct{}
 
-// Score implements Scorer.Score Method
-func (s *PixelDifferenceScorer) Diff(frames []*mjpeg.MjpegFrame) mjpeg.MjpegFrame {
+// FrameDifferenceScore implements Scorer.FrameDifferenceScore Method
+func Diff(frames []*mjpeg.MjpegFrame) mjpeg.MjpegFrame {
 	if len(frames) < 2 {
 		return mjpeg.NewMJPEGFrame()
 	}
@@ -26,14 +25,8 @@ func (s *PixelDifferenceScorer) Diff(frames []*mjpeg.MjpegFrame) mjpeg.MjpegFram
 	return *imageUtils.Encode(img)
 }
 
-// Score implements Scorer.Score Method
-func (s *PixelDifferenceScorer) Score(frames []*mjpeg.MjpegFrame) float64 {
-	if len(frames) < 2 {
-		return -1
-	}
-	img1 := imageUtils.Decode(frames[0])
-	img2 := imageUtils.Decode(frames[1])
-
+// FrameDifferenceScore implements Scorer.FrameDifferenceScore Method
+func FrameDifferenceScore(img1 image.Image, img2 image.Image) float64 {
 	return kernelPixelChangedThreshold(img1, img2) / float64(img1.Bounds().Dx()*img1.Bounds().Dy())
 }
 
@@ -152,8 +145,6 @@ func kernelPixelChangedThresholdEigenblur(img1 image.Image, img2 image.Image) in
 
 func kernelPixelChangedThreshold(img1 image.Image, img2 image.Image) float64 {
 	score := 0.0
-
-	//img1 = blur.Box(img1, 1)
 
 	for y := 0; y < img1.Bounds().Dy(); y++ {
 		for x := 0; x < img1.Bounds().Dx(); x++ {

@@ -22,6 +22,7 @@ type GlobalConfig struct {
 
 	UseAuth        bool
 	ShowInputLabel bool
+	UseMotion      bool
 	InputConfigs   []InputConfig
 }
 
@@ -38,6 +39,7 @@ func initialConfig() GlobalConfig {
 		Border:          0,
 		UseAuth:         false,
 		ShowInputLabel:  false,
+		UseMotion:       false,
 		InputConfigs:    []InputConfig{},
 	}
 }
