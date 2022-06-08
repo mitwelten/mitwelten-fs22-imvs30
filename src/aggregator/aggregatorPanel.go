@@ -45,14 +45,18 @@ func (aggregator *AggregatorPanel) GetAggregatorData() *AggregatorData {
 }
 
 func (aggregator *AggregatorPanel) aggregate(storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFrame {
-	newIndex := aggregator.motionDetector.GetMostActiveIndex()
-	if newIndex == -1 && time.Since(aggregator.lastSwitch) >= aggregator.Duration {
+	index := -1
+	if aggregator.motionDetector != nil {
+		index = aggregator.motionDetector.GetMostActiveIndex()
+	}
+
+	if index == -1 && time.Since(aggregator.lastSwitch) >= aggregator.Duration {
 		// duration update
 		aggregator.currentIndex = (aggregator.currentIndex + 1) % len(storages)
 		aggregator.lastSwitch = time.Now()
-	} else if newIndex != -1 && time.Since(aggregator.lastSwitch) >= minWaitBetweenChanges {
+	} else if index != -1 && index != aggregator.currentIndex && time.Since(aggregator.lastSwitch) >= minWaitBetweenChanges {
 		//  motion update
-		aggregator.currentIndex = newIndex
+		aggregator.currentIndex = index
 		aggregator.lastSwitch = time.Now()
 	}
 
