@@ -53,10 +53,10 @@ func (*ErrHttpReadFrame) Error() string {
 	return fmt.Sprintf("error while reading full frame")
 }
 
-type ErrHttpReadEntireFrame struct {
-	err error
+type ErrInvalidFrame struct {
+	Text string
 }
 
-func (*ErrHttpReadEntireFrame) Error() string {
-	return fmt.Sprintf("error while reading frame: Cannot read all bytes")
+func (e ErrInvalidFrame) Error() string {
+	return fmt.Sprintf(e.Text)
 }

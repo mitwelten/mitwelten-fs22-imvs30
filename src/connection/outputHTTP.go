@@ -1,7 +1,6 @@
 package connection
 
 import (
-	"errors"
 	"log"
 	"mjpeg_multiplexer/src/aggregator"
 	"mjpeg_multiplexer/src/mjpeg"
@@ -37,11 +36,11 @@ var HEADER = "HTTP/1.1 200 OK\r\n" +
 
 var DELIM = "\r\n--boundarydonotcross\r\n"
 
-func NewOutputHTTP(port string, aggregator aggregator.Aggregator) (Output, error) {
+func NewOutputHTTP(port string, aggregator aggregator.Aggregator) Output {
 	listener, err := net.Listen("tcp", ":"+port)
 
 	if err != nil {
-		return &OutputHTTP{}, errors.New("can't open socket")
+		log.Fatalf("can't open socket %s: %s", port, err.Error())
 	}
 
 	output := OutputHTTP{}
@@ -58,12 +57,12 @@ func NewOutputHTTP(port string, aggregator aggregator.Aggregator) (Output, error
 	go func() {
 		for {
 			conn, err := listener.Accept()
-			log.Println(conn.RemoteAddr().String(), " connected!")
-
 			if err != nil {
-				log.Println("Invalid Connection")
+				log.Printf("Invalid connection: %s", err.Error())
 				continue
 			}
+
+			log.Printf("%s connected\n", conn.RemoteAddr().String())
 
 			client := ClientConnection{make(chan *mjpeg.MjpegFrame), conn, false}
 
@@ -79,10 +78,10 @@ func NewOutputHTTP(port string, aggregator aggregator.Aggregator) (Output, error
 		}
 	}()
 
-	return &output, nil
+	return &output
 }
 
-func (output *OutputHTTP) SendFrame(frame *mjpeg.MjpegFrame) error {
+func (output *OutputHTTP) SendFrame(frame *mjpeg.MjpegFrame) {
 	defer output.clientsMutex.RUnlock()
 	output.clientsMutex.RLock()
 
@@ -92,8 +91,6 @@ func (output *OutputHTTP) SendFrame(frame *mjpeg.MjpegFrame) error {
 		default:
 		}
 	}
-
-	return nil
 }
 
 func (output *OutputHTTP) remove(client ClientConnection) {
@@ -122,15 +119,14 @@ func (output *OutputHTTP) serve(client ClientConnection) {
 
 		err := client_.Connection.Close()
 		if err != nil {
-			log.Println("can't close Connection to " + client_.Connection.LocalAddr().String() + ", potential leak!")
+			log.Printf("Can't close Connection to %s\n", client_.Connection.LocalAddr().String())
 		}
 	}(client)
 
 	// Send the stream header
 	var err = client.SendHeader()
 	if err != nil {
-		log.Println("error when sending header to " + client.Connection.LocalAddr().String() + ", closing Connection")
-		log.Println(err.Error())
+		log.Printf("Closing connection, error when sending header to %s: %s\n", client.Connection.LocalAddr().String(), err.Error())
 		return
 	}
 
@@ -151,8 +147,7 @@ func (output *OutputHTTP) serve(client ClientConnection) {
 		var err = client.SendFrame(frame)
 		if err != nil {
 			//todo Counter that closes after X errors
-			log.Println("error when sending frame to " + client.Connection.LocalAddr().String() + ", closing Connection")
-			log.Println(err.Error())
+			log.Printf("Closing connection, error when sending frames to %s: %s\n", client.Connection.LocalAddr().String(), err.Error())
 			return
 		}
 	}
@@ -190,11 +185,7 @@ func (output *OutputHTTP) Run() {
 
 			frame := storage_.GetLatestPtr()
 			output.lastFrame = frame
-			err := output.SendFrame(frame)
-			if err != nil {
-				log.Printf("Error while trying to send frame to output: %s\n", err.Error())
-				continue
-			}
+			output.SendFrame(frame)
 		}
 	}(output.aggregator.GetAggregatorData().OutputStorage)
 }

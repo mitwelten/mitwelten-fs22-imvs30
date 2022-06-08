@@ -1,7 +1,9 @@
 package connection
 
 import (
+	"errors"
 	"log"
+	"mjpeg_multiplexer/src/customErrors"
 	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/mjpeg"
 	"time"
@@ -16,7 +18,6 @@ type Input interface {
 
 func reconnectInput(input Input) {
 	for {
-		log.Printf("Retrying to connect to %s...\n", input.Info())
 		err := input.Start()
 		if err == nil {
 			log.Printf("Successfully reconnected to %s\n", input.Info())
@@ -24,7 +25,7 @@ func reconnectInput(input Input) {
 		}
 
 		log.Printf("Could not reconnect to %s\n", input.Info())
-		time.Sleep(1 * time.Minute)
+		time.Sleep(5 * time.Minute)
 	}
 
 }
@@ -44,8 +45,14 @@ func ListenToInput(input Input) *mjpeg.FrameStorage {
 			}
 			lastReceive = time.Now()
 			var frame, err = input.ReceiveFrameFast()
-			if err != nil {
-				log.Printf("error %s\n", err.Error())
+
+			if errors.As(err, &customErrors.ErrInvalidFrame{}) {
+				// retry when receiving invalid frame
+				log.Printf("Invalid frame read from socket %s: %s\n", input.Info(), err.Error())
+				continue
+			} else if err != nil {
+				// reconnect on read error
+				log.Printf("Could not read from socket %s: %s\n", input.Info(), err.Error())
 				reconnectInput(input)
 				continue
 			}

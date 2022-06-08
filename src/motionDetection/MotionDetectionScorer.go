@@ -34,7 +34,7 @@ func kernelPixelChangedThreshold(img1 image.Image, img2 image.Image) float64 {
 			r2, g2, b2, _ := img2.At(x, y).RGBA()
 			v2 := (int(r2/255) + int(g2/255) + int(b2/255)) / 3
 
-			if math.Abs(float64(v1-v2)) > threshold {
+			if math.Abs(float64(v1-v2)) >= threshold {
 				score++
 			}
 		}
@@ -74,7 +74,7 @@ func kernelPixelChangedThresholdImage(img1 image.Image, img2 image.Image) image.
 			r2, g2, b2, _ := img2.At(x, y).RGBA()
 			v2 := (int(r2/255) + int(g2/255) + int(b2/255)) / 3
 
-			if math.Abs(float64(v1-v2)) > threshold {
+			if math.Abs(float64(v1-v2)) >= threshold {
 				img.Set(x, y, color.White)
 			} else {
 				img.Set(x, y, color.Black)

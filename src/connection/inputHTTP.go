@@ -98,17 +98,13 @@ func (source *InputHTTP) Start() error {
 func (source *InputHTTP) ReceiveFrameFast() (mjpeg.MjpegFrame, error) {
 	header, err := source.bufferedConnection.ReadString(mjpeg.JPEG_PREFIX[0])
 	if err != nil {
-		// Authenticaion may be invalid
-		log.Println(header)
-		// could not read from header
 		return mjpeg.MjpegFrame{}, err
 	}
 
 	field := "Content-Length: "
 	startIndex := strings.LastIndex(header, field)
 	if startIndex == -1 {
-		//invalid header: no content length
-		return mjpeg.MjpegFrame{}, err
+		return mjpeg.MjpegFrame{}, &customErrors.ErrInvalidFrame{"invalid header: no content length"}
 	}
 
 	// count n digits after field
@@ -125,15 +121,14 @@ func (source *InputHTTP) ReceiveFrameFast() (mjpeg.MjpegFrame, error) {
 	contentLength, err := strconv.Atoi(header[contentLengthStart:contentLengthEnd])
 	if err != nil {
 		// cant parse content length
-		return mjpeg.MjpegFrame{}, err
+		return mjpeg.MjpegFrame{}, &customErrors.ErrInvalidFrame{"cant parse content length"}
 	}
 
 	body := make([]byte, contentLength-1) // first byte of jpge prefix has already been read
 
 	n, err := io.ReadFull(source.bufferedConnection, body)
 	if n != contentLength-1 {
-		log.Println("error: cannot read all bytes")
-		return mjpeg.MjpegFrame{}, &customErrors.ErrHttpReadEntireFrame{}
+		return mjpeg.MjpegFrame{}, &customErrors.ErrInvalidFrame{"cannot read all bytes"}
 	}
 
 	return mjpeg.MjpegFrame{Body: append(mjpeg.JPEG_PREFIX[0:1], body...)}, nil
@@ -207,8 +202,7 @@ func (source *InputHTTP) ReceiveFrame() (mjpeg.MjpegFrame, error) {
 	}
 
 	if n != contentLength-len(mjpeg.JPEG_PREFIX) {
-		log.Println("error: cannot read all bytes")
-		return mjpeg.MjpegFrame{}, &customErrors.ErrHttpReadEntireFrame{}
+		return mjpeg.MjpegFrame{}, &customErrors.ErrInvalidFrame{"cannot read all bytes"}
 	}
 
 	var body = append(mjpeg.JPEG_PREFIX, bufferBody...)
