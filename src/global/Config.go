@@ -51,5 +51,5 @@ func SetupInitialConfig() {
 }
 
 func DecodingNecessary() bool {
-	return Config.MaxHeight != -1 || Config.MaxWidth != -1 || Config.EncodeQuality != 100
+	return Config.MaxHeight != -1 || Config.MaxWidth != -1 || Config.EncodeQuality != 100 || Config.ShowInputLabel
 }

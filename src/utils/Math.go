@@ -6,6 +6,11 @@ type FloatPoint struct {
 	Y float64
 }
 
+type Tuple[T any] struct {
+	T1 T
+	T2 T
+}
+
 func Max(a, b int) int {
 	if a >= b {
 		return a

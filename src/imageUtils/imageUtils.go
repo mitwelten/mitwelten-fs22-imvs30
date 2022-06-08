@@ -33,6 +33,9 @@ type PanelLayout struct {
 	ChildrenHeight float64
 
 	ChildrenPositions []utils.FloatPoint
+
+	VerticalBorderPoints   []utils.Tuple[utils.FloatPoint]
+	HorizontalBorderPoints []utils.Tuple[utils.FloatPoint]
 }
 
 var Slots3 = PanelLayout{
@@ -43,6 +46,13 @@ var Slots3 = PanelLayout{
 	ChildrenPositions: []utils.FloatPoint{
 		{X: float64(2) / 3, Y: 0},
 		{X: float64(2) / 3, Y: float64(1) / 2},
+	},
+
+	VerticalBorderPoints: []utils.Tuple[utils.FloatPoint]{
+		{T1: utils.FloatPoint{X: float64(2) / 3, Y: 0}, T2: utils.FloatPoint{X: float64(2) / 3, Y: 1}},
+	},
+	HorizontalBorderPoints: []utils.Tuple[utils.FloatPoint]{
+		{T1: utils.FloatPoint{X: float64(2) / 3, Y: 0.5}, T2: utils.FloatPoint{X: 1, Y: 0.5}},
 	},
 }
 
@@ -55,6 +65,13 @@ var Slots4 = PanelLayout{
 		{X: float64(3) / 4, Y: 0},
 		{X: float64(3) / 4, Y: float64(1) / 3},
 		{X: float64(3) / 4, Y: float64(2) / 3},
+	},
+	VerticalBorderPoints: []utils.Tuple[utils.FloatPoint]{
+		{T1: utils.FloatPoint{X: float64(3) / 4, Y: 0}, T2: utils.FloatPoint{X: float64(3) / 4, Y: 1}},
+	},
+	HorizontalBorderPoints: []utils.Tuple[utils.FloatPoint]{
+		{T1: utils.FloatPoint{X: float64(3) / 4, Y: float64(1) / 3}, T2: utils.FloatPoint{X: 1, Y: float64(1) / 3}},
+		{T1: utils.FloatPoint{X: float64(3) / 4, Y: float64(2) / 3}, T2: utils.FloatPoint{X: 1, Y: float64(2) / 3}},
 	},
 }
 
@@ -69,6 +86,14 @@ var Slots6 = PanelLayout{
 		{X: float64(2) / 3, Y: float64(2) / 3},
 		{X: float64(2) / 3, Y: float64(1) / 3},
 		{X: float64(2) / 3, Y: 0},
+	},
+	VerticalBorderPoints: []utils.Tuple[utils.FloatPoint]{
+		{T1: utils.FloatPoint{X: float64(1) / 3, Y: float64(2) / 3}, T2: utils.FloatPoint{X: float64(1) / 3, Y: 1}},
+		{T1: utils.FloatPoint{X: float64(2) / 3, Y: 0}, T2: utils.FloatPoint{X: float64(2) / 3, Y: 1}},
+	},
+	HorizontalBorderPoints: []utils.Tuple[utils.FloatPoint]{
+		{T1: utils.FloatPoint{X: float64(2) / 3, Y: float64(1) / 3}, T2: utils.FloatPoint{X: 1, Y: float64(1) / 3}},
+		{T1: utils.FloatPoint{X: 0, Y: float64(2) / 3}, T2: utils.FloatPoint{X: 1, Y: float64(2) / 3}},
 	},
 }
 
@@ -85,6 +110,16 @@ var Slots8 = PanelLayout{
 		{X: float64(3) / 4, Y: float64(2) / 4},
 		{X: float64(3) / 4, Y: float64(1) / 4},
 		{X: float64(3) / 4, Y: 0},
+	},
+	VerticalBorderPoints: []utils.Tuple[utils.FloatPoint]{
+		{T1: utils.FloatPoint{X: float64(1) / 4, Y: float64(3) / 4}, T2: utils.FloatPoint{X: float64(1) / 4, Y: 1}},
+		{T1: utils.FloatPoint{X: float64(2) / 4, Y: float64(3) / 4}, T2: utils.FloatPoint{X: float64(2) / 4, Y: 1}},
+		{T1: utils.FloatPoint{X: float64(3) / 4, Y: 0}, T2: utils.FloatPoint{X: float64(3) / 4, Y: 1}},
+	},
+	HorizontalBorderPoints: []utils.Tuple[utils.FloatPoint]{
+		{T1: utils.FloatPoint{X: float64(3) / 4, Y: float64(1) / 4}, T2: utils.FloatPoint{X: 1, Y: float64(1) / 4}},
+		{T1: utils.FloatPoint{X: float64(3) / 4, Y: float64(2) / 4}, T2: utils.FloatPoint{X: 1, Y: float64(2) / 4}},
+		{T1: utils.FloatPoint{X: 0, Y: float64(3) / 4}, T2: utils.FloatPoint{X: 1, Y: float64(3) / 4}},
 	},
 }
 
@@ -170,6 +205,39 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 		delta := image.Point{X: int(float64(totalWidth) * layout.ChildrenWidth), Y: int(float64(totalHeight) * layout.ChildrenHeight)}
 		r = image.Rectangle{Min: sp, Max: sp.Add(delta)}
 		draw.NearestNeighbor.Scale(imageOut, r, images[index], images[index].Bounds(), draw.Over, nil)
+	}
+
+	// draw border
+	if global.Config.Border {
+		border := int(float64(totalWidth) * borderFactor)
+
+		//vertical lines
+		for _, el := range layout.VerticalBorderPoints {
+			// calculate width and height
+			rectangleWidth := border
+			rectangleHeight := int((el.T2.Y * float64(totalHeight)) - (el.T1.Y * float64(totalHeight)))
+			// start point is t1 - borderWidth
+			sp := image.Point{X: int(el.T1.X*float64(totalWidth)) - border/2, Y: int(el.T1.Y * float64(totalHeight))}
+			borderVertical := image.Rectangle{
+				Min: sp,
+				Max: sp.Add(image.Point{X: rectangleWidth, Y: rectangleHeight}),
+			}
+			draw.Draw(imageOut, borderVertical, image.Black, image.Point{}, draw.Src)
+		}
+
+		//horizontal lines
+		for _, el := range layout.HorizontalBorderPoints {
+			// calculate width and height
+			rectangleWidth := int((el.T2.X * float64(totalWidth)) - (el.T1.X * float64(totalWidth)))
+			rectangleHeight := border
+			// start point is t1 - borderHeight
+			sp := image.Point{X: int(el.T1.X*float64(totalWidth)) - border/2, Y: int(el.T1.Y * float64(totalHeight))}
+			borderVertical := image.Rectangle{
+				Min: sp,
+				Max: sp.Add(image.Point{X: rectangleWidth, Y: rectangleHeight}),
+			}
+			draw.Draw(imageOut, borderVertical, image.Black, image.Point{}, draw.Src)
+		}
 	}
 
 	return Encode(imageOut)
@@ -352,6 +420,7 @@ func GetFrameStorageSize(input *mjpeg.FrameStorage) (int, int, image.Image) {
 
 func Transform(input *mjpeg.FrameStorage) *mjpeg.MjpegFrame {
 	// todo more caching here?
+	// todo addLabel
 
 	width, height, img := GetFrameStorageSize(input)
 
