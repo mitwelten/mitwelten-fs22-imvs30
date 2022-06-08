@@ -264,7 +264,7 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 				y += int(float64(totalWidth)*borderFactor) / 2
 			}
 
-			addLabel(imageOut, x, y, global.Config.InputConfigs[i].Url)
+			addLabel(imageOut, x, y, global.Config.InputConfigs[i].Label)
 
 		}
 	}
@@ -377,18 +377,16 @@ func Transform(input *mjpeg.FrameStorage) *mjpeg.MjpegFrame {
 
 }
 
-const labelSize = 36
-const padding = 8
-
 var labelSrc = image.NewUniform(color.RGBA{R: 255, G: 255, B: 255, A: 255})
 var f, _ = freetype.ParseFont(arial)
-var face = truetype.NewFace(f, &truetype.Options{
-	Size: labelSize,
-})
 
 func addLabel(img *image.RGBA, x, y int, label string) {
-	point := fixed.Point26_6{X: fixed.I(x + padding), Y: fixed.I(y + labelSize)}
+	padding := global.Config.InputLabelFontSize / 4
+	point := fixed.Point26_6{X: fixed.I(x + padding), Y: fixed.I(y + global.Config.InputLabelFontSize)}
 
+	face := truetype.NewFace(f, &truetype.Options{
+		Size: float64(global.Config.InputLabelFontSize),
+	})
 	d := &font.Drawer{
 		Dst:  img,
 		Src:  labelSrc,
@@ -397,10 +395,10 @@ func addLabel(img *image.RGBA, x, y int, label string) {
 	}
 
 	textWidth := d.MeasureString(label).Round() + 2*padding
-	textHeight := labelSize + padding
+	textHeight := global.Config.InputLabelFontSize + padding
 
 	// draw the black border...
-	var r = image.Rectangle{Min: image.Point{X: x, Y: y}, Max: image.Point{X: x + textWidth, Y: y + textHeight}}
+	r := image.Rectangle{Min: image.Point{X: x, Y: y}, Max: image.Point{X: x + textWidth, Y: y + textHeight}}
 	draw.Draw(img, r, image.Black, image.Point{}, draw.Src)
 
 	// and the text

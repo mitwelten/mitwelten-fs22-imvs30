@@ -3,6 +3,7 @@ package args
 import (
 	"fmt"
 	"github.com/docopt/docopt.go"
+	"log"
 	"mjpeg_multiplexer/src/aggregator"
 	"mjpeg_multiplexer/src/connection"
 	"mjpeg_multiplexer/src/customErrors"
@@ -14,7 +15,7 @@ import (
 )
 
 const (
-	InputLocationSeparator = ","
+	ArgumentSeparator = ","
 )
 
 var (
@@ -26,32 +27,45 @@ var (
   multiplexer --version
 
 Options:
-  -h --help              Shows this screen.
-  --duration=n           frame duration [default: 10]
-  --input_framerate=n    input framerate in fps [default: -1]
-  --output_framerate=n   output framerate in fps[default: -1]
-  --output_max_width=n   output width in pixel [default: -1]
-  --output_max_height=n  output height in pixel [default: -1]
-  --output_quality=n     output jpeg quality in percentage [default: 100]
-  --border               number of black pixels between each image
-  --use_auth             Use Authentication
-  --label                Show label for input streams
-  --log_time             Log Time verbose
-  --motion               Enables motion detection to focus the most active frame on selected mode
-  --verbose              Shows details. 
-  --version              Shows version.`
+  -h --help                        Shows this screen.
+  --duration=n                     frame duration [default: 10]
+  --input_framerate=n              input framerate in fps [default: -1]
+  --output_framerate=n             output framerate in fps[default: -1]
+  --output_max_width=n             output width in pixel [default: -1]
+  --output_max_height=n            output height in pixel [default: -1]
+  --output_quality=n               output jpeg quality in percentage [default: 100]
+  --border                         number of black pixels between each image
+  --use_auth                       Use Authentication
+  --show_label                     Show label for input streams
+  --labels=n                       comma separated list of names to show instead of the camera input url
+  --label_font_size=n              input label font size in pixel [default: 32]
+  --log_time                       Log Time verbose
+  --motion                         Enables motion detection to focus the most active frame on selected mode
+  --verbose                        Shows details. 
+  --version                        Shows version.`
 )
 
 // parseInput parses input URLS derived from command line arguments
 func parseInputUrls(config multiplexer.MultiplexerConfig, inputStr string) multiplexer.MultiplexerConfig {
-	inputUrls := strings.Split(inputStr, InputLocationSeparator)
+	arr := strings.Split(inputStr, ArgumentSeparator)
 	config.InputLocations = []connection.Input{}
-	for i, url := range inputUrls {
-		global.Config.InputConfigs = append(global.Config.InputConfigs, global.InputConfig{Url: url})
+	for i, url := range arr {
+		global.Config.InputConfigs = append(global.Config.InputConfigs, global.InputConfig{Url: url, Label: url})
 		config.InputLocations = append(config.InputLocations, connection.NewInputHTTP(&global.Config.InputConfigs[i], url))
 	}
 
 	return config
+}
+
+// todo: evtl. trim
+func parseSeparatedString(inputStr string) {
+	arr := strings.Split(inputStr, ArgumentSeparator)
+	if len(global.Config.InputConfigs) != len(arr) {
+		log.Fatalf("%v input location present, but %v labels found\n", len(global.Config.InputConfigs), len(arr))
+	}
+	for i, label := range arr {
+		global.Config.InputConfigs[i].Label = label
+	}
 }
 
 var printUsage = func(err error, usage_ string) {
@@ -95,13 +109,18 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	useBorder, _ := arguments.Bool("--border")
 	useAuth, _ := arguments.Bool("--use_auth")
 	logTime, _ := arguments.Bool("--log_time")
-	showInputLabel, _ := arguments.Bool("--label")
+	showInputLabel, _ := arguments.Bool("--show_label")
 	useMotion, _ := arguments.Bool("--motion")
+	inputLabels, _ := arguments.String("--labels") // input inputLabels
+	inputLabelFontSize, _ := arguments.Int("--label_font_size")
 
 	// global config
 
-	// inputURL parsing
+	// inputURL and label parsing
 	config = parseInputUrls(config, input)
+	if len(inputLabels) != 0 {
+		parseSeparatedString(inputLabels)
+	}
 
 	// mode
 	if grid {
@@ -145,6 +164,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 
 	// label
 	global.Config.ShowInputLabel = showInputLabel
+	global.Config.InputLabelFontSize = inputLabelFontSize
 
 	//motion
 	global.Config.UseMotion = useMotion

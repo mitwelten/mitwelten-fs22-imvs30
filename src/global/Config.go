@@ -3,6 +3,7 @@ package global
 type InputConfig struct {
 	Url            string
 	Authentication string
+	Label          string
 }
 
 type GlobalConfig struct {
@@ -20,27 +21,29 @@ type GlobalConfig struct {
 	// use border between images
 	Border bool
 
-	UseAuth        bool
-	ShowInputLabel bool
-	UseMotion      bool
-	InputConfigs   []InputConfig
+	UseAuth            bool
+	ShowInputLabel     bool
+	InputLabelFontSize int
+	UseMotion          bool
+	InputConfigs       []InputConfig
 }
 
 var Config GlobalConfig
 
 func initialConfig() GlobalConfig {
 	return GlobalConfig{
-		LogTime:         false,
-		MaxWidth:        -1,
-		MaxHeight:       -1,
-		InputFramerate:  -1,
-		OutputFramerate: -1,
-		EncodeQuality:   100,
-		Border:          false,
-		UseAuth:         false,
-		ShowInputLabel:  false,
-		UseMotion:       false,
-		InputConfigs:    []InputConfig{},
+		LogTime:            false,
+		MaxWidth:           -1,
+		MaxHeight:          -1,
+		InputFramerate:     -1,
+		OutputFramerate:    -1,
+		EncodeQuality:      100,
+		Border:             false,
+		UseAuth:            false,
+		ShowInputLabel:     false,
+		InputLabelFontSize: 32,
+		UseMotion:          false,
+		InputConfigs:       []InputConfig{},
 	}
 }
 func SetupInitialConfig() {
