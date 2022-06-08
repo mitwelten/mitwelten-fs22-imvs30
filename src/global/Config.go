@@ -17,8 +17,8 @@ type GlobalConfig struct {
 	OutputFramerate float64
 	// quality for jpeg encoding
 	EncodeQuality int
-	// size of border between images
-	Border int
+	// use border between images
+	Border bool
 
 	UseAuth        bool
 	ShowInputLabel bool
@@ -36,7 +36,7 @@ func initialConfig() GlobalConfig {
 		InputFramerate:  -1,
 		OutputFramerate: -1,
 		EncodeQuality:   100,
-		Border:          0,
+		Border:          false,
 		UseAuth:         false,
 		ShowInputLabel:  false,
 		UseMotion:       false,

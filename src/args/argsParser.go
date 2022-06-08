@@ -33,7 +33,7 @@ Options:
   --output_max_width=n   output width in pixel [default: -1]
   --output_max_height=n  output height in pixel [default: -1]
   --output_quality=n     output jpeg quality in percentage [default: 100]
-  --border=n             number of black pixels between each image [default: 0]
+  --border               number of black pixels between each image
   --use_auth             Use Authentication
   --label                Show label for input streams
   --log_time             Log Time verbose
@@ -92,7 +92,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	outputMaxWidth, _ := arguments.Int("--output_max_width")
 	outputMaxHeight, _ := arguments.Int("--output_max_height")
 	outputQuality, _ := arguments.Int("--output_quality")
-	outputMargin, _ := arguments.Int("--border")
+	useBorder, _ := arguments.Bool("--border")
 	useAuth, _ := arguments.Bool("--use_auth")
 	logTime, _ := arguments.Bool("--log_time")
 	showInputLabel, _ := arguments.Bool("--label")
@@ -141,7 +141,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	global.Config.EncodeQuality = outputQuality
 
 	// border
-	global.Config.Border = outputMargin
+	global.Config.Border = useBorder
 
 	// label
 	global.Config.ShowInputLabel = showInputLabel

@@ -88,6 +88,8 @@ var Slots8 = PanelLayout{
 	},
 }
 
+const borderFactor = 0.0025
+
 func DecodeAll(frames ...*mjpeg.MjpegFrame) []image.Image {
 	var images []image.Image
 	for _, frame := range frames {
@@ -198,18 +200,8 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 	var cellWidth int
 	var cellHeight int
 	// check the max totalWidth and totalHeight
-	deltaW := 1
-	deltaH := 1
 
-	if global.Config.MaxWidth != -1 {
-		deltaW = totalWidth / global.Config.MaxWidth
-	}
-
-	if global.Config.MaxHeight != -1 {
-		deltaH = totalHeight / global.Config.MaxHeight
-	}
-
-	totalWidth, totalHeight = GetFinalImageSize(totalWidth/deltaW, totalHeight/deltaH)
+	totalWidth, totalHeight = GetFinalImageSize(totalWidth, totalHeight)
 
 	cellWidth = totalWidth / nCols
 	cellHeight = totalHeight / nRows
@@ -266,10 +258,10 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 			x := sp.X
 			y := sp.Y
 			if col_ != 0 {
-				x += global.Config.Border / 2
+				x += int(float64(totalWidth)*borderFactor) / 2
 			}
 			if row_ != 0 {
-				y += global.Config.Border / 2
+				y += int(float64(totalWidth)*borderFactor) / 2
 			}
 
 			addLabel(imageOut, x, y, global.Config.InputConfigs[i].Url)
@@ -278,9 +270,10 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 	}
 
 	// draw border
-	if global.Config.Border != 0 {
-		borderVertical := image.Rectangle{Min: image.Point{X: -global.Config.Border / 2}, Max: image.Point{X: global.Config.Border / 2, Y: imageOut.Bounds().Dy()}}
-		borderHorizontal := image.Rectangle{Min: image.Point{Y: -global.Config.Border / 2}, Max: image.Point{X: imageOut.Bounds().Dx(), Y: global.Config.Border / 2}}
+	if global.Config.Border {
+		border := int(float64(totalWidth) * borderFactor)
+		borderVertical := image.Rectangle{Min: image.Point{X: -border / 2}, Max: image.Point{X: border / 2, Y: imageOut.Bounds().Dy()}}
+		borderHorizontal := image.Rectangle{Min: image.Point{Y: -border / 2}, Max: image.Point{X: imageOut.Bounds().Dx(), Y: border / 2}}
 		for i, p := range marginStartPoints {
 			//ignore first point to avoid border lines
 			if i == 0 {
