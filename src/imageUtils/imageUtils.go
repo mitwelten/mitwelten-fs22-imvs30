@@ -198,6 +198,7 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 
 	imageIn := ResizeOutputFrame(images[startIndex], r.Dx(), r.Dy())
 	draw.NearestNeighbor.Scale(imageOut, r, imageIn, imageIn.Bounds(), draw.Over, nil)
+	addLabel(imageOut, sp.X, sp.Y, global.Config.InputConfigs[startIndex].Label)
 
 	for i, child := range layout.ChildrenPositions {
 		if i+1 >= len(storages) {
@@ -210,6 +211,21 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 
 		imageIn := ResizeOutputFrame(images[index], r.Dx(), r.Dy())
 		draw.NearestNeighbor.Scale(imageOut, r, imageIn, imageIn.Bounds(), draw.Over, nil)
+
+		if global.Config.ShowInputLabel {
+			// add offset to avoid overlap with the borders
+			offsetW := 0
+			offsetH := 0
+
+			//labels to the left / on top don't need an offset
+			if global.Config.Border && child.X != 0 {
+				offsetW = int(float64(totalWidth)*borderFactor) / 2
+			}
+			if global.Config.Border && child.Y != 0 {
+				offsetH = int(float64(totalWidth)*borderFactor) / 2
+			}
+			addLabel(imageOut, sp.X+offsetW, sp.Y+offsetH, global.Config.InputConfigs[index].Label)
+		}
 	}
 
 	// draw border
@@ -228,6 +244,7 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 				Max: sp.Add(image.Point{X: rectangleWidth, Y: rectangleHeight}),
 			}
 			draw.Draw(imageOut, borderVertical, image.Black, image.Point{}, draw.Src)
+
 		}
 
 		//horizontal lines
