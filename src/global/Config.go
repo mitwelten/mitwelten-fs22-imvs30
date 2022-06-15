@@ -10,8 +10,9 @@ type GlobalConfig struct {
 	// Print the time used for image operations
 	LogTime bool
 	// Maximal resolution of the resulting image, bigger images will be resized
-	MaxWidth  int
-	MaxHeight int
+	Width             int
+	Height            int
+	IgnoreAspectRatio bool
 	// Minimum amount of time to wait between 2 consecutive reads from the inputs
 	InputFramerate float64
 	// max framerate for the output
@@ -33,8 +34,9 @@ var Config GlobalConfig
 func initialConfig() GlobalConfig {
 	return GlobalConfig{
 		LogTime:            false,
-		MaxWidth:           -1,
-		MaxHeight:          -1,
+		Width:              -1,
+		Height:             -1,
+		IgnoreAspectRatio:  false,
 		InputFramerate:     -1,
 		OutputFramerate:    -1,
 		EncodeQuality:      100,
@@ -51,5 +53,5 @@ func SetupInitialConfig() {
 }
 
 func DecodingNecessary() bool {
-	return Config.MaxHeight != -1 || Config.MaxWidth != -1 || Config.EncodeQuality != 100 || Config.ShowInputLabel
+	return Config.Height != -1 || Config.Width != -1 || Config.EncodeQuality != 100 || Config.ShowInputLabel
 }

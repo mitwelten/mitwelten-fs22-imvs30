@@ -31,8 +31,9 @@ Options:
   --duration=n                     frame duration [default: 10]
   --input_framerate=n              input framerate in fps [default: -1]
   --output_framerate=n             output framerate in fps[default: -1]
-  --output_max_width=n             output width in pixel [default: -1]
-  --output_max_height=n            output height in pixel [default: -1]
+  --width=n                        output width in pixel [default: -1]
+  --height=n                       output height in pixel [default: -1]
+  --ignore_aspect_ratio            todo
   --output_quality=n               output jpeg quality in percentage [default: 100]
   --border                         number of black pixels between each image
   --use_auth                       Use Authentication
@@ -103,8 +104,9 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	// options
 	inputFramerate, _ := arguments.Float64("--input_framerate")
 	outputFramerate, _ := arguments.Float64("--output_framerate")
-	outputMaxWidth, _ := arguments.Int("--output_max_width")
-	outputMaxHeight, _ := arguments.Int("--output_max_height")
+	width, _ := arguments.Int("--width")
+	height, _ := arguments.Int("--height")
+	ignoreAspectRatio, _ := arguments.Bool("--ignore_aspect_ratio")
 	outputQuality, _ := arguments.Int("--output_quality")
 	useBorder, _ := arguments.Bool("--border")
 	useAuth, _ := arguments.Bool("--use_auth")
@@ -139,10 +141,9 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	// disabled: output file
 	// config.Output = connection.NewOutputFile(outputFileNamePtr)
 
-	if outputMaxWidth != -1 || outputMaxHeight != -1 {
-		global.Config.MaxWidth = outputMaxWidth
-		global.Config.MaxHeight = outputMaxHeight
-	}
+	global.Config.Width = width
+	global.Config.Height = height
+	global.Config.IgnoreAspectRatio = ignoreAspectRatio
 
 	//	return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidMode{Argument: *modePtr}
 

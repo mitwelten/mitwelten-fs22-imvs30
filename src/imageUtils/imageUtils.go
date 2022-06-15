@@ -14,6 +14,7 @@ import (
 	"image"
 	"image/color"
 	"log"
+	"math"
 	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/mjpeg"
 	"mjpeg_multiplexer/src/utils"
@@ -194,7 +195,9 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 	//main character image
 	sp := image.Point{}
 	r := image.Rectangle{Min: sp, Max: image.Point{X: int(float64(totalWidth) * layout.FirstWidth), Y: int(float64(totalHeight) * layout.FirstHeight)}}
-	draw.NearestNeighbor.Scale(imageOut, r, images[startIndex], images[startIndex].Bounds(), draw.Over, nil)
+
+	imageIn := ResizeOutputFrame(images[startIndex], r.Dx(), r.Dy())
+	draw.NearestNeighbor.Scale(imageOut, r, imageIn, imageIn.Bounds(), draw.Over, nil)
 
 	for i, child := range layout.ChildrenPositions {
 		if i+1 >= len(storages) {
@@ -204,7 +207,9 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 		sp = image.Point{X: int(float64(totalWidth) * child.X), Y: int(float64(totalHeight) * child.Y)}
 		delta := image.Point{X: int(float64(totalWidth) * layout.ChildrenWidth), Y: int(float64(totalHeight) * layout.ChildrenHeight)}
 		r = image.Rectangle{Min: sp, Max: sp.Add(delta)}
-		draw.NearestNeighbor.Scale(imageOut, r, images[index], images[index].Bounds(), draw.Over, nil)
+
+		imageIn := ResizeOutputFrame(images[index], r.Dx(), r.Dy())
+		draw.NearestNeighbor.Scale(imageOut, r, imageIn, imageIn.Bounds(), draw.Over, nil)
 	}
 
 	// draw border
@@ -215,7 +220,7 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 		for _, el := range layout.VerticalBorderPoints {
 			// calculate width and height
 			rectangleWidth := border
-			rectangleHeight := int((el.T2.Y * float64(totalHeight)) - (el.T1.Y * float64(totalHeight)))
+			rectangleHeight := int((el.T2.Y*float64(totalHeight))-(el.T1.Y*float64(totalHeight))) + border/2
 			// start point is t1 - borderWidth
 			sp := image.Point{X: int(el.T1.X*float64(totalWidth)) - border/2, Y: int(el.T1.Y * float64(totalHeight))}
 			borderVertical := image.Rectangle{
@@ -228,7 +233,7 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 		//horizontal lines
 		for _, el := range layout.HorizontalBorderPoints {
 			// calculate width and height
-			rectangleWidth := int((el.T2.X * float64(totalWidth)) - (el.T1.X * float64(totalWidth)))
+			rectangleWidth := int((el.T2.X*float64(totalWidth))-(el.T1.X*float64(totalWidth))) + border/2
 			rectangleHeight := border
 			// start point is t1 - borderHeight
 			sp := image.Point{X: int(el.T1.X*float64(totalWidth)) - border/2, Y: int(el.T1.Y * float64(totalHeight))}
@@ -277,7 +282,7 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 	// resize all images if needed
 	for i, _ := range images {
 		if images[i].Bounds().Dx() != cellWidth || images[i].Bounds().Dy() != cellHeight {
-			images[i] = Resize(images[i], cellWidth, cellHeight)
+			images[i] = ResizeOutputFrame(images[i], cellWidth, cellHeight)
 			//frames[i].CachedImage = images[i]
 		}
 	}
@@ -363,6 +368,7 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 
 //ResizeStorage resizes and image and saved the resized image to the storage
 func ResizeStorage(frame *mjpeg.MjpegFrame, img image.Image, width int, height int) image.Image {
+	//todo remove?
 	frame.OriginalWidth = img.Bounds().Dx()
 	frame.OriginalHeight = img.Bounds().Dy()
 	frame.Resized = true
@@ -370,31 +376,61 @@ func ResizeStorage(frame *mjpeg.MjpegFrame, img image.Image, width int, height i
 	return Resize(img, width, height)
 }
 
+//ResizeOutputFrame resizes an image with regard to letterbox
+func ResizeOutputFrame(img image.Image, width int, height int) image.Image {
+	if !global.Config.IgnoreAspectRatio {
+
+		deltaW := float64(width) / float64(img.Bounds().Dx())
+		deltaH := float64(height) / float64(img.Bounds().Dy())
+
+		factor := math.Min(deltaW, deltaH)
+
+		outputWidth := int(float64(img.Bounds().Dx()) * factor)
+		outputHeight := int(float64(img.Bounds().Dy()) * factor)
+
+		offsetW := 0
+		offsetH := 0
+		if deltaW > deltaH {
+			//letterbox left and right
+			offsetW = (width - outputWidth) / 2
+
+		} else if deltaW < deltaH {
+			//letterbox top and bottom
+			offsetH = (height - outputHeight) / 2
+		}
+
+		dst := image.NewRGBA(image.Rect(0, 0, width, height))
+		draw.NearestNeighbor.Scale(dst, image.Rect(offsetW, offsetH, width-offsetW, height-offsetH), img, img.Bounds(), draw.Over, nil)
+		return dst
+	} else {
+		dst := image.NewRGBA(image.Rect(0, 0, width, height))
+		draw.NearestNeighbor.Scale(dst, dst.Rect, img, img.Bounds(), draw.Over, nil)
+		return dst
+	}
+}
+
 //Resize resizes an image
 func Resize(img image.Image, width int, height int) image.Image {
+
 	dst := image.NewRGBA(image.Rect(0, 0, width, height))
 	draw.NearestNeighbor.Scale(dst, dst.Rect, img, img.Bounds(), draw.Over, nil)
 	return dst
 }
 
-//GetFinalImageSize returns the size of the image in regard to the globally set MaxWidth and MinWidth
+//GetFinalImageSize returns the size of the image in regard to the globally set Width and MinWidth
 func GetFinalImageSize(currentWidth int, currentHeight int) (int, int) {
-	if global.Config.MaxWidth != -1 && global.Config.MaxHeight != -1 {
+	if global.Config.Width != -1 && global.Config.Height != -1 {
 		// both dimensions may be resized to the desired size
-		currentWidth = utils.Min(currentWidth, global.Config.MaxWidth)
-		currentHeight = utils.Min(currentHeight, global.Config.MaxHeight)
-	} else if global.Config.MaxWidth != -1 && global.Config.MaxHeight == -1 {
+		currentWidth = global.Config.Width
+		currentHeight = global.Config.Height
+	} else if global.Config.Width != -1 && global.Config.Height == -1 {
 		// reduce width and scale height
-		if currentWidth > global.Config.MaxWidth {
-			currentHeight = int(float64(currentHeight) * (float64(global.Config.MaxWidth) / float64(currentWidth)))
-			currentWidth = global.Config.MaxWidth
-		}
-	} else if global.Config.MaxWidth == -1 && global.Config.MaxHeight != -1 {
+		currentHeight = int(float64(currentHeight) * (float64(global.Config.Width) / float64(currentWidth)))
+		currentWidth = global.Config.Width
+	} else if global.Config.Width == -1 && global.Config.Height != -1 {
 		// reduce height and scale width
-		if currentHeight > global.Config.MaxHeight {
-			currentWidth = int(float64(currentWidth) * (float64(global.Config.MaxHeight) / float64(currentHeight)))
-			currentHeight = global.Config.MaxHeight
-		}
+		currentWidth = int(float64(currentWidth) * (float64(global.Config.Height) / float64(currentHeight)))
+		currentHeight = global.Config.Height
 	}
 
 	return currentWidth, currentHeight
@@ -430,14 +466,14 @@ func Transform(input *mjpeg.FrameStorage) *mjpeg.MjpegFrame {
 	}
 
 	// check if resizing is needed
-	if (global.Config.MaxWidth < width) || (global.Config.MaxHeight < height) {
+	if (global.Config.Width != width) || (global.Config.Height != height) {
 		if img == nil {
 			img = Decode(input.GetLatestPtr())
 		}
 
 		outputWidth, outputHeight := GetFinalImageSize(width, height)
 
-		resized := ResizeStorage(input.GetLatestPtr(), img, outputWidth, outputHeight)
+		resized := ResizeOutputFrame(img, outputWidth, outputHeight)
 		return Encode(resized)
 	}
 
