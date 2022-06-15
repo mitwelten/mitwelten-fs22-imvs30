@@ -124,8 +124,6 @@ var Slots8 = PanelLayout{
 	},
 }
 
-const borderFactor = 0.0025
-
 func DecodeAll(frames ...*mjpeg.MjpegFrame) []image.Image {
 	var images []image.Image
 	for _, frame := range frames {
@@ -218,19 +216,19 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 			offsetH := 0
 
 			//labels to the left / on top don't need an offset
-			if global.Config.Border && child.X != 0 {
-				offsetW = int(float64(totalWidth)*borderFactor) / 2
+			if global.Config.ShowBorder && child.X != 0 {
+				offsetW = getBorderSize(totalWidth) / 2
 			}
-			if global.Config.Border && child.Y != 0 {
-				offsetH = int(float64(totalWidth)*borderFactor) / 2
+			if global.Config.ShowBorder && child.Y != 0 {
+				offsetH = getBorderSize(totalWidth) / 2
 			}
 			addLabel(imageOut, sp.X+offsetW, sp.Y+offsetH, global.Config.InputConfigs[index].Label)
 		}
 	}
 
 	// draw border
-	if global.Config.Border {
-		border := int(float64(totalWidth) * borderFactor)
+	if global.Config.ShowBorder {
+		border := getBorderSize(totalWidth)
 
 		//vertical lines
 		for _, el := range layout.VerticalBorderPoints {
@@ -348,10 +346,10 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 			x := sp.X
 			y := sp.Y
 			if col_ != 0 {
-				x += int(float64(totalWidth)*borderFactor) / 2
+				x += getBorderSize(totalWidth) / 2
 			}
 			if row_ != 0 {
-				y += int(float64(totalWidth)*borderFactor) / 2
+				y += getBorderSize(totalWidth) / 2
 			}
 
 			addLabel(imageOut, x, y, global.Config.InputConfigs[i].Label)
@@ -360,8 +358,8 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 	}
 
 	// draw border
-	if global.Config.Border {
-		border := int(float64(totalWidth) * borderFactor)
+	if global.Config.ShowBorder {
+		border := getBorderSize(totalWidth)
 		borderVertical := image.Rectangle{Min: image.Point{X: -border / 2}, Max: image.Point{X: border / 2, Y: imageOut.Bounds().Dy()}}
 		borderHorizontal := image.Rectangle{Min: image.Point{Y: -border / 2}, Max: image.Point{X: imageOut.Bounds().Dx(), Y: border / 2}}
 		for i, p := range marginStartPoints {
@@ -525,4 +523,13 @@ func addLabel(img *image.RGBA, x, y int, label string) {
 
 	// and the text
 	d.DrawString(label)
+}
+
+const borderFactor = 0.0025
+
+func getBorderSize(totalWidth int) int {
+	if global.Config.ShowBorder {
+		return utils.Max(int(float64(totalWidth)*borderFactor), 2)
+	}
+	return 0
 }

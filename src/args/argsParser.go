@@ -161,7 +161,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	global.Config.EncodeQuality = outputQuality
 
 	// border
-	global.Config.Border = useBorder
+	global.Config.ShowBorder = useBorder
 
 	// label
 	global.Config.ShowInputLabel = showInputLabel
