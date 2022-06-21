@@ -47,6 +47,6 @@ func (aggregator *AggregatorCarousel) aggregate(storages ...*mjpeg.FrameStorage)
 		aggregator.lastSwitch = time.Now()
 	}
 
-	return imageUtils.Transform(storages[aggregator.currentIndex])
+	return imageUtils.Carousel(storages[aggregator.currentIndex], aggregator.currentIndex)
 	//return imageUtils.Encode(aggregator.motionDetector.GetMostActiveImage())
 }

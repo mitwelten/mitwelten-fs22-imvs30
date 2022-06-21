@@ -5,12 +5,6 @@ package imageUtils
 import (
 	"bytes"
 	_ "embed"
-	"github.com/golang/freetype"
-	"github.com/golang/freetype/truetype"
-	"github.com/pixiv/go-libjpeg/jpeg"
-	"golang.org/x/image/draw"
-	"golang.org/x/image/font"
-	"golang.org/x/image/math/fixed"
 	"image"
 	"image/color"
 	"log"
@@ -18,6 +12,13 @@ import (
 	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/mjpeg"
 	"mjpeg_multiplexer/src/utils"
+
+	"github.com/golang/freetype"
+	"github.com/golang/freetype/truetype"
+	"github.com/pixiv/go-libjpeg/jpeg"
+	"golang.org/x/image/draw"
+	"golang.org/x/image/font"
+	"golang.org/x/image/math/fixed"
 )
 
 //go:embed arial.ttf
@@ -124,16 +125,28 @@ var Slots8 = PanelLayout{
 	},
 }
 
-func DecodeAll(frames ...*mjpeg.MjpegFrame) []image.Image {
+func DecodeAll(storages ...*mjpeg.FrameStorage) []image.Image {
 	var images []image.Image
-	for _, frame := range frames {
-		var img = Decode(frame)
+	for _, storage := range storages {
+		var img = Decode(storage)
 		images = append(images, img)
 	}
 	return images
 }
 
-func Decode(frame *mjpeg.MjpegFrame) image.Image {
+func Decode(storage *mjpeg.FrameStorage) image.Image {
+	img := DecodeFrame(storage.GetLatestPtr())
+	// update the width and height of the storage if the image is not empty (i.e. the black filler one)
+	if !storage.GetLatestPtr().Empty {
+		width, height := storage.GetImageSize()
+		if img.Bounds().Dx() != width || img.Bounds().Dy() != height {
+			storage.SetImageSize(img.Bounds().Dx(), img.Bounds().Dy())
+		}
+	}
+	return img
+}
+
+func DecodeFrame(frame *mjpeg.MjpegFrame) image.Image {
 	if frame.CachedImage == nil {
 		img, err := jpeg.Decode(bytes.NewReader(frame.Body), &DecodeOptions)
 		frame.CachedImage = img
@@ -146,16 +159,6 @@ func Decode(frame *mjpeg.MjpegFrame) image.Image {
 	} else {
 		return frame.CachedImage
 	}
-}
-
-func EncodeAll(images ...image.Image) []*mjpeg.MjpegFrame {
-	var frames []*mjpeg.MjpegFrame
-	for _, img := range images {
-		imageOut := Encode(img)
-		frames = append(frames, imageOut)
-	}
-
-	return frames
 }
 
 func Encode(image image.Image) *mjpeg.MjpegFrame {
@@ -173,13 +176,9 @@ func Encode(image image.Image) *mjpeg.MjpegFrame {
 
 func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFrame {
 	//todo optimize by caching the result and painting over it?
-	var frames []*mjpeg.MjpegFrame
-	for i := 0; i < len(storages); i++ {
-		frames = append(frames, storages[i].GetLatestPtr())
-	}
-	var images = DecodeAll(frames...)
+	var images = DecodeAll(storages...)
 
-	firstWidthInitial, firstHeightInitial, _ := GetFrameStorageSize(storages[0])
+	firstWidthInitial, firstHeightInitial := storages[0].GetImageSize()
 
 	totalWidth := int(float64(firstWidthInitial) / layout.FirstWidth)
 	totalHeight := int(float64(firstHeightInitial) / layout.FirstHeight)
@@ -274,14 +273,8 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 	if nFrames == 0 {
 		log.Fatalf("At least one frame needed\n")
 	}
-
-	var frames []*mjpeg.MjpegFrame
-	for i := 0; i < len(storages); i++ {
-		frames = append(frames, storages[i].GetLatestPtr())
-	}
-
-	var images = DecodeAll(frames...)
-	firstWidthInitial, firstHeightInitial, _ := GetFrameStorageSize(storages[0])
+	var images = DecodeAll(storages...)
+	firstWidthInitial, firstHeightInitial := storages[0].GetImageSize()
 	totalWidth := firstWidthInitial * nCols
 	totalHeight := firstHeightInitial * nRows
 
@@ -381,16 +374,6 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 	return Encode(imageOut)
 }
 
-//ResizeStorage resizes and image and saved the resized image to the storage
-func ResizeStorage(frame *mjpeg.MjpegFrame, img image.Image, width int, height int) image.Image {
-	//todo remove?
-	frame.OriginalWidth = img.Bounds().Dx()
-	frame.OriginalHeight = img.Bounds().Dy()
-	frame.Resized = true
-
-	return Resize(img, width, height)
-}
-
 //ResizeOutputFrame resizes an image with regard to letterbox
 func ResizeOutputFrame(img image.Image, width int, height int) image.Image {
 	if !global.Config.IgnoreAspectRatio {
@@ -451,49 +434,29 @@ func GetFinalImageSize(currentWidth int, currentHeight int) (int, int) {
 	return currentWidth, currentHeight
 }
 
-func GetFrameStorageSize(input *mjpeg.FrameStorage) (int, int, image.Image) {
-	width, height := input.GetImageSize()
-
-	// check if height or width has been set in the storage
-	var img image.Image = nil
-	if width == -1 || height == -1 {
-		img = Decode(input.GetLatestPtr())
-		width = img.Bounds().Dx()
-		height = img.Bounds().Dy()
-
-		// store the result, but only if it's not the empty image
-		if !input.GetLatestPtr().Empty {
-			input.SetImageSize(img.Bounds().Dx(), img.Bounds().Dy())
-		}
-	}
-	return width, height, img
-}
-
-func Transform(input *mjpeg.FrameStorage) *mjpeg.MjpegFrame {
-	// todo more caching here?
-	// todo addLabel
-
-	width, height, img := GetFrameStorageSize(input)
+func Carousel(input *mjpeg.FrameStorage, index int) *mjpeg.MjpegFrame {
 
 	// with default settings (no resize, no quality change) the image doesn't need to be decoded and encoded at all
 	if !global.DecodingNecessary() {
 		return input.GetLatestPtr()
 	}
 
-	// check if resizing is needed
+	img := Decode(input)
+	width, height := input.GetImageSize()
+
+	// resizing
 	if (global.Config.Width != width) || (global.Config.Height != height) {
-		if img == nil {
-			img = Decode(input.GetLatestPtr())
-		}
-
 		outputWidth, outputHeight := GetFinalImageSize(width, height)
-
-		resized := ResizeOutputFrame(img, outputWidth, outputHeight)
-		return Encode(resized)
+		img = ResizeOutputFrame(img, outputWidth, outputHeight)
 	}
 
-	// Else just decode and encode to adjust the quality
-	return Encode(Decode(input.GetLatestPtr()))
+	// label
+	if global.Config.ShowInputLabel {
+		addLabel(img.(*image.RGBA), 0, 0, global.Config.InputConfigs[index].Label)
+	}
+
+	// quality gets adjusted here
+	return Encode(img)
 
 }
 

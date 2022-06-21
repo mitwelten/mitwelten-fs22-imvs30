@@ -17,6 +17,7 @@ type MultiplexerConfig struct {
 }
 
 func Multiplexer(multiplexerConfig MultiplexerConfig) {
+	log.Println("Running the MJPEG-multiFLEXer")
 	var wg sync.WaitGroup
 
 	if global.Config.UseAuth {

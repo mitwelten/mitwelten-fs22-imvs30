@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"github.com/docopt/docopt.go"
 	"log"
+	"math"
 	"mjpeg_multiplexer/src/aggregator"
 	"mjpeg_multiplexer/src/connection"
 	"mjpeg_multiplexer/src/customErrors"
 	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/multiplexer"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -20,30 +22,67 @@ const (
 
 var (
 	usage = `Usage:
-  multiplexer (grid) (--dimension GRID_Y GRID_X) (input) URL (output) PORT [options] 
-  multiplexer (carousel) (--duration DURATION) (input) URL (output) PORT [options]
-  multiplexer (panel) [--cycle] [--duration DURATION] (input) URL (output) PORT [options]  
+  multiplexer (grid | carousel | panel) (input) URL (output) PORT [options] 
   multiplexer -h | --help
   multiplexer --version
 
 Options:
-  -h --help                        Shows this screen.
+  --grid_dimension=ROWS,COLUMNS    todo
+  --motion                         Enables motion detection to focus the most active frame on selected mode
   --duration=n                     frame duration [default: 10]
-  --input_framerate=n              input framerate in fps [default: -1]
-  --output_framerate=n             output framerate in fps[default: -1]
+  --cycle                          todo
   --width=n                        output width in pixel [default: -1]
   --height=n                       output height in pixel [default: -1]
   --ignore_aspect_ratio            todo
-  --output_quality=n               output jpeg quality in percentage [default: 100]
-  --border                         number of black pixels between each image
+  --framerate=n                    output framerate in fps[default: -1]
+  --quality=n                      output jpeg quality in percentage [default: 100]
   --use_auth                       Use Authentication
+  --show_border                    number of black pixels between each image
   --show_label                     Show label for input streams
   --labels=n                       comma separated list of names to show instead of the camera input url
   --label_font_size=n              input label font size in pixel [default: 32]
   --log_time                       Log Time verbose
-  --motion                         Enables motion detection to focus the most active frame on selected mode
   --verbose                        Shows details. 
-  --version                        Shows version.`
+  --version                        Shows version.
+  -h --help                        Shows this screen.
+`
+)
+
+var (
+	helpString = `Usage: multiplexer [grid | panel | carousel] input [URL] output [URL] [options...]
+                   <--------- mode --------> <- input -> <- output ->
+Mode:
+  grid: static grid of images with X rows and Y columns
+  panel: dynamic panel of.... Can be used with motion (see --motion)
+  carousel: dynamic carousel view.... Can be used with motion (see --motion)
+Input:  comma separated list of urls including port
+Output: output url including port
+
+Examples: 
+  ./multiplexer grid input localhost:8080,localhost:8081 output 8088
+  ./multiplexer panel input :8080,:8081,:8082 output 8088 --cycle --width 800 
+  ./multiplexer carousel input 192.168.0.1:8080 192.168.0.2:8081 output 8088 --motion
+
+Options:
+  --grid_dimension=ROWS,COLUMNS    todo
+  --motion                         Enables motion detection to focus the most active frame on selected mode
+  --duration=n                     frame duration [default: 10]
+  --cycle                          todo
+  --width=n                        output width in pixel [default: -1]
+  --height=n                       output height in pixel [default: -1]
+  --ignore_aspect_ratio            todo
+  --framerate=n                    output framerate in fps[default: -1]
+  --quality=n                      output jpeg quality in percentage [default: 100]
+  --use_auth                       Use Authentication
+  --show_border                    number of black pixels between each image
+  --show_label                     Show label for input streams
+  --labels=n                       comma separated list of names to show instead of the camera input url
+  --label_font_size=n              input label font size in pixel [default: 32]
+  --log_time                       Log Time verbose
+  --verbose                        Shows details. 
+  --version                        Shows version.
+  -h --help                        Shows this screen.
+`
 )
 
 // parseInput parses input URLS derived from command line arguments
@@ -70,8 +109,8 @@ func parseSeparatedString(inputStr string) {
 }
 
 var printUsage = func(err error, usage_ string) {
-	fmt.Println(usage)
-	os.Exit(0)
+	fmt.Println(helpString)
+	os.Exit(1)
 }
 
 // ParseArgs parses all arguments derived from command line
@@ -83,40 +122,33 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	}
 	arguments, err := parser.ParseArgs(usage, nil, "")
 
-	// parse all arguments and save them to vars
-	//arguments, _ := docopt.ParseDoc(usage)
-	fmt.Println(arguments)
-
-	// mandatory
-	input, _ := arguments.String("URL") // input
-	port, _ := arguments.String("PORT") // output
-
 	// mode
 	grid, _ := arguments.Bool("grid")
 	panel, _ := arguments.Bool("panel")
 	carousel, _ := arguments.Bool("carousel")
-	// mode options
-	gridX, _ := arguments.Int("GRID_X")
-	gridY, _ := arguments.Int("GRID_Y")
-	duration, _ := arguments.Int("--duration") // carousel or panel-cycle duration in seconds
+	//input
+	input, _ := arguments.String("URL") // input
+	//output
+	port, _ := arguments.String("PORT") // output
+	println(port)
 
+	//options
+	gridDimension, _ := arguments.String("--grid_dimension")
+	useMotion, _ := arguments.Bool("--motion")
+	duration, _ := arguments.Int("--duration") // carousel or panel-cycle duration in seconds
 	panelCycle, _ := arguments.Bool("--cycle") // panel cycle, default false
-	// options
-	inputFramerate, _ := arguments.Float64("--input_framerate")
-	outputFramerate, _ := arguments.Float64("--output_framerate")
 	width, _ := arguments.Int("--width")
 	height, _ := arguments.Int("--height")
 	ignoreAspectRatio, _ := arguments.Bool("--ignore_aspect_ratio")
-	outputQuality, _ := arguments.Int("--output_quality")
-	useBorder, _ := arguments.Bool("--border")
+	framerate, _ := arguments.Float64("--framerate")
+	quality, _ := arguments.Int("--quality")
+	showBorder, _ := arguments.Bool("--show_border")
 	useAuth, _ := arguments.Bool("--use_auth")
-	logTime, _ := arguments.Bool("--log_time")
 	showInputLabel, _ := arguments.Bool("--show_label")
-	useMotion, _ := arguments.Bool("--motion")
 	inputLabels, _ := arguments.String("--labels") // input inputLabels
 	inputLabelFontSize, _ := arguments.Int("--label_font_size")
 
-	// global config
+	logTime, _ := arguments.Bool("--log_time")
 
 	// inputURL and label parsing
 	config = parseInputUrls(config, input)
@@ -126,7 +158,23 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 
 	// mode
 	if grid {
-		config.Aggregator = &aggregator.AggregatorGrid{Row: gridY, Col: gridX}
+		var gridX int
+		var gridY int
+		if len(gridDimension) == 0 {
+			gridX = int(math.Ceil(math.Sqrt(float64(len(global.Config.InputConfigs)))))
+			gridY = gridX
+		} else {
+			arr := strings.Split(gridDimension, ArgumentSeparator)
+			gridX, err = strconv.Atoi(arr[0])
+			if err != nil {
+				log.Fatalf("Invalid grid dimension input %v: %v", arr[0], err.Error())
+			}
+			gridY, err = strconv.Atoi(arr[1])
+			if err != nil {
+				log.Fatalf("Invalid grid dimension input %v: %v", arr[1], err.Error())
+			}
+		}
+		config.Aggregator = &aggregator.AggregatorGrid{Row: gridX, Col: gridY}
 	} else if carousel {
 		config.Aggregator = &aggregator.AggregatorCarousel{Duration: time.Duration(duration) * time.Second}
 	} else if panel {
@@ -154,14 +202,13 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	global.Config.LogTime = logTime
 
 	// InputRates
-	global.Config.InputFramerate = inputFramerate
-	global.Config.OutputFramerate = outputFramerate
+	global.Config.OutputFramerate = framerate
 
 	// quality
-	global.Config.EncodeQuality = outputQuality
+	global.Config.EncodeQuality = quality
 
 	// border
-	global.Config.ShowBorder = useBorder
+	global.Config.ShowBorder = showBorder
 
 	// label
 	global.Config.ShowInputLabel = showInputLabel

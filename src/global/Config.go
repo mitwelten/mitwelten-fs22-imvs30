@@ -13,8 +13,6 @@ type GlobalConfig struct {
 	Width             int
 	Height            int
 	IgnoreAspectRatio bool
-	// Minimum amount of time to wait between 2 consecutive reads from the inputs
-	InputFramerate float64
 	// max framerate for the output
 	OutputFramerate float64
 	// quality for jpeg encoding
@@ -37,7 +35,6 @@ func initialConfig() GlobalConfig {
 		Width:              -1,
 		Height:             -1,
 		IgnoreAspectRatio:  false,
-		InputFramerate:     -1,
 		OutputFramerate:    -1,
 		EncodeQuality:      100,
 		ShowBorder:         false,

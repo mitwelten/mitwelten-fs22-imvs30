@@ -32,25 +32,26 @@ func profile() {
 }
 
 func main() {
-	profile()
+	//profile()
 	setupLog()
 	global.SetupInitialConfig()
 
-	log.Println("Running the MJPEG-multiFLEXer")
-	log.Println("parsing args...")
-	// loop over all arguments by index and value
-	for i, arg := range os.Args {
-		// print index and value
-		log.Println("item", i, "is", arg)
-	}
+	/*	log.Println("parsing args...")
+		// loop over all arguments by index and value
+		for i, arg := range os.Args {
+			// print index and value
+			log.Println("item", i, "is", arg)
+		}
 
+	*/
 	multiplexerConfig, err := args.ParseArgs(os.Args)
 	if err != nil {
 		panic(err.Error())
 	}
+	/*
+		log.Printf("Global config: %+v\n", global.Config)
+		log.Printf("Multiplexer config: %+v\n", multiplexerConfig)
 
-	log.Printf("Global config: %+v\n", global.Config)
-	log.Printf("Multiplexer config: %+v\n", multiplexerConfig)
-
+	*/
 	multiplexer.Multiplexer(multiplexerConfig)
 }
