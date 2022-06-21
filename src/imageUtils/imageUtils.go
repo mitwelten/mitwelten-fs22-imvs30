@@ -136,12 +136,10 @@ func DecodeAll(storages ...*mjpeg.FrameStorage) []image.Image {
 
 func Decode(storage *mjpeg.FrameStorage) image.Image {
 	img := DecodeFrame(storage.GetLatestPtr())
-	// update the width and height of the storage if the image is not empty (i.e. the black filler one)
-	if !storage.GetLatestPtr().Empty {
-		width, height := storage.GetImageSize()
-		if img.Bounds().Dx() != width || img.Bounds().Dy() != height {
-			storage.SetImageSize(img.Bounds().Dx(), img.Bounds().Dy())
-		}
+	// update the width and height of the storage
+	width, height := storage.GetImageSize()
+	if img.Bounds().Dx() != width || img.Bounds().Dy() != height {
+		storage.SetImageSize(img.Bounds().Dx(), img.Bounds().Dy())
 	}
 	return img
 }

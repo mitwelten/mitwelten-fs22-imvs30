@@ -28,14 +28,10 @@ func Multiplexer(multiplexerConfig MultiplexerConfig) {
 
 	for _, inputConnection := range multiplexerConfig.InputLocations {
 		wg.Add(1)
-
-		err := inputConnection.Start()
-		if err != nil {
-			log.Fatalf("Can't open input stream: %s", err.Error())
-		}
 		var frameData = connection.ListenToInput(inputConnection)
 		frameStorage = append(frameStorage, frameData)
 	}
+	println("ok we go")
 
 	aggregator.Aggregate(&multiplexerConfig.Aggregator, frameStorage...)
 	multiplexerConfig.Output.Run()

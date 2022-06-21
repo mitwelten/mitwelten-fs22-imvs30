@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"mjpeg_multiplexer/src/customErrors"
+	"mjpeg_multiplexer/src/imageUtils"
 	"mjpeg_multiplexer/src/mjpeg"
 	"time"
 )
@@ -34,6 +35,17 @@ func ListenToInput(input Input) *mjpeg.FrameStorage {
 	frameData := mjpeg.NewFrameStorage()
 
 	go func() {
+		err := input.Start()
+		if err != nil {
+			log.Fatalf("Can't open input stream: %s", err.Error())
+		}
+		frame, err := input.ReceiveFrameFast()
+		// store and encode the first frame to get information about its size
+		if err == nil {
+			frameData.Store(frame)
+			imageUtils.Decode(frameData)
+		}
+
 		for {
 			var frame, err = input.ReceiveFrameFast()
 
