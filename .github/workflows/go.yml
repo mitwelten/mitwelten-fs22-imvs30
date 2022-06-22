@@ -1,35 +1,27 @@
-name: Go build and test
-
-on:
-  push:
-  pull_request:
-
+'on':
+  push: null
+  pull_request: null
 jobs:
-  xgo:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: install dependecies
-        run: sudo apt-get install -y libjpeg-turbo8-dev
-        
-      - name: Checkout
-        uses: actions/checkout@v2
-        
-      - name: Build
-        uses: TobiasKunzFHNW/ghaction-xgo@master
+      - uses: actions/checkout@v2
+      - uses: pguyot/arm-runner-action@v2
         with:
-          xgo_version: latest
-          go_version: 1.18
-          dest: ./build
-          pkg: src
-          prefix: multiplexer
-          targets: linux/arm64
-          v: true
-          x: true
-          race: false
-          ldflags: -s -w
-          buildmode: default
-      - name: Check build dir
-        run: ls -l /usr/lib/
-        
-      - name: Check build dir
-        run: ls -l /usr/lib64/
+          image_additional_mb: 1024
+          base_image: '${{ matrix.base_image }}'
+          cpu: '${{ matrix.cpu }}'
+          commands: |
+            apt-get install --no-install-recommends -y libjpeg-turbo8-dev
+            wget https://go.dev/dl/go1.18.3.linux-arm6.tar.gz
+            sudo tar -C /usr/local -xzf go1.18.3.linux-arm64.tar.gz
+            export PATH=$PATH:/usr/local/go/bin
+            export GOPATH=$HOME/go
+            pwd
+            ls -l
+            go build -o multiplexer_arm ./src/main.go 
+      - name: Upload binary
+        uses: actions/upload-artifact@v2
+        with:
+          name: Release image
+          path: my-release-image.img.xz
