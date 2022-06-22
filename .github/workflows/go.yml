@@ -1,3 +1,5 @@
+name: Build and generate binary
+
 'on':
   push: null
   pull_request: null
