@@ -8,12 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [armv6l, armv7l, aarch64]
+        arch: [armv7l, aarch64]
         include:
-        - arch: armv6l
-          cpu: arm1176
-          base_image: raspios_lite:latest
-          cpu_info: raspberrypi_zero_w
         - arch: armv7l
           cpu: cortex-a7
           base_image: raspios_lite:latest
@@ -30,7 +26,7 @@ jobs:
           base_image: '${{ matrix.base_image }}'
           cpu: '${{ matrix.cpu }}'
           commands: |
-            apt-get install --no-install-recommends -y libjpeg-turbo8-dev
+            apt-get install --no-install-recommends -y libjpeg62-turbo-dev
             wget https://go.dev/dl/go1.18.3.linux-arm6.tar.gz
             sudo tar -C /usr/local -xzf go1.18.3.linux-arm64.tar.gz
             export PATH=$PATH:/usr/local/go/bin
