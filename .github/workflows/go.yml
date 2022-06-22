@@ -30,8 +30,9 @@ jobs:
             pwd
             ls -l
             go build -o multiplexer_arm ./src/main.go 
+            ls -l
       - name: Upload binary
         uses: actions/upload-artifact@v2
         with:
-          name: Release image
-          path: my-release-image.img.xz
+          name: Release binary
+          path: multiplexer_arm
