@@ -8,12 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        arch: [armv7l, aarch64]
+        arch: [aarch64]
         include:
-        - arch: armv7l
-          cpu: cortex-a7
-          base_image: raspios_lite:latest
-          cpu_info: raspberrypi_3b
         - arch: aarch64
           cpu: cortex-a53
           base_image: raspios_lite_arm64:latest
