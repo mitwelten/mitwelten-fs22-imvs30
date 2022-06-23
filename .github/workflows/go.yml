@@ -35,5 +35,5 @@ jobs:
       - name: Upload binary
         uses: actions/upload-artifact@v2
         with:
-          name: Release binary
+          name: multiplexer_arm
           path: multiplexer_arm
