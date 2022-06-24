@@ -10,9 +10,9 @@ jobs:
       matrix:
         arch: [aarch64]
         include:
-        - arch: aarch64
+        - arch: armv7l
           cpu: cortex-a53
-          base_image: raspios_lite_arm64:latest
+          base_image: raspios_lite:latest
           cpu_info: raspberrypi_zero2_w_arm64_w
     steps:
       - uses: actions/checkout@v2
