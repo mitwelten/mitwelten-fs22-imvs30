@@ -1,9 +1,8 @@
 name: Build and generate binary
 
 on: 
-  push:
-    tags:
-    - '*'
+  push: null
+  pull_request: null
     
 jobs:
   build:
@@ -40,12 +39,9 @@ jobs:
           name: multiplexer_arm
           path: multiplexer_arm
       # release artifact
-      - uses: ncipollo/release-action@v1
+      - name: Release
+        uses: softprops/action-gh-release@v1
         with:
-          artifacts: "multiplexer_arm"
-          token: ${{ secrets.GITHUB_TOKEN }}
+          files: multiplexer_arm
           prerelease: true
           name: latest
-          allowUpdates: true
-          replacesArtifacts: true
-          
