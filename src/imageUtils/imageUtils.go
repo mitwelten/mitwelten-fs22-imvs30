@@ -172,8 +172,10 @@ func Encode(image image.Image) *mjpeg.MjpegFrame {
 	err := jpeg.Encode(buff, image, &config)
 
 	if err != nil {
-		//todo remove panic
-		panic("can't encode jpg")
+		log.Printf("Unable to encode image: %v\n", err.Error())
+		// create a new MJPEGframe as fallback
+		frame := mjpeg.NewMJPEGFrame()
+		return &frame
 	}
 
 	return &mjpeg.MjpegFrame{Body: buff.Bytes()}
