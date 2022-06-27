@@ -150,6 +150,7 @@ func DecodeFrame(frame *mjpeg.MjpegFrame) image.Image {
 		frame.CachedImage = img
 
 		if err != nil {
+			//todo remove panic!
 			panic("can't decode jpg")
 		}
 
@@ -166,6 +167,7 @@ func Encode(image image.Image) *mjpeg.MjpegFrame {
 	err := jpeg.Encode(buff, image, &config)
 
 	if err != nil {
+		//todo remove panic
 		panic("can't encode jpg")
 	}
 
@@ -184,8 +186,7 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 	totalWidth, totalHeight = GetFinalImageSize(totalWidth, totalHeight)
 
 	//output img
-	rectangle := image.Rectangle{Max: image.Point{X: totalWidth, Y: totalHeight}}
-	imageOut := image.NewRGBA(rectangle)
+	imageOut := getImageOut(totalWidth, totalHeight)
 
 	//main character image
 	sp := image.Point{}
@@ -260,6 +261,17 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 	return Encode(imageOut)
 }
 
+var imageOut *image.RGBA
+
+func getImageOut(width int, height int) *image.RGBA {
+	if imageOut == nil || imageOut.Rect.Max.X != width || imageOut.Rect.Max.Y != height {
+		pointMax := image.Point{X: width, Y: height}
+		rectangle := image.Rectangle{Min: image.Point{}, Max: pointMax}
+		imageOut = image.NewRGBA(rectangle)
+	}
+	return imageOut
+}
+
 func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFrame {
 	var nCells = nRows * nCols
 	var nFrames = len(storages)
@@ -294,11 +306,7 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 	}
 
 	// rectangle
-	var pointMax = image.Point{X: totalWidth, Y: totalHeight}
-	var rectangle = image.Rectangle{Min: image.Point{}, Max: pointMax}
-
-	// image
-	var imageOut = image.NewRGBA(rectangle)
+	imageOut := getImageOut(totalWidth, totalHeight)
 
 	var marginStartPoints []image.Point
 
@@ -433,7 +441,6 @@ func GetFinalImageSize(currentWidth int, currentHeight int) (int, int) {
 }
 
 func Carousel(input *mjpeg.FrameStorage, index int) *mjpeg.MjpegFrame {
-
 	// with default settings (no resize, no quality change) the image doesn't need to be decoded and encoded at all
 	if !global.DecodingNecessary() {
 		return input.GetLatestPtr()

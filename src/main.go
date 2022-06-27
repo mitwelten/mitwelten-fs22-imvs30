@@ -32,7 +32,7 @@ func profile() {
 }
 
 func main() {
-	//profile()
+	profile()
 	setupLog()
 	global.SetupInitialConfig()
 

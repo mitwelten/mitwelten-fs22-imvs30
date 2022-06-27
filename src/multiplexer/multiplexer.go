@@ -31,7 +31,6 @@ func Multiplexer(multiplexerConfig MultiplexerConfig) {
 		var frameData = connection.ListenToInput(inputConnection)
 		frameStorage = append(frameStorage, frameData)
 	}
-	println("ok we go")
 
 	aggregator.Aggregate(&multiplexerConfig.Aggregator, frameStorage...)
 	multiplexerConfig.Output.Run()

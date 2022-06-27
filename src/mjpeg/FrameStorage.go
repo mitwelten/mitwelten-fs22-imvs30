@@ -94,7 +94,7 @@ func (frameStorage *FrameStorage) GetLatest() MjpegFrame {
 	return frameStorage.buffer.Peek()
 }
 
-// GetLatest returns the newest frame inserted into the storage
+// GetLatestPtr returns the newest frame inserted into the storage
 func (frameStorage *FrameStorage) GetLatestPtr() *MjpegFrame {
 	frameStorage.mu.RLock()
 	defer frameStorage.mu.RUnlock()
