@@ -9,9 +9,11 @@ import (
 	"github.com/pixiv/go-libjpeg/jpeg"
 	"github.com/vipsimage/vips"
 	"golang.org/x/image/draw"
+	"io/ioutil"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
+	"os"
 	"path/filepath"
 	//"golang.org/x/image/draw"
 	"image"
@@ -61,11 +63,32 @@ func main() {
 		img.Save2file("out.png")
 		iterations := 100
 	*/
-	iterations := 50
+	iterations := 100
+
+	fmt.Printf("baumarkt resize\n")
+	fmt.Printf("    Number of runs: %v\n", iterations)
+	opt := DecodeOptions
+	src, _ := jpeg.Decode(bytes.NewReader(imageData), &opt)
+	start := time.Now()
+
+	for i := 0; i < iterations; i++ {
+		dst := image.NewRGBA(image.Rect(0, 0, 100, 100))
+		draw.NearestNeighbor.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
+		if i == -1 {
+			buff := bytes.NewBuffer([]byte{})
+			_ = jpeg.Encode(buff, dst, &EncodingOptions)
+			_ = ioutil.WriteFile("baumarkt_resize.jpg", buff.Bytes(), 0644)
+		}
+	}
+	end := time.Since(start).Milliseconds()
+	fmt.Printf("    Total: %v ms\n", end)
+	fmt.Printf("    Per iteration: %v ms\n", float64(end)/float64(iterations))
+
+	os.Exit(0)
 
 	fmt.Printf("govips resize\n")
 	fmt.Printf("    Number of runs: %v\n", iterations)
-	start := time.Now()
+	start = time.Now()
 	govips.LoggingSettings(nil, govips.LogLevelError)
 
 	for i := 0; i < iterations; i++ {
@@ -83,7 +106,7 @@ func main() {
 		//ioutil.WriteFile("govips.jpg", buff, 0644)
 	}
 
-	end := time.Since(start).Milliseconds()
+	end = time.Since(start).Milliseconds()
 	fmt.Printf("    Total: %v ms\n", end)
 	fmt.Printf("    Per iteration: %v ms\n", float64(end)/float64(iterations))
 
@@ -120,12 +143,12 @@ func main() {
 
 	fmt.Printf("baumarkt resize\n")
 	fmt.Printf("    Number of runs: %v\n", iterations)
+	opt = DecodeOptions
+	src, _ = jpeg.Decode(bytes.NewReader(imageData), &opt)
 	start = time.Now()
 
 	for i := 0; i < iterations; i++ {
-		opt := DecodeOptions
-		src, _ := jpeg.Decode(bytes.NewReader(imageData), &opt)
-		dst := image.NewRGBA(image.Rect(0, 0, 410, 308))
+		dst := image.NewRGBA(image.Rect(0, 0, 100, 100))
 		draw.NearestNeighbor.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
 	}
 

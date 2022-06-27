@@ -9,10 +9,13 @@ import (
 
 func main() {
 
-	iterations := 100
+	iterations := 50
 	fmt.Printf("libjpg: \n")
 	jpgBenchmark_libjpg.Decode(iterations)
 	jpgBenchmark_libjpg.Encode(iterations)
+
+	jpgBenchmark_libjpg.DecodeRGBA(iterations)
+	jpgBenchmark_libjpg.EncodeRGBA(iterations)
 	//jpgBenchmark_libjpg.DecodeEncode(iterations)
 	//	_ = jpgBenchmark_libjpg.DecodeEncodeSave()
 

@@ -15,7 +15,7 @@ import (
 
 var imageData []byte
 
-var DecodeOptions = jpeg.DecoderOptions{ScaleTarget: image.Rectangle{}, DCTMethod: jpeg.DCTIFast, DisableFancyUpsampling: true, DisableBlockSmoothing: false}
+var DecodeOptions = jpeg.DecoderOptions{ScaleTarget: image.Rectangle{}, DCTMethod: jpeg.DCTIFast, DisableFancyUpsampling: true, DisableBlockSmoothing: true}
 
 // OptimizeCoding: Slightly more efficient compreesion, but way slower
 // ProgressiveMode not needed in our case
@@ -26,6 +26,24 @@ var EncodingOptions = jpeg.EncoderOptions{Quality: 100, OptimizeCoding: true, Pr
 func Encode(iterations int) {
 	img, _ := jpeg.Decode(bytes.NewReader(imageData), &DecodeOptions)
 	fmt.Printf("  Encode\n")
+	fmt.Printf("    Number of runs: %v\n", iterations)
+	start := time.Now()
+	for i := 0; i < iterations; i++ {
+		//encode
+		buff := bytes.NewBuffer([]byte{})
+		err := jpeg.Encode(buff, img, &EncodingOptions)
+
+		if err != nil {
+			panic("can't encode jpg")
+		}
+	}
+	end := time.Since(start).Milliseconds()
+	fmt.Printf("    Total: %v ms\n", end)
+	fmt.Printf("    Per iteration: %v ms\n", float64(end)/float64(iterations))
+}
+func EncodeRGBA(iterations int) {
+	img, _ := jpeg.DecodeIntoRGBA(bytes.NewReader(imageData), &DecodeOptions)
+	fmt.Printf("  Encode RGBA\n")
 	fmt.Printf("    Number of runs: %v\n", iterations)
 	start := time.Now()
 	for i := 0; i < iterations; i++ {
@@ -54,6 +72,17 @@ func Decode(iterations int) {
 	fmt.Printf("    Per iteration: %v ms\n", float64(end)/float64(iterations))
 }
 
+func DecodeRGBA(iterations int) {
+	fmt.Printf("  Decode RGBA\n")
+	fmt.Printf("    Number of runs: %v\n", iterations)
+	start := time.Now()
+	for i := 0; i < iterations; i++ {
+		_, _ = jpeg.DecodeIntoRGBA(bytes.NewReader(imageData), &DecodeOptions)
+	}
+	end := time.Since(start).Milliseconds()
+	fmt.Printf("    Total: %v ms\n", end)
+	fmt.Printf("    Per iteration: %v ms\n", float64(end)/float64(iterations))
+}
 func DecodeEncode(iterations int) {
 	fmt.Printf("  DecodeEncode\n")
 	fmt.Printf("    Number of runs: %v\n", iterations)
