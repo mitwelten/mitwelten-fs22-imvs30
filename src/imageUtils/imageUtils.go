@@ -134,30 +134,35 @@ func DecodeAll(storages ...*mjpeg.FrameStorage) []image.Image {
 	return images
 }
 
-func Decode(storage *mjpeg.FrameStorage) image.Image {
-	img := DecodeFrame(storage.GetLatestPtr())
-	// update the width and height of the storage
-	width, height := storage.GetImageSize()
-	if img.Bounds().Dx() != width || img.Bounds().Dy() != height {
-		storage.SetImageSize(img.Bounds().Dx(), img.Bounds().Dy())
-	}
-	return img
-}
+func DecodeAt(storage *mjpeg.FrameStorage, index int) image.Image {
+	frame := storage.GetAllPtr()[index]
 
-func DecodeFrame(frame *mjpeg.MjpegFrame) image.Image {
+	//try to read from the cache
 	if frame.CachedImage == nil {
 		img, err := jpeg.Decode(bytes.NewReader(frame.Body), &DecodeOptions)
 		frame.CachedImage = img
 
 		if err != nil {
-			//todo remove panic!
-			panic("can't decode jpg")
+			log.Printf("Unable to decode jpg: %v\n", err.Error())
+			// Create a fallback black image
+			rectangle := image.Rectangle{Min: image.Point{}, Max: image.Point{X: 640, Y: 360}}
+			return image.NewRGBA(rectangle)
+		}
+
+		// update the width and height of the storage
+		width, height := storage.GetImageSize()
+		if img.Bounds().Dx() != width || img.Bounds().Dy() != height {
+			storage.SetImageSize(img.Bounds().Dx(), img.Bounds().Dy())
 		}
 
 		return img
 	} else {
 		return frame.CachedImage
 	}
+}
+
+func Decode(storage *mjpeg.FrameStorage) image.Image {
+	return DecodeAt(storage, 0)
 }
 
 func Encode(image image.Image) *mjpeg.MjpegFrame {
