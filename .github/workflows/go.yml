@@ -1,8 +1,10 @@
 name: Build and generate binary
 
-'on':
-  push: null
-  pull_request: null
+on: 
+  push:
+    tags:
+    - '*'
+    
 jobs:
   build:
     runs-on: ubuntu-latest
