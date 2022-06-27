@@ -42,7 +42,7 @@ jobs:
         with:
           artifacts: "multiplexer_arm"
           token: ${{ secrets.GITHUB_TOKEN }}
-          prerelase: true
+          prerelease: true
           name: latest
           allowUpdates: true
           replacesArtifacts: true
