@@ -139,7 +139,7 @@ func DecodeAt(storage *mjpeg.FrameStorage, index int) image.Image {
 
 	//try to read from the cache
 	if frame.CachedImage == nil {
-		img, err := jpeg.Decode(bytes.NewReader(frame.Body), &DecodeOptions)
+		img, err := jpeg.DecodeIntoRGBA(bytes.NewReader(frame.Body), &DecodeOptions)
 		frame.CachedImage = img
 
 		if err != nil {
