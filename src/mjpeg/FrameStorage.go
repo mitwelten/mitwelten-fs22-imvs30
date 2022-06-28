@@ -53,8 +53,8 @@ func NewFrameStorage() *FrameStorage {
 	frameStorage.buffer = utils.NewRingBuffer[MjpegFrame](nOfStoredFrames)
 	frameStorage.buffer.Push(frame)
 	frameStorage.LastUpdated = time.Now()
-	frameStorage.imageWidth = -1
-	frameStorage.imageHeight = -1
+	frameStorage.imageWidth = 0
+	frameStorage.imageHeight = 0
 	frameStorage.active = true
 
 	return &frameStorage
