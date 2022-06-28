@@ -48,12 +48,6 @@ func Aggregate(aggregatorPtr *Aggregator, storages ...*mjpeg.FrameStorage) {
 				continue
 			}
 
-			// start timer
-			//var s time.Time
-			if global.Config.LogTime {
-				//s = time.Now()
-			}
-
 			// get frame
 			var frame *mjpeg.MjpegFrame
 			if aggregatorData.passthrough && len(storages) == 1 && !global.DecodingNecessary() {
@@ -62,13 +56,11 @@ func Aggregate(aggregatorPtr *Aggregator, storages ...*mjpeg.FrameStorage) {
 				frame = aggregator.aggregate(storages...)
 			}
 
-			// stop timer
-			if global.Config.LogTime {
-				//log.Printf("Aggregate with %v images: %vms\n", len(storages), time.Since(s).Milliseconds())
+			if frame == nil {
+				continue
 			}
 
-			outputCondition := aggregatorData.OutputStorage
-			if outputCondition != nil {
+			if aggregatorData.OutputStorage != nil {
 				aggregatorData.OutputStorage.StorePtr(frame)
 				aggregatorData.OutputCondition.Signal()
 			}
