@@ -182,7 +182,6 @@ func Encode(image image.Image) *mjpeg.MjpegFrame {
 }
 
 func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFrame {
-	//todo optimize by caching the result and painting over it?
 	var images = DecodeAll(storages...)
 
 	firstWidthInitial, firstHeightInitial := storages[0].GetImageSize()
@@ -201,7 +200,10 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 
 	imageIn := ResizeOutputFrame(images[startIndex], r.Dx(), r.Dy())
 	draw.NearestNeighbor.Scale(imageOut, r, imageIn, imageIn.Bounds(), draw.Over, nil)
-	addLabel(imageOut, sp.X, sp.Y, global.Config.InputConfigs[startIndex].Label)
+
+	if global.Config.ShowInputLabel {
+		addLabel(imageOut, sp.X, sp.Y, global.Config.InputConfigs[startIndex].Label)
+	}
 
 	for i, child := range layout.ChildrenPositions {
 		if i+1 >= len(storages) {
