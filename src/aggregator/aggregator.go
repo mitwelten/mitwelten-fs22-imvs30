@@ -32,6 +32,7 @@ func Aggregate(aggregatorPtr *Aggregator, storages ...*mjpeg.FrameStorage) {
 	condition := setupCondition(storages...)
 
 	lastUpdate := time.Unix(0, 0)
+	FPS := 0
 
 	go func() {
 		for {
@@ -48,9 +49,9 @@ func Aggregate(aggregatorPtr *Aggregator, storages ...*mjpeg.FrameStorage) {
 			}
 
 			// start timer
-			var s time.Time
+			//var s time.Time
 			if global.Config.LogTime {
-				s = time.Now()
+				//s = time.Now()
 			}
 
 			// get frame
@@ -63,7 +64,7 @@ func Aggregate(aggregatorPtr *Aggregator, storages ...*mjpeg.FrameStorage) {
 
 			// stop timer
 			if global.Config.LogTime {
-				log.Printf("Aggregate with %v images: %vms\n", len(storages), time.Since(s).Milliseconds())
+				//log.Printf("Aggregate with %v images: %vms\n", len(storages), time.Since(s).Milliseconds())
 			}
 
 			outputCondition := aggregatorData.OutputStorage
@@ -71,6 +72,15 @@ func Aggregate(aggregatorPtr *Aggregator, storages ...*mjpeg.FrameStorage) {
 				aggregatorData.OutputStorage.StorePtr(frame)
 				aggregatorData.OutputCondition.Signal()
 			}
+
+			FPS++
+			if lastUpdate.Second() != time.Now().Second() {
+				if global.Config.LogTime {
+					log.Printf("%v FPS\n", FPS)
+				}
+				FPS = 0
+			}
+
 			lastUpdate = time.Now()
 		}
 	}()
