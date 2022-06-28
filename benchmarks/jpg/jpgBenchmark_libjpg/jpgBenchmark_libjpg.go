@@ -15,13 +15,13 @@ import (
 
 var imageData []byte
 
-var DecodeOptions = jpeg.DecoderOptions{ScaleTarget: image.Rectangle{}, DCTMethod: jpeg.DCTIFast, DisableFancyUpsampling: true, DisableBlockSmoothing: true}
+var DecodeOptions = jpeg.DecoderOptions{ScaleTarget: image.Rectangle{}, DCTMethod: jpeg.DCTIFast, DisableFancyUpsampling: false, DisableBlockSmoothing: false}
 
 // OptimizeCoding: Slightly more efficient compreesion, but way slower
 // ProgressiveMode not needed in our case
 // DCTMethod JDCT_ISLOW is the fastest on my (Tobi) system
 // See https://github.com/libjpeg-turbo/libjpeg-turbo/blob/main/libjpeg.txt
-var EncodingOptions = jpeg.EncoderOptions{Quality: 100, OptimizeCoding: true, ProgressiveMode: false, DCTMethod: jpeg.DCTISlow}
+var EncodingOptions = jpeg.EncoderOptions{Quality: 100, OptimizeCoding: false, ProgressiveMode: false, DCTMethod: jpeg.DCTISlow}
 
 func Encode(iterations int) {
 	img, _ := jpeg.Decode(bytes.NewReader(imageData), &DecodeOptions)

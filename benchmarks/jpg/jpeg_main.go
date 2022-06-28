@@ -9,13 +9,52 @@ import (
 
 func main() {
 
-	iterations := 50
+	iterations := 100
 	fmt.Printf("libjpg: \n")
-	jpgBenchmark_libjpg.Decode(iterations)
-	jpgBenchmark_libjpg.Encode(iterations)
+	//jpgBenchmark_libjpg.Decode(iterations)
+	//jpgBenchmark_libjpg.Encode(iterations)
 
 	jpgBenchmark_libjpg.DecodeRGBA(iterations)
 	jpgBenchmark_libjpg.EncodeRGBA(iterations)
+
+	fmt.Printf("----\n")
+
+	fmt.Printf("libjpg: DisableFancyUpsampling \n")
+	jpgBenchmark_libjpg.DecodeOptions.DisableFancyUpsampling = true
+	jpgBenchmark_libjpg.DecodeRGBA(iterations)
+	jpgBenchmark_libjpg.DecodeOptions.DisableFancyUpsampling = false
+
+	fmt.Printf("libjpg: DisableBlockSmoothing \n")
+	jpgBenchmark_libjpg.DecodeOptions.DisableBlockSmoothing = true
+	jpgBenchmark_libjpg.DecodeRGBA(iterations)
+	jpgBenchmark_libjpg.DecodeOptions.DisableBlockSmoothing = false
+
+	fmt.Printf("libjpg: combined \n")
+	jpgBenchmark_libjpg.DecodeOptions.DisableFancyUpsampling = true
+	jpgBenchmark_libjpg.DecodeOptions.DisableBlockSmoothing = true
+	jpgBenchmark_libjpg.DecodeRGBA(iterations)
+	jpgBenchmark_libjpg.DecodeOptions.DisableFancyUpsampling = false
+	jpgBenchmark_libjpg.DecodeOptions.DisableBlockSmoothing = false
+
+	fmt.Printf("----\n")
+
+	fmt.Printf("libjpg: OptimizeCoding \n")
+	jpgBenchmark_libjpg.EncodingOptions.OptimizeCoding = true
+	jpgBenchmark_libjpg.EncodeRGBA(iterations)
+	jpgBenchmark_libjpg.EncodingOptions.OptimizeCoding = false
+
+	fmt.Printf("libjpg: ProgressiveMode \n")
+	jpgBenchmark_libjpg.EncodingOptions.ProgressiveMode = true
+	jpgBenchmark_libjpg.EncodeRGBA(iterations)
+	jpgBenchmark_libjpg.EncodingOptions.ProgressiveMode = false
+
+	fmt.Printf("libjpg: combined \n")
+	jpgBenchmark_libjpg.EncodingOptions.OptimizeCoding = true
+	jpgBenchmark_libjpg.EncodingOptions.ProgressiveMode = true
+	jpgBenchmark_libjpg.EncodeRGBA(iterations)
+	jpgBenchmark_libjpg.EncodingOptions.OptimizeCoding = false
+	jpgBenchmark_libjpg.EncodingOptions.ProgressiveMode = false
+
 	//jpgBenchmark_libjpg.DecodeEncode(iterations)
 	//	_ = jpgBenchmark_libjpg.DecodeEncodeSave()
 

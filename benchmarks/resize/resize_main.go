@@ -4,16 +4,14 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
+	"github.com/anthonynsimon/bild/transform"
 	govips "github.com/davidbyttow/govips/v2/vips"
 	"github.com/discord/lilliput"
 	"github.com/pixiv/go-libjpeg/jpeg"
 	"github.com/vipsimage/vips"
 	"golang.org/x/image/draw"
 	"io/ioutil"
-	"log"
-	"net/http"
 	_ "net/http/pprof"
-	"os"
 	"path/filepath"
 	//"golang.org/x/image/draw"
 	"image"
@@ -52,17 +50,7 @@ func resizeLilliPut(origName, newName string) {
 }
 
 func main() {
-	go func() {
-		log.Println(http.ListenAndServe("localhost:6060", nil))
-	}()
-	/*	img := vips.NewFromBuffer(imageData, "")
-		_ = img.ThumbnailImage(410)
 
-		img.MagickSaveBuffer()
-		img.Wrap()
-		img.Save2file("out.png")
-		iterations := 100
-	*/
 	iterations := 100
 
 	fmt.Printf("baumarkt resize\n")
@@ -74,7 +62,7 @@ func main() {
 	for i := 0; i < iterations; i++ {
 		dst := image.NewRGBA(image.Rect(0, 0, 100, 100))
 		draw.NearestNeighbor.Scale(dst, dst.Rect, src, src.Bounds(), draw.Over, nil)
-		if i == -1 {
+		if i == 0 {
 			buff := bytes.NewBuffer([]byte{})
 			_ = jpeg.Encode(buff, dst, &EncodingOptions)
 			_ = ioutil.WriteFile("baumarkt_resize.jpg", buff.Bytes(), 0644)
@@ -84,7 +72,17 @@ func main() {
 	fmt.Printf("    Total: %v ms\n", end)
 	fmt.Printf("    Per iteration: %v ms\n", float64(end)/float64(iterations))
 
-	os.Exit(0)
+	fmt.Printf("bild resize\n")
+	fmt.Printf("    Number of runs: %v\n", iterations)
+	start = time.Now()
+
+	for i := 0; i < iterations; i++ {
+		_ = transform.Resize(src, 100, 100, transform.NearestNeighbor)
+	}
+
+	end = time.Since(start).Milliseconds()
+	fmt.Printf("    Total: %v ms\n", end)
+	fmt.Printf("    Per iteration: %v ms\n", float64(end)/float64(iterations))
 
 	fmt.Printf("govips resize\n")
 	fmt.Printf("    Number of runs: %v\n", iterations)
