@@ -290,7 +290,7 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 	if nFrames == 0 {
 		log.Fatalf("At least one frame needed\n")
 	}
-	var images = DecodeAll(storages...)
+	//var images = DecodeAll(storages...)
 	firstWidthInitial, firstHeightInitial := storages[0].GetImageSize()
 	totalWidth := firstWidthInitial * nCols
 	totalHeight := firstHeightInitial * nRows
@@ -304,14 +304,15 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 	cellWidth = totalWidth / nCols
 	cellHeight = totalHeight / nRows
 
-	// resize all images if needed
-	for i, _ := range images {
-		if images[i].Bounds().Dx() != cellWidth || images[i].Bounds().Dy() != cellHeight {
-			images[i] = ResizeOutputFrame(images[i], cellWidth, cellHeight)
-			//frames[i].CachedImage = images[i]
+	/*	// resize all images if needed
+		for i, _ := range storages {
+			x, y := storages[i].GetImageSize()
+			if x != cellWidth || y != cellHeight {
+				images[i] = ResizeOutputFrame(images[i], cellWidth, cellHeight)
+				//frames[i].CachedImage = images[i]
+			}
 		}
-	}
-
+	*/
 	// rectangle
 	imageOut := getImageOut(totalWidth, totalHeight)
 
@@ -332,8 +333,20 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 			marginStartPoints = append(marginStartPoints, sp)
 		}
 
-		var r = image.Rectangle{Min: sp, Max: sp.Add(images[i].Bounds().Size())}
-		draw.Draw(imageOut, r, images[i], image.Point{}, draw.Src)
+		// don't redraw already drawn images
+		if storages[i].GetLatestPtr().CachedImage != nil {
+			continue
+		}
+
+		// Check for resizing
+		img := Decode(storages[i])
+		if img.Bounds().Dx() != cellWidth || img.Bounds().Dy() != cellHeight {
+			img = ResizeOutputFrame(img, cellWidth, cellHeight)
+			storages[i].GetLatestPtr().CachedImage = img
+		}
+
+		var r = image.Rectangle{Min: sp, Max: sp.Add(img.Bounds().Size())}
+		draw.Draw(imageOut, r, img, image.Point{}, draw.Src)
 	}
 
 	//place labels
