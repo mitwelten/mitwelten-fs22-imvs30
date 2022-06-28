@@ -106,9 +106,31 @@ var Slots8 = PanelLayout{
 	},
 }
 
+func PanelDrawFrame(storage *mjpeg.FrameStorage, r image.Rectangle, flush bool) {
+	frame := storage.GetLatestPtr()
+	if flush {
+		frame.CachedImage = nil
+	}
+
+	img := Decode(storage)
+
+	// Check for resizing
+	if img.Bounds().Dx() != r.Dx() || img.Bounds().Dy() != r.Dy() {
+		img = ResizeOutputFrame(img, r.Dx(), r.Dy())
+		frame.CachedImage = img
+	}
+
+	draw.Draw(imageOut, r, img, image.Point{}, draw.Src)
+}
+
+var previousIndex = -1
+
 func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFrame {
-	//var images = DecodeAll(storages...)
-	flush := true
+	flush := false
+	if previousIndex == -1 || previousIndex != startIndex {
+		previousIndex = startIndex
+		flush = true
+	}
 
 	firstWidthInitial, firstHeightInitial := storages[0].GetImageSize()
 	totalWidth := int(float64(firstWidthInitial) / layout.FirstWidth)
@@ -138,7 +160,7 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 		delta := image.Point{X: int(float64(totalWidth) * layout.ChildrenWidth), Y: int(float64(totalHeight) * layout.ChildrenHeight)}
 		r = image.Rectangle{Min: sp, Max: sp.Add(delta)}
 
-		PanelDrawFrame(storages[i], r, flush)
+		PanelDrawFrame(storages[index], r, flush)
 
 		if global.Config.ShowInputLabel {
 			// add offset to avoid overlap with the borders
