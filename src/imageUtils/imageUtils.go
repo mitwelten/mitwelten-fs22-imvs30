@@ -83,21 +83,6 @@ func Encode(image image.Image) *mjpeg.MjpegFrame {
 	return &mjpeg.MjpegFrame{Body: buff.Bytes()}
 }
 
-func PanelDrawFrame(storage *mjpeg.FrameStorage, r image.Rectangle, flush bool) {
-	if flush {
-		storage.GetLatestPtr().CachedImage = nil
-	}
-	img := Decode(storage)
-
-	// Check for resizing
-	if img.Bounds().Dx() != r.Dx() || img.Bounds().Dy() != r.Dy() {
-		img = ResizeOutputFrame(img, r.Dx(), r.Dy())
-		storage.GetLatestPtr().CachedImage = img
-	}
-
-	draw.Draw(imageOut, r, img, image.Point{}, draw.Src)
-}
-
 var imageOut *image.RGBA
 
 func getImageOut(width int, height int) *image.RGBA {
