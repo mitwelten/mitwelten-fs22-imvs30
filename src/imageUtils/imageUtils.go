@@ -24,7 +24,7 @@ import (
 //go:embed arial.ttf
 var arial []byte
 
-var DecodeOptions = jpeg.DecoderOptions{ScaleTarget: image.Rectangle{}, DCTMethod: jpeg.DCTIFast, DisableFancyUpsampling: false, DisableBlockSmoothing: false}
+var DecodeOptions = jpeg.DecoderOptions{ScaleTarget: image.Rectangle{}, DCTMethod: jpeg.DCTIFast, DisableFancyUpsampling: true, DisableBlockSmoothing: true}
 var EncodingOptions = jpeg.EncoderOptions{Quality: 100, OptimizeCoding: false, ProgressiveMode: false, DCTMethod: jpeg.DCTIFast}
 
 type PanelLayout struct {
@@ -427,17 +427,14 @@ func ResizeOutputFrame(img image.Image, width int, height int) image.Image {
 		draw.NearestNeighbor.Scale(dst, image.Rect(offsetW, offsetH, width-offsetW, height-offsetH), img, img.Bounds(), draw.Over, nil)
 		return dst
 	} else {
-		dst := image.NewRGBA(image.Rect(0, 0, width, height))
-		draw.NearestNeighbor.Scale(dst, dst.Rect, img, img.Bounds(), draw.Over, nil)
-		return dst
+		return Resize(img, width, height)
 	}
 }
 
 //Resize resizes an image
 func Resize(img image.Image, width int, height int) image.Image {
-
 	dst := image.NewRGBA(image.Rect(0, 0, width, height))
-	draw.NearestNeighbor.Scale(dst, dst.Rect, img, img.Bounds(), draw.Over, nil)
+	draw.NearestNeighbor.Scale(dst, dst.Rect, img, img.Bounds(), draw.Src, nil)
 	return dst
 }
 
