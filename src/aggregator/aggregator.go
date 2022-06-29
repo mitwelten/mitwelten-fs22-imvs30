@@ -67,7 +67,7 @@ func Aggregate(aggregatorPtr *Aggregator, storages ...*mjpeg.FrameStorage) {
 
 			FPS++
 			if lastUpdate.Second() != time.Now().Second() {
-				if global.Config.LogTime {
+				if global.Config.LogFPS {
 					log.Printf("%v FPS\n", FPS)
 				}
 				FPS = 0

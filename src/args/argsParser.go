@@ -41,7 +41,7 @@ Options:
   --show_label                     Show label for input streams
   --labels=n                       comma separated list of names to show instead of the camera input url
   --label_font_size=n              input label font size in pixel [default: 32]
-  --log_time                       Log Time verbose
+  --log_fps                       Log Time verbose
   --verbose                        Shows details. 
   --version                        Shows version.
   -h --help                        Shows this screen.
@@ -78,7 +78,7 @@ Options:
   --show_label                     Show label for input streams
   --labels=n                       comma separated list of names to show instead of the camera input url
   --label_font_size=n              input label font size in pixel [default: 32]
-  --log_time                       Log Time verbose
+  --log_fps                       Log Time verbose
   --verbose                        Shows details. 
   --version                        Shows version.
   -h --help                        Shows this screen.
@@ -130,7 +130,6 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	input, _ := arguments.String("URL") // input
 	//output
 	port, _ := arguments.String("PORT") // output
-	println(port)
 
 	//options
 	gridDimension, _ := arguments.String("--grid_dimension")
@@ -148,7 +147,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	inputLabels, _ := arguments.String("--labels") // input inputLabels
 	inputLabelFontSize, _ := arguments.Int("--label_font_size")
 
-	logTime, _ := arguments.Bool("--log_time")
+	logFPS, _ := arguments.Bool("--log_fps")
 
 	// inputURL and label parsing
 	config = parseInputUrls(config, input)
@@ -199,7 +198,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	global.Config.UseAuth = useAuth
 
 	// logtime
-	global.Config.LogTime = logTime
+	global.Config.LogFPS = logFPS
 
 	// InputRates
 	global.Config.OutputFramerate = framerate

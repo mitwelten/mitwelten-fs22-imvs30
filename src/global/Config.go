@@ -8,7 +8,7 @@ type InputConfig struct {
 
 type GlobalConfig struct {
 	// Print the time used for image operations
-	LogTime bool
+	LogFPS bool
 	// Maximal resolution of the resulting image, bigger images will be resized
 	Width             int
 	Height            int
@@ -31,7 +31,7 @@ var Config GlobalConfig
 
 func initialConfig() GlobalConfig {
 	return GlobalConfig{
-		LogTime:            false,
+		LogFPS:             false,
 		Width:              -1,
 		Height:             -1,
 		IgnoreAspectRatio:  false,
