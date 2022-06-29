@@ -150,10 +150,10 @@ func (output *OutputHTTP) serve(client ClientConnection) {
 		if err != nil {
 			output.errorCounter++
 			if output.errorCounter == 5 {
-				log.Printf("Closing connection, error when sending frames to %s: %s\n", client.Connection.LocalAddr().String(), err.Error())
+				log.Printf("Closing connection, error while sending frames to %s: %s\n", client.Connection.LocalAddr().String(), err.Error())
 				return
 			}
-			log.Printf("Error when sending frames to %s: %s\n", client.Connection.LocalAddr().String(), err.Error())
+			continue
 		}
 		output.errorCounter = 0
 	}
