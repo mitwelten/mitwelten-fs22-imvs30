@@ -1,4 +1,4 @@
-name: Build and generate binary
+name: Build and upload binary to release page
 
 on: 
   push: null
