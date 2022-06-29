@@ -25,7 +25,7 @@ import (
 var arial []byte
 
 var DecodeOptions = jpeg.DecoderOptions{ScaleTarget: image.Rectangle{}, DCTMethod: jpeg.DCTIFast, DisableFancyUpsampling: true, DisableBlockSmoothing: true}
-var EncodingOptions = jpeg.EncoderOptions{Quality: 100, OptimizeCoding: false, ProgressiveMode: false, DCTMethod: jpeg.DCTIFast}
+var EncodingOptions = jpeg.EncoderOptions{Quality: 80, OptimizeCoding: false, ProgressiveMode: false, DCTMethod: jpeg.DCTIFast}
 
 func DecodeAll(storages ...*mjpeg.FrameStorage) []image.Image {
 	var images []image.Image
@@ -70,7 +70,9 @@ func Decode(storage *mjpeg.FrameStorage) image.Image {
 func Encode(image image.Image) *mjpeg.MjpegFrame {
 	buff := bytes.NewBuffer([]byte{})
 	config := EncodingOptions
-	config.Quality = global.Config.EncodeQuality
+	if global.Config.EncodeQuality != -1 {
+		config.Quality = global.Config.EncodeQuality
+	}
 	err := jpeg.Encode(buff, image, &config)
 
 	if err != nil {

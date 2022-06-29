@@ -36,7 +36,7 @@ func initialConfig() GlobalConfig {
 		Height:             -1,
 		IgnoreAspectRatio:  false,
 		OutputFramerate:    -1,
-		EncodeQuality:      100,
+		EncodeQuality:      -1,
 		ShowBorder:         false,
 		UseAuth:            false,
 		ShowInputLabel:     false,
@@ -50,5 +50,5 @@ func SetupInitialConfig() {
 }
 
 func DecodingNecessary() bool {
-	return Config.Height != -1 || Config.Width != -1 || Config.EncodeQuality != 100 || Config.ShowInputLabel
+	return Config.Height != -1 || Config.Width != -1 || (Config.EncodeQuality != 100 && Config.EncodeQuality != -1) || Config.ShowInputLabel
 }

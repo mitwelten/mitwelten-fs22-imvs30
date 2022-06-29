@@ -35,13 +35,13 @@ Options:
   --height=n                       output height in pixel [default: -1]
   --ignore_aspect_ratio            todo
   --framerate=n                    output framerate in fps[default: -1]
-  --quality=n                      output jpeg quality in percentage [default: 100]
+  --quality=n                      output jpeg quality in percentage [default: -1]
   --use_auth                       Use Authentication
   --show_border                    number of black pixels between each image
   --show_label                     Show label for input streams
   --labels=n                       comma separated list of names to show instead of the camera input url
   --label_font_size=n              input label font size in pixel [default: 32]
-  --log_fps                       Log Time verbose
+  --log_fps                        Log Time verbose
   --verbose                        Shows details. 
   --version                        Shows version.
   -h --help                        Shows this screen.
@@ -72,13 +72,13 @@ Options:
   --height=n                       output height in pixel [default: -1]
   --ignore_aspect_ratio            todo
   --framerate=n                    output framerate in fps[default: -1]
-  --quality=n                      output jpeg quality in percentage [default: 100]
+  --quality=n                      output jpeg quality in percentage [default: -1]
   --use_auth                       Use Authentication
   --show_border                    number of black pixels between each image
   --show_label                     Show label for input streams
   --labels=n                       comma separated list of names to show instead of the camera input url
   --label_font_size=n              input label font size in pixel [default: 32]
-  --log_fps                       Log Time verbose
+  --log_fps                        Log Time verbose
   --verbose                        Shows details. 
   --version                        Shows version.
   -h --help                        Shows this screen.
