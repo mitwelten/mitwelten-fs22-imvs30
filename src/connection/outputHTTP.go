@@ -15,6 +15,7 @@ type OutputHTTP struct {
 	clientsMutex *sync.RWMutex
 	aggregator   aggregator.Aggregator
 	condition    *sync.Cond
+	errorCounter int
 }
 
 type ClientConnection struct {
@@ -53,6 +54,7 @@ func NewOutputHTTP(port string, aggregator aggregator.Aggregator) Output {
 
 	output.clients = make([]ClientConnection, 0)
 	output.clientsMutex = &sync.RWMutex{}
+	output.errorCounter = 0
 
 	go func() {
 		for {
@@ -146,10 +148,14 @@ func (output *OutputHTTP) serve(client ClientConnection) {
 		var frame = <-client.channel
 		var err = client.SendFrame(frame)
 		if err != nil {
-			//todo Counter that closes after X errors
-			log.Printf("Closing connection, error when sending frames to %s: %s\n", client.Connection.LocalAddr().String(), err.Error())
-			return
+			output.errorCounter++
+			if output.errorCounter == 5 {
+				log.Printf("Closing connection, error when sending frames to %s: %s\n", client.Connection.LocalAddr().String(), err.Error())
+				return
+			}
+			log.Printf("Error when sending frames to %s: %s\n", client.Connection.LocalAddr().String(), err.Error())
 		}
+		output.errorCounter = 0
 	}
 }
 func (client *ClientConnection) SendHeader() error {
