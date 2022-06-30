@@ -3,6 +3,7 @@ package JPEGBenchmark_libjpg
 import (
 	"github.com/pixiv/go-libjpeg/jpeg"
 	"io/ioutil"
+	"strconv"
 
 	"bytes"
 	_ "embed"
@@ -11,17 +12,11 @@ import (
 	"time"
 )
 
-//go:embed image_real.jpg
-
+//go:embed image_orig.jpg
 var imageData []byte
 
-var DecodeOptions = jpeg.DecoderOptions{ScaleTarget: image.Rectangle{}, DCTMethod: jpeg.DCTIFast, DisableFancyUpsampling: false, DisableBlockSmoothing: false}
-
-// OptimizeCoding: Slightly more efficient compreesion, but way slower
-// ProgressiveMode not needed in our case
-// DCTMethod JDCT_ISLOW is the fastest on my (Tobi) system
-// See https://github.com/libjpeg-turbo/libjpeg-turbo/blob/main/libjpeg.txt
-var EncodingOptions = jpeg.EncoderOptions{Quality: 100, OptimizeCoding: false, ProgressiveMode: false, DCTMethod: jpeg.DCTISlow}
+var DecodeOptions = jpeg.DecoderOptions{ScaleTarget: image.Rectangle{}, DCTMethod: jpeg.DCTIFast, DisableFancyUpsampling: true, DisableBlockSmoothing: true}
+var EncodingOptions = jpeg.EncoderOptions{Quality: 80, OptimizeCoding: false, ProgressiveMode: false, DCTMethod: jpeg.DCTIFast}
 
 func Encode(iterations int) {
 	img, _ := jpeg.Decode(bytes.NewReader(imageData), &DecodeOptions)
@@ -129,9 +124,58 @@ func DecodeEncodeSave() []byte {
 	if err != nil {
 		panic("can't encode jpg")
 	}
-	err = ioutil.WriteFile("jpg/jpgBenchmark_libjpg/image_out_libjpg_20.jpg", buff.Bytes(), 0644)
+	err = ioutil.WriteFile("jpg/jpgBenchmark_libjpg/quality_"+strconv.Itoa(EncodingOptions.Quality)+".jpg", buff.Bytes(), 0644)
 	if err != nil {
 		panic("can't save jpg")
 	}
 	return buff.Bytes()
+}
+
+func BenchmarkDecode(iterations int, imageData []byte) float64 {
+	fmt.Printf("  Decode libjpg\n")
+	fmt.Printf("    Number of runs: %v\n", iterations)
+
+	for i := 0; i < iterations/10; i++ {
+		reader := bytes.NewReader(imageData)
+		_, _ = jpeg.Decode(reader, &DecodeOptions)
+	}
+
+	start := time.Now()
+	for i := 0; i < iterations; i++ {
+		reader := bytes.NewReader(imageData)
+		_, _ = jpeg.Decode(reader, &DecodeOptions)
+	}
+	end := time.Since(start).Milliseconds()
+	fmt.Printf("    Total: %v ms\n", end)
+	fmt.Printf("    Per iteration: %v ms\n", float64(end)/float64(iterations))
+	return float64(end) / float64(iterations)
+}
+func BenchmarkEncode(iterations int, imageData []byte) float64 {
+	fmt.Printf("  Encode libjpg\n")
+	fmt.Printf("    Number of runs: %v\n", iterations)
+	reader := bytes.NewReader(imageData)
+	img, _ := jpeg.Decode(reader, &DecodeOptions)
+
+	for i := 0; i < iterations/10; i++ {
+		buff := bytes.NewBuffer([]byte{})
+		err := jpeg.Encode(buff, img, &EncodingOptions)
+
+		if err != nil {
+			panic("can't encode jpg")
+		}
+	}
+
+	start := time.Now()
+	for i := 0; i < iterations; i++ {
+		buff := bytes.NewBuffer([]byte{})
+		err := jpeg.Encode(buff, img, &EncodingOptions)
+
+		if err != nil {
+			panic("can't encode jpg")
+		}
+	}
+	end := time.Since(start).Milliseconds()
+	fmt.Printf("    Total: %v ms\n", end)
+	fmt.Printf("    Per iteration: %v ms\n", float64(end)/float64(iterations))
+	return float64(end) / float64(iterations)
 }

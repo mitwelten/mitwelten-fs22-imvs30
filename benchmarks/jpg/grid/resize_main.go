@@ -11,11 +11,13 @@ import (
 	"log"
 	"net/http"
 	_ "net/http/pprof"
+	"os"
+	"runtime/trace"
 	"time"
 )
 
 var DecodeOptions = jpeg.DecoderOptions{ScaleTarget: image.Rectangle{}, DCTMethod: jpeg.DCTIFast, DisableFancyUpsampling: true, DisableBlockSmoothing: true}
-var EncodingOptions = jpeg.EncoderOptions{Quality: 100, OptimizeCoding: false, ProgressiveMode: false, DCTMethod: jpeg.DCTISlow}
+var EncodingOptions = jpeg.EncoderOptions{Quality: 80, OptimizeCoding: false, ProgressiveMode: false, DCTMethod: jpeg.DCTISlow}
 
 //go:embed image_real.jpg
 var imageData []byte
@@ -28,44 +30,40 @@ func vips_merge(iterations int, encode bool) {
 	defer govips.Shutdown()
 
 	fmt.Printf("    Number of runs: %v\n", iterations)
-	start := time.Now()
+	ep := govips.NewJpegExportParams()
+	ep.StripMetadata = false
+	ep.Quality = 80
+	ep.Interlace = false
+	ep.OptimizeCoding = false
+	ep.SubsampleMode = govips.VipsForeignSubsampleAuto
+	ep.TrellisQuant = true
+	ep.OvershootDeringing = true
+	ep.OptimizeScans = true
+	ep.QuantTable = 3
 
+	start := time.Now()
 	for i := 0; i < iterations; i++ {
 
 		imgout, _ := govips.NewImageFromBuffer(imageData)
-		w := float64(imgout.Width())
-		h := float64(imgout.Height())
-		imgout.ResizeWithVScale(outWidth/w, outHeight/h, govips.KernelNearest)
-		img1, _ := govips.NewThumbnailWithSizeFromBuffer(imageData, 800, 600, govips.InterestingNone, govips.SizeForce)
-		img2, _ := govips.NewThumbnailWithSizeFromBuffer(imageData, 800, 600, govips.InterestingNone, govips.SizeForce)
+		/*		w := float64(imgout.Width())
+				h := float64(imgout.Height())
+				imgout.ResizeWithVScale(outWidth/w, outHeight/h, govips.KernelNearest)
+				img1, _ := govips.NewThumbnailWithSizeFromBuffer(imageData, 800, 600, govips.InterestingNone, govips.SizeForce)
+				img2, _ := govips.NewThumbnailWithSizeFromBuffer(imageData, 800, 600, govips.InterestingNone, govips.SizeForce)
 
-		imgout.Insert(img1, 0, 0, false, nil)
-		imgout.Insert(img2, img1.Width(), 0, false, nil)
+				imgout.Insert(img1, 0, 0, false, nil)
+				imgout.Insert(img2, img1.Width(), 0, false, nil)
+		*/
+		_, _, _ = imgout.ExportJpeg(ep)
+		//_, _ = imgout.ToBytes()
 
-		if encode {
+		/*	p := govips.NewDefaultExportParams()
+			p.Quality = 100
+			_, _ = imgout.ToImage(p)
+			//ioutil.WriteFile("go_vips_merge.jpg", goImg, 0644)
 
-			ep := govips.NewJpegExportParams()
-			ep.StripMetadata = true
-			ep.Quality = 75
-			ep.Interlace = true
-			ep.OptimizeCoding = true
-			ep.SubsampleMode = govips.VipsForeignSubsampleAuto
-			ep.TrellisQuant = true
-			ep.OvershootDeringing = true
-			ep.OptimizeScans = true
-			ep.QuantTable = 3
-
-			//_, _, _ = imgout.ExportJpeg(ep)
-			//_, _ = imgout.ToBytes()
-
-			/*	p := govips.NewDefaultExportParams()
-				p.Quality = 100
-				_, _ = imgout.ToImage(p)
-				//ioutil.WriteFile("go_vips_merge.jpg", goImg, 0644)
-
-				//buff := bytes.NewBuffer([]byte{})
-				//_ = jpeg.Encode(buff, imageOut, &EncodingOptions)*/
-		}
+			//buff := bytes.NewBuffer([]byte{})
+			//_ = jpeg.Encode(buff, imageOut, &EncodingOptions)*/
 	}
 
 	end := time.Since(start).Milliseconds()
@@ -113,7 +111,6 @@ func baumarkt_merge(iterations int, encode bool) {
 
 		if encode {
 			buff := bytes.NewBuffer([]byte{})
-			//options := jpeg.EncoderOptions{Quality: 100}
 			_ = jpeg.Encode(buff, imageOut, &EncodingOptions)
 			//_ = ioutil.WriteFile("baumarkt_merge.jpg", buff.Bytes(), 0644)
 		}
@@ -128,15 +125,25 @@ func main() {
 	go func() {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
+	f, err := os.Create(time.Now().Format("2006-01-02T150405.pprof"))
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
 
-	iterations := 50
+	if err := trace.Start(f); err != nil {
+		panic(err)
+	}
+	defer trace.Stop()
+
+	iterations := 200
 	govips.LoggingSettings(nil, govips.LogLevelCritical)
 
-	//fmt.Printf("vips\n")
-	//vips_merge(iterations, true)
+	fmt.Printf("vips\n")
+	vips_merge(iterations, true)
 
-	fmt.Printf("baumarkt\n")
-	baumarkt_merge(iterations, false)
+	//fmt.Printf("baumarkt\n")
+	//baumarkt_merge(iterations, true)
 
 	// =========================
 
