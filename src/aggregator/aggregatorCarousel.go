@@ -1,7 +1,6 @@
 package aggregator
 
 import (
-	"log"
 	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/imageUtils"
 	"mjpeg_multiplexer/src/mjpeg"
@@ -24,11 +23,6 @@ type AggregatorCarousel struct {
 }
 
 func (aggregator *AggregatorCarousel) Setup(storages ...*mjpeg.FrameStorage) {
-	if global.DecodingNecessary() {
-		log.Printf("Carousel: Each frame will have to be decoded and encoded, which may be slow. Remove the width, height, quality and show_label paramter to activate the passthrough mode for more frames per second.\n")
-	} else {
-		log.Printf("Carousel: Passthrough mode activated - each frame will be directly passed to the output without any decoding and encoding\n")
-	}
 
 	aggregator.data.passthrough = false
 	aggregator.lastSwitch = time.Now()

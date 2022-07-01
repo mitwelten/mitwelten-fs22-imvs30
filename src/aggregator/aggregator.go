@@ -1,9 +1,11 @@
 package aggregator
 
 import (
+	"fmt"
 	"log"
 	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/mjpeg"
+	"reflect"
 	"sync"
 	"time"
 )
@@ -34,6 +36,20 @@ func Aggregate(aggregatorPtr *Aggregator, storages ...*mjpeg.FrameStorage) {
 	lastUpdate := time.Unix(0, 0)
 	FPS := 0
 
+	passthroughMode := false
+
+	if !global.DecodingNecessary() && reflect.TypeOf(aggregator) == reflect.TypeOf(&AggregatorCarousel{}) {
+		passthroughMode = true
+	} else if !global.DecodingNecessary() && len(storages) == 1 {
+		passthroughMode = true
+	}
+
+	if passthroughMode {
+		fmt.Printf("Passthorugh-Mode activate - Each frame will be directly passed to the output without any decoding and encoding\n")
+	} else {
+		fmt.Printf("Passthorugh-Mode not active - Each frame will be decoded and encoded, which may be slow.\n=> Activate it by either using the 'carousel' mode or by only using one input source and by removing the width, height, quality and show_label options.\n")
+	}
+
 	go func() {
 		for {
 			condition.Wait()
@@ -50,7 +66,7 @@ func Aggregate(aggregatorPtr *Aggregator, storages ...*mjpeg.FrameStorage) {
 
 			// get frame
 			var frame *mjpeg.MjpegFrame
-			if aggregatorData.passthrough && len(storages) == 1 && !global.DecodingNecessary() {
+			if aggregatorData.passthrough && len(storages) == 1 && passthroughMode {
 				frame = storages[0].GetLatestPtr()
 			} else {
 				frame = aggregator.aggregate(storages...)
