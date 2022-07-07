@@ -44,6 +44,8 @@ Options:
   --log_fps                        Log Time verbose
   --verbose                        Shows details. 
   --version                        Shows version.
+  --always_active                  (hidden) Disables the 'fast mode' when no client is connected
+  --disable_passthrough                 (hidden) Disables passthrough mode
   -h --help                        Shows this screen.
 `
 )
@@ -146,8 +148,11 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	showInputLabel, _ := arguments.Bool("--show_label")
 	inputLabels, _ := arguments.String("--labels") // input inputLabels
 	inputLabelFontSize, _ := arguments.Int("--label_font_size")
-
 	logFPS, _ := arguments.Bool("--log_fps")
+
+	//hidden
+	always_active, _ := arguments.Bool("--always_active")
+	disable_passthrough, _ := arguments.Bool("--disable_passthrough")
 
 	// inputURL and label parsing
 	config = parseInputUrls(config, input)
@@ -215,6 +220,10 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 
 	//motion
 	global.Config.UseMotion = useMotion
+
+	//hidden
+	global.Config.AlwaysActive = always_active
+	global.Config.DisablePassthrough = disable_passthrough
 
 	// non error case, return nil
 	return config, nil

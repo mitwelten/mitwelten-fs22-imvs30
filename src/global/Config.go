@@ -25,6 +25,9 @@ type GlobalConfig struct {
 	InputLabelFontSize int
 	UseMotion          bool
 	InputConfigs       []InputConfig
+	//hidden
+	DisablePassthrough bool
+	AlwaysActive       bool
 }
 
 var Config GlobalConfig
@@ -43,6 +46,9 @@ func initialConfig() GlobalConfig {
 		InputLabelFontSize: 32,
 		UseMotion:          false,
 		InputConfigs:       []InputConfig{},
+		//hidden
+		DisablePassthrough: false,
+		AlwaysActive:       false,
 	}
 }
 func SetupInitialConfig() {
@@ -50,5 +56,5 @@ func SetupInitialConfig() {
 }
 
 func DecodingNecessary() bool {
-	return Config.Height != -1 || Config.Width != -1 || (Config.EncodeQuality != 100 && Config.EncodeQuality != -1) || Config.ShowInputLabel
+	return Config.Height != -1 || Config.Width != -1 || (Config.EncodeQuality != 100 && Config.EncodeQuality != -1) || Config.ShowInputLabel || Config.DisablePassthrough
 }
