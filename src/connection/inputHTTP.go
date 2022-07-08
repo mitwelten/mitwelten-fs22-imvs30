@@ -77,7 +77,7 @@ func (source *InputHTTP) sendHeader() error {
 
 	return nil
 }
-func (source *InputHTTP) Start() error {
+func (source *InputHTTP) Init() error {
 	var err error
 
 	err = source.open()

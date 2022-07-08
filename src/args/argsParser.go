@@ -116,7 +116,7 @@ var printUsage = func(err error, usage_ string) {
 }
 
 // ParseArgs parses all arguments derived from command line
-func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) {
+func ParseArgs() (config multiplexer.MultiplexerConfig, err error) {
 	// init custom handler to print full usage on error
 	parser := &docopt.Parser{
 		HelpHandler:  printUsage,

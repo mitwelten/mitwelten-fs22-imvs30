@@ -36,22 +36,9 @@ func main() {
 	setupLog()
 	global.SetupInitialConfig()
 
-	/*	log.Println("parsing args...")
-		// loop over all arguments by index and value
-		for i, arg := range os.Args {
-			// print index and value
-			log.Println("item", i, "is", arg)
-		}
-
-	*/
-	multiplexerConfig, err := args.ParseArgs(os.Args)
+	multiplexerConfig, err := args.ParseArgs()
 	if err != nil {
 		panic(err.Error())
 	}
-	/*
-		log.Printf("Global config: %+v\n", global.Config)
-		log.Printf("Multiplexer config: %+v\n", multiplexerConfig)
-
-	*/
 	multiplexer.Multiplexer(multiplexerConfig)
 }

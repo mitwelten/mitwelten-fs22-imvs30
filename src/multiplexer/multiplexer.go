@@ -28,12 +28,12 @@ func Multiplexer(multiplexerConfig MultiplexerConfig) {
 
 	for _, inputConnection := range multiplexerConfig.InputLocations {
 		wg.Add(1)
-		var frameData = connection.ListenToInput(inputConnection)
+		var frameData = connection.StartInput(inputConnection)
 		frameStorage = append(frameStorage, frameData)
 	}
 
-	aggregator.Aggregate(&multiplexerConfig.Aggregator, frameStorage...)
-	multiplexerConfig.Output.Run()
+	aggregator.StartAggregator(&multiplexerConfig.Aggregator, frameStorage...)
+	multiplexerConfig.Output.StartOutput()
 	wg.Add(1)
 	wg.Wait()
 }

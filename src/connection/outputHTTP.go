@@ -184,7 +184,7 @@ func (client *ClientConnection) SendFrame(frame *mjpeg.MjpegFrame) error {
 	return nil
 }
 
-func (output *OutputHTTP) Run() {
+func (output *OutputHTTP) StartOutput() {
 	go func(storage_ *mjpeg.FrameStorage) {
 		for {
 			output.condition.Wait()

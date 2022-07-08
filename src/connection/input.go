@@ -11,13 +11,13 @@ import (
 
 type Input interface {
 	ReceiveFrame() (mjpeg.MjpegFrame, error)
-	Start() error
+	Init() error
 	Info() string
 }
 
 func reconnectInput(input Input) {
 	for {
-		err := input.Start()
+		err := input.Init()
 		if err == nil {
 			log.Printf("Successfully reconnected to %s\n", input.Info())
 			return
@@ -29,12 +29,12 @@ func reconnectInput(input Input) {
 
 }
 
-func ListenToInput(input Input) *mjpeg.FrameStorage {
+func StartInput(input Input) *mjpeg.FrameStorage {
 
 	frameData := mjpeg.NewFrameStorage()
 
 	go func() {
-		err := input.Start()
+		err := input.Init()
 		if err != nil {
 			log.Fatalf("Can't open input stream: %s", err.Error())
 		}

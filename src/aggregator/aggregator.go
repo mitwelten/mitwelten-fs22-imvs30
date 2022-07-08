@@ -26,8 +26,8 @@ type AggregatorData struct {
 	OutputCondition *sync.Cond
 }
 
-func Aggregate(aggregatorPtr *Aggregator, storages ...*mjpeg.FrameStorage) {
-	aggregator := *aggregatorPtr
+func StartAggregator(agg *Aggregator, storages ...*mjpeg.FrameStorage) {
+	aggregator := *agg
 	aggregator.Setup(storages...)
 	aggregatorData := aggregator.GetAggregatorData()
 	aggregatorData.OutputStorage = mjpeg.NewFrameStorage()
