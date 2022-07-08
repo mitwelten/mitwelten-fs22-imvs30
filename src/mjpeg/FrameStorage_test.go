@@ -1,7 +1,7 @@
 package mjpeg
 
 import (
-	"mjpeg_multiplexer/src/integration_tests/util"
+	"mjpeg_multiplexer/src/utils"
 	"testing"
 )
 
@@ -18,7 +18,7 @@ func TestFrameStorage_GetLatest(t *testing.T) {
 
 	for i := 0; i < nOfStoredFrames; i++ {
 		frameStorage.Store(getFrame(i))
-		util.Assert(t, getFrame(i), frameStorage.GetLatest(), true)
+		utils.Assert(t, getFrame(i), frameStorage.GetLatest(), true)
 	}
 
 }
@@ -28,13 +28,13 @@ func TestFrameStorage_GetAll(t *testing.T) {
 	// when
 	frameStorage := NewFrameStorage()
 	// then expect default frame
-	util.Assert(t, 1, len(frameStorage.GetAll()), true)
+	utils.Assert(t, 1, len(frameStorage.GetAll()), true)
 
 	// when
 	for i := 1; i < nOfStoredFrames; i++ {
 		frameStorage.Store(getFrame(i))
 		// then expect frames stored in framestorage
-		util.Assert(t, i+1, len(frameStorage.GetAll()), true)
+		utils.Assert(t, i+1, len(frameStorage.GetAll()), true)
 	}
 
 	// expect GetAll() to return the newest frames first ('newest' = added last)
@@ -44,5 +44,5 @@ func TestFrameStorage_GetAll(t *testing.T) {
 		frames[nOfStoredFrames-i-1] = getFrame(i)
 	}
 
-	util.Assert(t, frames, frameStorage.GetAll(), true)
+	utils.Assert(t, frames, frameStorage.GetAll(), true)
 }

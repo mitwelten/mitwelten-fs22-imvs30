@@ -2,9 +2,7 @@ package connection
 
 import (
 	"bufio"
-	"bytes"
 	"io"
-	"log"
 	"mjpeg_multiplexer/src/customErrors"
 	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/mjpeg"
@@ -72,7 +70,7 @@ func (source *InputHTTP) sendHeader() error {
 	}
 
 	// Get the first frame to test if we have permission to access the source
-	_, err = source.ReceiveFrameFast()
+	_, err = source.ReceiveFrame()
 	if err != nil {
 		return err
 	}
@@ -95,7 +93,7 @@ func (source *InputHTTP) Start() error {
 	return nil
 }
 
-func (source *InputHTTP) ReceiveFrameFast() (mjpeg.MjpegFrame, error) {
+func (source *InputHTTP) ReceiveFrame() (mjpeg.MjpegFrame, error) {
 	header, err := source.bufferedConnection.ReadString(mjpeg.JPEG_PREFIX[0])
 	if err != nil {
 		return mjpeg.MjpegFrame{}, err
@@ -104,7 +102,7 @@ func (source *InputHTTP) ReceiveFrameFast() (mjpeg.MjpegFrame, error) {
 	field := "Content-Length: "
 	startIndex := strings.LastIndex(header, field)
 	if startIndex == -1 {
-		return mjpeg.MjpegFrame{}, &customErrors.ErrInvalidFrame{"invalid header: no content length"}
+		return mjpeg.MjpegFrame{}, &customErrors.ErrInvalidFrame{Text: "invalid header: no content length"}
 	}
 
 	// count n digits after field
@@ -121,91 +119,15 @@ func (source *InputHTTP) ReceiveFrameFast() (mjpeg.MjpegFrame, error) {
 	contentLength, err := strconv.Atoi(header[contentLengthStart:contentLengthEnd])
 	if err != nil {
 		// cant parse content length
-		return mjpeg.MjpegFrame{}, &customErrors.ErrInvalidFrame{"cant parse content length"}
+		return mjpeg.MjpegFrame{}, &customErrors.ErrInvalidFrame{Text: "cant parse content length"}
 	}
 
-	body := make([]byte, contentLength-1) // first byte of jpge prefix has already been read
+	body := make([]byte, contentLength-1) // first byte of jpeg prefix has already been read
 
 	n, err := io.ReadFull(source.bufferedConnection, body)
 	if n != contentLength-1 {
-		return mjpeg.MjpegFrame{}, &customErrors.ErrInvalidFrame{"cannot read all bytes"}
+		return mjpeg.MjpegFrame{}, &customErrors.ErrInvalidFrame{Text: "cannot read all bytes"}
 	}
 
 	return mjpeg.MjpegFrame{Body: append(mjpeg.JPEG_PREFIX[0:1], body...)}, nil
-}
-
-func (source *InputHTTP) ReceiveFrame() (mjpeg.MjpegFrame, error) {
-	// todo optimize
-	// Read header
-	var buffer = make([]byte, 1)
-	for {
-		var bufferTmp = make([]byte, 1)
-		var _, err = source.connection.Read(bufferTmp[:])
-		if err != nil {
-			return mjpeg.MjpegFrame{}, &customErrors.ErrHttpReadHeader{}
-		}
-
-		buffer = append(buffer, bufferTmp...)
-
-		// Check if jpg start has been reached
-		if len(buffer) > len(mjpeg.JPEG_PREFIX) && bytes.Compare(buffer[len(buffer)-len(mjpeg.JPEG_PREFIX):], mjpeg.JPEG_PREFIX) == 0 {
-			break
-		}
-	}
-
-	// find index of content-length number
-	var index = 0
-	var wordIndex = 0
-	var word = "Content-Length: "
-
-	for {
-		if index >= len(buffer) {
-			break
-		}
-
-		if wordIndex == len(word) {
-			break
-		}
-
-		if buffer[index] == word[wordIndex] {
-			wordIndex++
-		} else {
-			wordIndex = 0
-		}
-
-		index++
-	}
-
-	if wordIndex != len(word) {
-		log.Println("error: empty frame received")
-		return mjpeg.MjpegFrame{}, &customErrors.ErrHttpEmptyFrame{}
-	}
-
-	// parse content size number
-	var length = 0
-	for {
-		var el = buffer[index+length]
-		if el < '0' || el > '9' {
-			break
-		}
-		length++
-	}
-	var contentLength, _ = strconv.Atoi(string(buffer[index : index+length]))
-
-	// read rest of the frame
-	var bufferBody = make([]byte, contentLength-len(mjpeg.JPEG_PREFIX)) //jpge prefix has already been read
-	var n, err = io.ReadFull(source.connection, bufferBody)
-
-	if err != nil {
-		log.Println("error: could not read frame")
-		return mjpeg.MjpegFrame{}, &customErrors.ErrHttpReadFrame{}
-	}
-
-	if n != contentLength-len(mjpeg.JPEG_PREFIX) {
-		return mjpeg.MjpegFrame{}, &customErrors.ErrInvalidFrame{"cannot read all bytes"}
-	}
-
-	var body = append(mjpeg.JPEG_PREFIX, bufferBody...)
-
-	return mjpeg.MjpegFrame{Body: body}, nil
 }

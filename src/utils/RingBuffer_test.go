@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"mjpeg_multiplexer/src/integration_tests/util"
 	"testing"
 )
 
@@ -12,7 +11,7 @@ func TestRingBuffer_Peek(t *testing.T) {
 
 	for i := 0; i < size*5; i++ {
 		buffer.Push(i)
-		util.Assert(t, i, buffer.Peek(), true)
+		Assert(t, i, buffer.Peek(), true)
 	}
 
 }
@@ -22,16 +21,16 @@ func TestRingBuffer_GetAll(t *testing.T) {
 	size := 20
 
 	buffer := NewRingBuffer[int](size)
-	util.Assert(t, 0, len(buffer.GetAll()), true)
+	Assert(t, 0, len(buffer.GetAll()), true)
 
 	// when
 	for i := 1; i < size*5; i++ {
 		buffer.Push(i)
 		// then expect frames stored in framestorage
 		if i < size {
-			util.Assert(t, i, len(buffer.GetAll()), true)
+			Assert(t, i, len(buffer.GetAll()), true)
 		} else {
-			util.Assert(t, size, len(buffer.GetAll()), true)
+			Assert(t, size, len(buffer.GetAll()), true)
 		}
 	}
 
@@ -42,7 +41,7 @@ func TestRingBuffer_GetAll(t *testing.T) {
 		data_[size-i-1] = i
 	}
 
-	util.Assert(t, data_, buffer.GetAll(), true)
+	Assert(t, data_, buffer.GetAll(), true)
 }
 
 //TestRingBuffer_GetAll util if the correct data and the correct size information is returned, even on 'overflow'
@@ -57,11 +56,11 @@ func TestRingBuffer_GetData(t *testing.T) {
 		buffer.Push(i)
 		data[i%size] = i
 		bufferData, bufferSize := buffer.GetData()
-		util.Assert(t, data, *bufferData, true)
+		Assert(t, data, *bufferData, true)
 		if i < size {
-			util.Assert(t, i+1, bufferSize, true)
+			Assert(t, i+1, bufferSize, true)
 		} else {
-			util.Assert(t, size, bufferSize, true)
+			Assert(t, size, bufferSize, true)
 		}
 	}
 }

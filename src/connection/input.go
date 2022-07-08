@@ -11,7 +11,6 @@ import (
 
 type Input interface {
 	ReceiveFrame() (mjpeg.MjpegFrame, error)
-	ReceiveFrameFast() (mjpeg.MjpegFrame, error)
 	Start() error
 	Info() string
 }
@@ -39,7 +38,7 @@ func ListenToInput(input Input) *mjpeg.FrameStorage {
 		if err != nil {
 			log.Fatalf("Can't open input stream: %s", err.Error())
 		}
-		frame, err := input.ReceiveFrameFast()
+		frame, err := input.ReceiveFrame()
 		// store and encode the first frame to get information about its size
 		if err == nil {
 			frameData.Store(frame)
@@ -47,7 +46,7 @@ func ListenToInput(input Input) *mjpeg.FrameStorage {
 		}
 
 		for {
-			var frame, err = input.ReceiveFrameFast()
+			var frame, err = input.ReceiveFrame()
 
 			if errors.As(err, &customErrors.ErrInvalidFrame{}) {
 				// retry when receiving invalid frame
