@@ -6,7 +6,6 @@ import (
 	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/mjpeg"
 	"reflect"
-	"sync"
 	"time"
 )
 
@@ -23,7 +22,6 @@ type AggregatorData struct {
 	passthrough   bool
 	Enabled       bool
 	OutputStorage *mjpeg.FrameStorage
-	//OutputCondition *sync.Cond
 }
 
 // StartAggregator starts the aggregator loop for the passed aggregator in a separate go routine
@@ -33,10 +31,10 @@ func StartAggregator(agg *Aggregator, inputStorages ...*mjpeg.FrameStorage) {
 	aggregator.Setup(inputStorages...)
 	aggregatorData := aggregator.GetAggregatorData()
 	aggregatorData.OutputStorage = mjpeg.NewFrameStorage()
-	condition := setupCondition(inputStorages...)
+	condition := mjpeg.CreateUpdateCondition(inputStorages...)
 
 	lastUpdate := time.Unix(0, 0)
-	FPS := 0
+	currentFPS := 0
 
 	passthroughMode := false
 
@@ -83,28 +81,16 @@ func StartAggregator(agg *Aggregator, inputStorages ...*mjpeg.FrameStorage) {
 				aggregatorData.OutputStorage.StorePtr(frame)
 			}
 
-			FPS++
+			currentFPS++
 			if lastUpdate.Second() != time.Now().Second() {
 				if global.Config.LogFPS {
-					log.Printf("%v FPS\n", FPS)
+					log.Printf("%v FPS\n", currentFPS)
 				}
-				FPS = 0
+				currentFPS = 0
 			}
 
 			lastUpdate = time.Now()
 		}
 	}()
 
-}
-
-func setupCondition(storages ...*mjpeg.FrameStorage) *sync.Cond {
-	// init the lock and condition object to notify the aggregator when a new frame has been stored
-	lock := sync.Mutex{}
-	lock.Lock()
-	condition := sync.NewCond(&lock)
-	for _, storage := range storages {
-		storage.StorateChangeCondition = condition
-	}
-
-	return condition
 }

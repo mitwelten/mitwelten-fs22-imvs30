@@ -190,11 +190,7 @@ func (output *OutputHTTP) distributeFramesLoop() {
 
 func (output *OutputHTTP) StartOutput(agg *aggregator.Aggregator) {
 	output.aggregator = *agg
-
-	lock := sync.Mutex{}
-	lock.Lock()
-	output.condition = sync.NewCond(&lock)
-	output.aggregator.GetAggregatorData().OutputStorage.StorateChangeCondition = output.condition
+	output.condition = mjpeg.CreateUpdateCondition(output.aggregator.GetAggregatorData().OutputStorage)
 
 	go output.connectionLoop()
 	go output.distributeFramesLoop()

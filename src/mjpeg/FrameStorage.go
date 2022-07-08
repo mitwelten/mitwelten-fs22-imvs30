@@ -45,6 +45,17 @@ func (frameStorage *FrameStorage) SetImageSize(width, height int) {
 	frameStorage.imageHeight = height
 }
 
+func CreateUpdateCondition(storages ...*FrameStorage) *sync.Cond {
+	lock := sync.Mutex{}
+	lock.Lock()
+	condition := sync.NewCond(&lock)
+	for _, storage := range storages {
+		storage.StorateChangeCondition = condition
+	}
+
+	return condition
+}
+
 // NewFrameStorage FrameStorage ctor
 func NewFrameStorage() *FrameStorage {
 	frame := NewMJPEGFrame()

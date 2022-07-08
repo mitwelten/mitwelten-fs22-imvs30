@@ -88,15 +88,13 @@ Options:
 )
 
 // parseInput parses input URLS derived from command line arguments
-func parseInputUrls(config multiplexer.MultiplexerConfig, inputStr string) multiplexer.MultiplexerConfig {
+func parseInputUrls(config *multiplexer.MultiplexerConfig, inputStr string) {
 	arr := strings.Split(inputStr, ArgumentSeparator)
 	config.InputLocations = []connection.Input{}
 	for i, url := range arr {
 		global.Config.InputConfigs = append(global.Config.InputConfigs, global.InputConfig{Url: url, Label: url})
 		config.InputLocations = append(config.InputLocations, connection.NewInputHTTP(&global.Config.InputConfigs[i], url))
 	}
-
-	return config
 }
 
 // todo: evtl. trim
@@ -151,11 +149,11 @@ func ParseArgs() (config multiplexer.MultiplexerConfig, err error) {
 	logFPS, _ := arguments.Bool("--log_fps")
 
 	//hidden
-	always_active, _ := arguments.Bool("--always_active")
-	disable_passthrough, _ := arguments.Bool("--disable_passthrough")
+	alwaysActive, _ := arguments.Bool("--always_active")
+	disablePassthrough, _ := arguments.Bool("--disable_passthrough")
 
 	// inputURL and label parsing
-	config = parseInputUrls(config, input)
+	parseInputUrls(&config, input)
 	if len(inputLabels) != 0 {
 		parseSeparatedString(inputLabels)
 	}
@@ -197,8 +195,6 @@ func ParseArgs() (config multiplexer.MultiplexerConfig, err error) {
 	global.Config.Height = height
 	global.Config.IgnoreAspectRatio = ignoreAspectRatio
 
-	//	return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidMode{Argument: *modePtr}
-
 	// credentials
 	global.Config.UseAuth = useAuth
 
@@ -222,8 +218,8 @@ func ParseArgs() (config multiplexer.MultiplexerConfig, err error) {
 	global.Config.UseMotion = useMotion
 
 	//hidden
-	global.Config.AlwaysActive = always_active
-	global.Config.DisablePassthrough = disable_passthrough
+	global.Config.AlwaysActive = alwaysActive
+	global.Config.DisablePassthrough = disablePassthrough
 
 	// non error case, return nil
 	return config, nil
