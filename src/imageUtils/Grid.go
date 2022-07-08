@@ -20,6 +20,10 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 		log.Fatalf("At least one frame needed\n")
 	}
 
+	if imageInContainers == nil {
+		imageInContainers = make([]*image.RGBA, nFrames)
+	}
+
 	firstWidthInitial, firstHeightInitial := storages[0].GetImageSize()
 	totalWidth := firstWidthInitial * nCols
 	totalHeight := firstHeightInitial * nRows
@@ -57,7 +61,14 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 		}
 
 		// Check for resizing
-		img := Decode(storages[i])
+		if imageInContainers[i] != nil {
+			DecodeContainer(storages[i], imageInContainers[i])
+		} else {
+			image_ := Decode(storages[i])
+			imageInContainers[i] = image_.(*image.RGBA)
+		}
+		var img image.Image
+		img = imageInContainers[i]
 
 		if img.Bounds().Dx() != cellWidth || img.Bounds().Dy() != cellHeight {
 			img = ResizeOutputFrame(img, cellWidth, cellHeight)

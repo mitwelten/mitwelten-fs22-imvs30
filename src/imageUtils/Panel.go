@@ -106,13 +106,20 @@ var Slots8 = PanelLayout{
 	},
 }
 
-func PanelDrawFrame(storage *mjpeg.FrameStorage, r image.Rectangle, flush bool) {
+func PanelDrawFrame(storage *mjpeg.FrameStorage, r image.Rectangle, flush bool, i int) {
 	frame := storage.GetLatestPtr()
 	if flush {
 		frame.CachedImage = nil
 	}
 
-	img := Decode(storage)
+	if imageInContainers[i] != nil {
+		DecodeContainer(storage, imageInContainers[i])
+	} else {
+		image_ := Decode(storage)
+		imageInContainers[i] = image_.(*image.RGBA)
+	}
+	var img image.Image
+	img = imageInContainers[i]
 
 	// Check for resizing
 	if img.Bounds().Dx() != r.Dx() || img.Bounds().Dy() != r.Dy() {
@@ -132,6 +139,10 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 		flush = true
 	}
 
+	if imageInContainers == nil {
+		imageInContainers = make([]*image.RGBA, len(storages))
+	}
+
 	firstWidthInitial, firstHeightInitial := storages[0].GetImageSize()
 	totalWidth := int(float64(firstWidthInitial) / layout.FirstWidth)
 	totalHeight := int(float64(firstHeightInitial) / layout.FirstHeight)
@@ -145,7 +156,7 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 	sp := image.Point{}
 	r := image.Rectangle{Min: sp, Max: image.Point{X: int(float64(totalWidth) * layout.FirstWidth), Y: int(float64(totalHeight) * layout.FirstHeight)}}
 
-	PanelDrawFrame(storages[startIndex], r, flush)
+	PanelDrawFrame(storages[startIndex], r, flush, 0)
 
 	if global.Config.ShowInputLabel {
 		addLabel(imageOut, sp.X, sp.Y, global.Config.InputConfigs[startIndex].Label)
@@ -160,7 +171,7 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 		delta := image.Point{X: int(float64(totalWidth) * layout.ChildrenWidth), Y: int(float64(totalHeight) * layout.ChildrenHeight)}
 		r = image.Rectangle{Min: sp, Max: sp.Add(delta)}
 
-		PanelDrawFrame(storages[index], r, flush)
+		PanelDrawFrame(storages[index], r, flush, index)
 
 		if global.Config.ShowInputLabel {
 			// add offset to avoid overlap with the borders

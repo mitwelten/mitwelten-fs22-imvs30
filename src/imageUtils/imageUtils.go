@@ -13,9 +13,10 @@ import (
 	"mjpeg_multiplexer/src/mjpeg"
 	"mjpeg_multiplexer/src/utils"
 
+	"github.com/TobiasKunzFHNW/go-libjpeg/jpeg"
+
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
-	"github.com/pixiv/go-libjpeg/jpeg"
 	"golang.org/x/image/draw"
 	"golang.org/x/image/font"
 	"golang.org/x/image/math/fixed"
@@ -36,12 +37,19 @@ func DecodeAll(storages ...*mjpeg.FrameStorage) []image.Image {
 	return images
 }
 
-func DecodeAt(storage *mjpeg.FrameStorage, index int) image.Image {
+func DecodeAt(storage *mjpeg.FrameStorage, index int, imageContainer *image.RGBA) image.Image {
 	frame := storage.GetAllPtr()[index]
 
 	//try to read from the cache
 	if frame.CachedImage == nil {
-		img, err := jpeg.DecodeIntoRGBA(bytes.NewReader(frame.Body), &DecodeOptions)
+		var img *image.RGBA
+		var err error
+		if imageContainer != nil {
+			err = jpeg.DecodeIntoRGBA2(&imageContainer, bytes.NewReader(frame.Body), &DecodeOptions)
+			img = imageContainer
+		} else {
+			img, err = jpeg.DecodeIntoRGBA(bytes.NewReader(frame.Body), &DecodeOptions)
+		}
 		frame.CachedImage = img
 
 		if err != nil {
@@ -63,8 +71,12 @@ func DecodeAt(storage *mjpeg.FrameStorage, index int) image.Image {
 	}
 }
 
+func DecodeContainer(storage *mjpeg.FrameStorage, container *image.RGBA) image.Image {
+	return DecodeAt(storage, 0, container)
+}
+
 func Decode(storage *mjpeg.FrameStorage) image.Image {
-	return DecodeAt(storage, 0)
+	return DecodeAt(storage, 0, nil)
 }
 
 func Encode(image image.Image) *mjpeg.MjpegFrame {
@@ -95,6 +107,8 @@ func getImageOut(width int, height int) *image.RGBA {
 	}
 	return imageOut
 }
+
+var imageInContainers []*image.RGBA
 
 //ResizeOutputFrame resizes an image with regard to letterbox
 func ResizeOutputFrame(img image.Image, width int, height int) image.Image {

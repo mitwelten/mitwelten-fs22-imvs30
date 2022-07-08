@@ -42,7 +42,7 @@ func (motionDetector *MotionDetector) UpdateScores() {
 	for i, storage := range motionDetector.storages {
 		if len(storage.GetAllPtr()) >= 2 {
 			//todo cache last frame to reuse it next second?
-			score := FrameDifferenceScore(imageUtils.DecodeAt(storage, 0), imageUtils.DecodeAt(storage, 1))
+			score := FrameDifferenceScore(imageUtils.DecodeAt(storage, 0, nil), imageUtils.DecodeAt(storage, 1, nil))
 			motionDetector.previousScores[i].Push(score)
 		}
 	}
@@ -100,6 +100,6 @@ func (motionDetector *MotionDetector) GetMostActiveImage() image.Image {
 
 	index := motionDetector.GetMostActiveIndex()
 
-	return FrameDifferenceImage(imageUtils.DecodeAt(motionDetector.storages[index], 0), imageUtils.DecodeAt(motionDetector.storages[index], 4))
+	return FrameDifferenceImage(imageUtils.DecodeAt(motionDetector.storages[index], 0, nil), imageUtils.DecodeAt(motionDetector.storages[index], 4, nil))
 
 }
