@@ -6,10 +6,11 @@ import (
 	"log"
 	"math"
 	"mjpeg_multiplexer/src/aggregator"
-	"mjpeg_multiplexer/src/connection"
 	"mjpeg_multiplexer/src/customErrors"
 	"mjpeg_multiplexer/src/global"
+	"mjpeg_multiplexer/src/input"
 	"mjpeg_multiplexer/src/multiplexer"
+	"mjpeg_multiplexer/src/output"
 	"os"
 	"strconv"
 	"strings"
@@ -90,10 +91,10 @@ Options:
 // parseInput parses input URLS derived from command line arguments
 func parseInputUrls(config *multiplexer.MultiplexerConfig, inputStr string) {
 	arr := strings.Split(inputStr, ArgumentSeparator)
-	config.InputLocations = []connection.Input{}
+	config.Inputs = []input.Input{}
 	for i, url := range arr {
 		global.Config.InputConfigs = append(global.Config.InputConfigs, global.InputConfig{Url: url, Label: url})
-		config.InputLocations = append(config.InputLocations, connection.NewInputHTTP(&global.Config.InputConfigs[i], url))
+		config.Inputs = append(config.Inputs, input.NewInputHTTP(&global.Config.InputConfigs[i], url))
 	}
 }
 
@@ -186,7 +187,7 @@ func ParseArgs() (config multiplexer.MultiplexerConfig, err error) {
 	}
 
 	// output stream
-	config.Output = connection.NewOutputHTTP(port)
+	config.Output = output.NewOutputHTTP(port)
 
 	// disabled: output file
 	// config.Output = connection.NewOutputFile(outputFileNamePtr)

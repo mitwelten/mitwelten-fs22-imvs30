@@ -1,4 +1,4 @@
-package connection
+package output
 
 import (
 	"mjpeg_multiplexer/src/aggregator"

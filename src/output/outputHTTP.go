@@ -1,4 +1,4 @@
-package connection
+package output
 
 import (
 	"log"
@@ -22,7 +22,6 @@ type OutputHTTP struct {
 type ClientConnection struct {
 	channel    chan *mjpeg.MjpegFrame
 	Connection net.Conn
-	isClosed   bool
 }
 
 var HEADER = "HTTP/1.1 200 OK\r\n" +
@@ -165,7 +164,7 @@ func (output *OutputHTTP) connectionLoop() {
 
 		log.Printf("%s connected\n", conn.RemoteAddr().String())
 
-		client := ClientConnection{make(chan *mjpeg.MjpegFrame), conn, false}
+		client := ClientConnection{make(chan *mjpeg.MjpegFrame), conn}
 
 		output.clientsMutex.Lock()
 		output.clients = append(output.clients, client)
@@ -182,7 +181,7 @@ func (output *OutputHTTP) connectionLoop() {
 func (output *OutputHTTP) distributeFramesLoop() {
 	for {
 		output.condition.Wait()
-		frame := output.aggregator.GetAggregatorData().OutputStorage.GetLatestPtr()
+		frame := output.aggregator.GetAggregatorData().AggregatorStorage.GetLatestPtr()
 		output.lastFrame = frame
 		output.SendFrame(frame)
 	}
@@ -190,7 +189,7 @@ func (output *OutputHTTP) distributeFramesLoop() {
 
 func (output *OutputHTTP) StartOutput(agg *aggregator.Aggregator) {
 	output.aggregator = *agg
-	output.condition = mjpeg.CreateUpdateCondition(output.aggregator.GetAggregatorData().OutputStorage)
+	output.condition = mjpeg.CreateUpdateCondition(output.aggregator.GetAggregatorData().AggregatorStorage)
 
 	go output.connectionLoop()
 	go output.distributeFramesLoop()

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"mjpeg_multiplexer/src/global"
+	"mjpeg_multiplexer/src/input"
 	"mjpeg_multiplexer/src/mjpeg"
 	"reflect"
 	"time"
@@ -19,18 +20,22 @@ type Aggregator interface {
 }
 
 type AggregatorData struct {
-	passthrough   bool
-	Enabled       bool
-	OutputStorage *mjpeg.FrameStorage
+	passthrough       bool
+	Enabled           bool
+	AggregatorStorage *mjpeg.FrameStorage
 }
 
 // StartAggregator starts the aggregator loop for the passed aggregator in a separate go routine
-func StartAggregator(agg *Aggregator, inputStorages ...*mjpeg.FrameStorage) {
+func StartAggregator(agg *Aggregator, inputs ...input.Input) {
+	var inputStorages []*mjpeg.FrameStorage
+	for _, input := range inputs {
+		inputStorages = append(inputStorages, input.GetInputData().InputStorage)
+	}
 	// Setup
 	aggregator := *agg
 	aggregator.Setup(inputStorages...)
 	aggregatorData := aggregator.GetAggregatorData()
-	aggregatorData.OutputStorage = mjpeg.NewFrameStorage()
+	aggregatorData.AggregatorStorage = mjpeg.NewFrameStorage()
 	condition := mjpeg.CreateUpdateCondition(inputStorages...)
 
 	lastUpdate := time.Unix(0, 0)
@@ -77,8 +82,8 @@ func StartAggregator(agg *Aggregator, inputStorages ...*mjpeg.FrameStorage) {
 			}
 
 			// and store it
-			if aggregatorData.OutputStorage != nil {
-				aggregatorData.OutputStorage.StorePtr(frame)
+			if aggregatorData.AggregatorStorage != nil {
+				aggregatorData.AggregatorStorage.StorePtr(frame)
 			}
 
 			currentFPS++

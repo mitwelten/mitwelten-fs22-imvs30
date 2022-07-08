@@ -3,17 +3,17 @@ package multiplexer
 import (
 	"log"
 	"mjpeg_multiplexer/src/aggregator"
-	"mjpeg_multiplexer/src/connection"
 	"mjpeg_multiplexer/src/global"
-	"mjpeg_multiplexer/src/mjpeg"
+	"mjpeg_multiplexer/src/input"
+	"mjpeg_multiplexer/src/output"
 	"mjpeg_multiplexer/src/utils"
 	"sync"
 )
 
 type MultiplexerConfig struct {
-	InputLocations []connection.Input
-	Output         connection.Output
-	Aggregator     aggregator.Aggregator
+	Inputs     []input.Input
+	Output     output.Output
+	Aggregator aggregator.Aggregator
 }
 
 func Multiplexer(multiplexerConfig MultiplexerConfig) {
@@ -24,15 +24,12 @@ func Multiplexer(multiplexerConfig MultiplexerConfig) {
 		utils.ParseAuthenticationFile()
 	}
 
-	var inputStorages []*mjpeg.FrameStorage
-
-	for _, inputConnection := range multiplexerConfig.InputLocations {
+	for _, inputConnection := range multiplexerConfig.Inputs {
 		wg.Add(1)
-		var frameData = connection.StartInput(inputConnection)
-		inputStorages = append(inputStorages, frameData)
+		input.StartInput(inputConnection)
 	}
 
-	aggregator.StartAggregator(&multiplexerConfig.Aggregator, inputStorages...)
+	aggregator.StartAggregator(&multiplexerConfig.Aggregator, multiplexerConfig.Inputs...)
 	multiplexerConfig.Output.StartOutput(&multiplexerConfig.Aggregator)
 	wg.Add(1)
 	wg.Wait()

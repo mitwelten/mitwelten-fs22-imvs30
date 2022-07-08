@@ -1,4 +1,4 @@
-package connection
+package input
 
 import (
 	"errors"
@@ -13,6 +13,11 @@ type Input interface {
 	ReceiveFrame() (mjpeg.MjpegFrame, error)
 	Init() error
 	Info() string
+	GetInputData() *InputData
+}
+
+type InputData struct {
+	InputStorage *mjpeg.FrameStorage
 }
 
 func reconnectInput(input Input) {
@@ -29,9 +34,10 @@ func reconnectInput(input Input) {
 
 }
 
-func StartInput(input Input) *mjpeg.FrameStorage {
+func StartInput(input Input) {
 
-	frameData := mjpeg.NewFrameStorage()
+	inputData := input.GetInputData()
+	inputData.InputStorage = mjpeg.NewFrameStorage()
 
 	go func() {
 		err := input.Init()
@@ -41,8 +47,8 @@ func StartInput(input Input) *mjpeg.FrameStorage {
 		frame, err := input.ReceiveFrame()
 		// store and encode the first frame to get information about its size
 		if err == nil {
-			frameData.Store(frame)
-			imageUtils.Decode(frameData)
+			inputData.InputStorage.Store(frame)
+			imageUtils.Decode(inputData.InputStorage)
 		}
 
 		for {
@@ -58,8 +64,7 @@ func StartInput(input Input) *mjpeg.FrameStorage {
 				reconnectInput(input)
 				continue
 			}
-			frameData.Store(frame)
+			inputData.InputStorage.Store(frame)
 		}
 	}()
-	return frameData
 }

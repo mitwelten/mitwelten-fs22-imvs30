@@ -1,4 +1,4 @@
-package connection
+package input
 
 import (
 	"bufio"
@@ -20,18 +20,20 @@ const delim = "\r\n"
 const authentication = "Authorization: Basic "
 
 type InputHTTP struct {
+	data               InputData
 	config             *global.InputConfig
 	url                string
 	connection         net.Conn
 	bufferedConnection *bufio.Reader
-	buffer             []byte
 }
 
 // NewInputHTTP todo TEST: Test this function by creating an input and checking if it runs
 func NewInputHTTP(config *global.InputConfig, url string) *InputHTTP {
 	return &InputHTTP{config: config, url: url}
 }
-
+func (source *InputHTTP) GetInputData() *InputData {
+	return &source.data
+}
 func (source *InputHTTP) Info() string {
 	return source.url
 }
@@ -39,7 +41,6 @@ func (source *InputHTTP) open() error {
 	var err error
 	source.connection, err = net.DialTimeout("tcp", source.url, 3*time.Second)
 	source.bufferedConnection = bufio.NewReader(source.connection)
-	source.buffer = make([]byte, 1024)
 
 	if err != nil {
 		return &customErrors.ErrHttpOpenInputSocketDial{IP: source.url}
