@@ -11,12 +11,12 @@ import (
 func TestInAndOutput(t *testing.T) {
 
 	var agg aggregator.Aggregator = &aggregator.AggregatorCarousel{}
-	output := NewOutputHTTP("8123", agg)
+	output := NewOutputHTTP("8123")
 	input := NewInputHTTP(nil, "localhost:8123")
 	storage := StartInput(input)
 
 	aggregator.StartAggregator(&agg, storage)
-	output.StartOutput()
+	output.StartOutput(&agg)
 
 	frame := mjpeg.MjpegFrame{}
 	frame.Body = []byte{1, 2, 3}

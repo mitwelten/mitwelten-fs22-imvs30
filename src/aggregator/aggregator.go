@@ -20,18 +20,20 @@ type Aggregator interface {
 }
 
 type AggregatorData struct {
-	passthrough     bool
-	Enabled         bool
-	OutputStorage   *mjpeg.FrameStorage
-	OutputCondition *sync.Cond
+	passthrough   bool
+	Enabled       bool
+	OutputStorage *mjpeg.FrameStorage
+	//OutputCondition *sync.Cond
 }
 
-func StartAggregator(agg *Aggregator, storages ...*mjpeg.FrameStorage) {
+// StartAggregator starts the aggregator loop for the passed aggregator in a separate go routine
+func StartAggregator(agg *Aggregator, inputStorages ...*mjpeg.FrameStorage) {
+	// Setup
 	aggregator := *agg
-	aggregator.Setup(storages...)
+	aggregator.Setup(inputStorages...)
 	aggregatorData := aggregator.GetAggregatorData()
 	aggregatorData.OutputStorage = mjpeg.NewFrameStorage()
-	condition := setupCondition(storages...)
+	condition := setupCondition(inputStorages...)
 
 	lastUpdate := time.Unix(0, 0)
 	FPS := 0
@@ -40,7 +42,7 @@ func StartAggregator(agg *Aggregator, storages ...*mjpeg.FrameStorage) {
 
 	if !global.DecodingNecessary() && reflect.TypeOf(aggregator) == reflect.TypeOf(&AggregatorCarousel{}) {
 		passthroughMode = true
-	} else if !global.DecodingNecessary() && len(storages) == 1 {
+	} else if !global.DecodingNecessary() && len(inputStorages) == 1 {
 		passthroughMode = true
 	}
 
@@ -54,7 +56,7 @@ func StartAggregator(agg *Aggregator, storages ...*mjpeg.FrameStorage) {
 		for {
 			condition.Wait()
 
-			//todo wait with a condition here?
+			// not enabled => no client is connected and no work has to be done
 			if !global.Config.AlwaysActive && !aggregator.GetAggregatorData().Enabled {
 				time.Sleep(1 * time.Second)
 				continue
@@ -64,21 +66,21 @@ func StartAggregator(agg *Aggregator, storages ...*mjpeg.FrameStorage) {
 				continue
 			}
 
-			// get frame
+			// process the new frame...
 			var frame *mjpeg.MjpegFrame
-			if aggregatorData.passthrough && len(storages) == 1 && passthroughMode {
-				frame = storages[0].GetLatestPtr()
+			if aggregatorData.passthrough && len(inputStorages) == 1 && passthroughMode {
+				frame = inputStorages[0].GetLatestPtr()
 			} else {
-				frame = aggregator.aggregate(storages...)
+				frame = aggregator.aggregate(inputStorages...)
 			}
 
 			if frame == nil {
 				continue
 			}
 
+			// and store it
 			if aggregatorData.OutputStorage != nil {
 				aggregatorData.OutputStorage.StorePtr(frame)
-				aggregatorData.OutputCondition.Signal()
 			}
 
 			FPS++
@@ -100,8 +102,8 @@ func setupCondition(storages ...*mjpeg.FrameStorage) *sync.Cond {
 	lock := sync.Mutex{}
 	lock.Lock()
 	condition := sync.NewCond(&lock)
-	for _, el := range storages {
-		el.AggregatorCondition = condition
+	for _, storage := range storages {
+		storage.StorateChangeCondition = condition
 	}
 
 	return condition

@@ -10,10 +10,10 @@ const nOfStoredFrames = 2
 
 // FrameStorage stores multiple MJPEG frames
 type FrameStorage struct {
-	mu                  sync.RWMutex
-	AggregatorCondition *sync.Cond
-	buffer              utils.RingBuffer[MjpegFrame]
-	LastUpdated         time.Time
+	mu                     sync.RWMutex
+	StorateChangeCondition *sync.Cond
+	buffer                 utils.RingBuffer[MjpegFrame]
+	LastUpdated            time.Time
 
 	imageWidth  int
 	imageHeight int
@@ -68,8 +68,8 @@ func (frameStorage *FrameStorage) Store(frame MjpegFrame) {
 	frameStorage.buffer.Push(frame)
 	frameStorage.LastUpdated = time.Now()
 
-	if frameStorage.AggregatorCondition != nil {
-		frameStorage.AggregatorCondition.Signal()
+	if frameStorage.StorateChangeCondition != nil {
+		frameStorage.StorateChangeCondition.Signal()
 	}
 }
 
@@ -81,8 +81,8 @@ func (frameStorage *FrameStorage) StorePtr(frame *MjpegFrame) {
 	frameStorage.buffer.PushPtr(frame)
 	frameStorage.LastUpdated = time.Now()
 
-	if frameStorage.AggregatorCondition != nil {
-		frameStorage.AggregatorCondition.Signal()
+	if frameStorage.StorateChangeCondition != nil {
+		frameStorage.StorateChangeCondition.Signal()
 	}
 }
 

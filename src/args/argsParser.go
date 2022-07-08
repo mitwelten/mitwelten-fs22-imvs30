@@ -188,7 +188,7 @@ func ParseArgs() (config multiplexer.MultiplexerConfig, err error) {
 	}
 
 	// output stream
-	config.Output = connection.NewOutputHTTP(port, config.Aggregator)
+	config.Output = connection.NewOutputHTTP(port)
 
 	// disabled: output file
 	// config.Output = connection.NewOutputFile(outputFileNamePtr)

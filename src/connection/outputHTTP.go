@@ -10,6 +10,7 @@ import (
 )
 
 type OutputHTTP struct {
+	port         string
 	lastFrame    *mjpeg.MjpegFrame
 	clients      []ClientConnection
 	clientsMutex *sync.RWMutex
@@ -37,48 +38,13 @@ var HEADER = "HTTP/1.1 200 OK\r\n" +
 
 var DELIM = "\r\n--boundarydonotcross\r\n"
 
-func NewOutputHTTP(port string, aggregator aggregator.Aggregator) Output {
-	listener, err := net.Listen("tcp", ":"+port)
-
-	if err != nil {
-		log.Fatalf("can't open socket %s: %s", port, err.Error())
-	}
-
+func NewOutputHTTP(port string) Output {
 	output := OutputHTTP{}
-	output.aggregator = aggregator
-
-	lock := sync.Mutex{}
-	lock.Lock()
-	output.condition = sync.NewCond(&lock)
-	output.aggregator.GetAggregatorData().OutputCondition = output.condition
+	output.port = port
 
 	output.clients = make([]ClientConnection, 0)
 	output.clientsMutex = &sync.RWMutex{}
 	output.errorCounter = 0
-
-	go func() {
-		for {
-			conn, err := listener.Accept()
-			if err != nil {
-				log.Printf("Invalid connection: %s", err.Error())
-				continue
-			}
-
-			log.Printf("%s connected\n", conn.RemoteAddr().String())
-
-			client := ClientConnection{make(chan *mjpeg.MjpegFrame), conn, false}
-
-			output.clientsMutex.Lock()
-			output.clients = append(output.clients, client)
-			if len(output.clients) == 1 && output.aggregator != nil {
-				output.aggregator.GetAggregatorData().Enabled = true
-				log.Printf("Client connected, starting aggregator\n")
-			}
-			output.clientsMutex.Unlock()
-
-			go output.serve(client)
-		}
-	}()
 
 	return &output
 }
@@ -184,14 +150,52 @@ func (client *ClientConnection) SendFrame(frame *mjpeg.MjpegFrame) error {
 	return nil
 }
 
-func (output *OutputHTTP) StartOutput() {
-	go func(storage_ *mjpeg.FrameStorage) {
-		for {
-			output.condition.Wait()
+func (output *OutputHTTP) connectionLoop() {
+	listener, err := net.Listen("tcp", ":"+output.port)
 
-			frame := storage_.GetLatestPtr()
-			output.lastFrame = frame
-			output.SendFrame(frame)
+	if err != nil {
+		log.Fatalf("can't open socket %s: %s", output.port, err.Error())
+	}
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			log.Printf("Invalid connection: %s", err.Error())
+			continue
 		}
-	}(output.aggregator.GetAggregatorData().OutputStorage)
+
+		log.Printf("%s connected\n", conn.RemoteAddr().String())
+
+		client := ClientConnection{make(chan *mjpeg.MjpegFrame), conn, false}
+
+		output.clientsMutex.Lock()
+		output.clients = append(output.clients, client)
+		if len(output.clients) == 1 && output.aggregator != nil {
+			output.aggregator.GetAggregatorData().Enabled = true
+			log.Printf("Client connected, starting aggregator\n")
+		}
+		output.clientsMutex.Unlock()
+
+		go output.serve(client)
+	}
+}
+
+func (output *OutputHTTP) distributeFramesLoop() {
+	for {
+		output.condition.Wait()
+		frame := output.aggregator.GetAggregatorData().OutputStorage.GetLatestPtr()
+		output.lastFrame = frame
+		output.SendFrame(frame)
+	}
+}
+
+func (output *OutputHTTP) StartOutput(agg *aggregator.Aggregator) {
+	output.aggregator = *agg
+
+	lock := sync.Mutex{}
+	lock.Lock()
+	output.condition = sync.NewCond(&lock)
+	output.aggregator.GetAggregatorData().OutputStorage.StorateChangeCondition = output.condition
+
+	go output.connectionLoop()
+	go output.distributeFramesLoop()
 }

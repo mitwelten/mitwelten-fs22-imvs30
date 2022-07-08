@@ -24,16 +24,16 @@ func Multiplexer(multiplexerConfig MultiplexerConfig) {
 		utils.ParseAuthenticationFile()
 	}
 
-	var frameStorage []*mjpeg.FrameStorage
+	var inputStorages []*mjpeg.FrameStorage
 
 	for _, inputConnection := range multiplexerConfig.InputLocations {
 		wg.Add(1)
 		var frameData = connection.StartInput(inputConnection)
-		frameStorage = append(frameStorage, frameData)
+		inputStorages = append(inputStorages, frameData)
 	}
 
-	aggregator.StartAggregator(&multiplexerConfig.Aggregator, frameStorage...)
-	multiplexerConfig.Output.StartOutput()
+	aggregator.StartAggregator(&multiplexerConfig.Aggregator, inputStorages...)
+	multiplexerConfig.Output.StartOutput(&multiplexerConfig.Aggregator)
 	wg.Add(1)
 	wg.Wait()
 }
