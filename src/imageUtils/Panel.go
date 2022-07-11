@@ -156,7 +156,7 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 	sp := image.Point{}
 	r := image.Rectangle{Min: sp, Max: image.Point{X: int(float64(totalWidth) * layout.FirstWidth), Y: int(float64(totalHeight) * layout.FirstHeight)}}
 
-	PanelDrawFrame(storages[startIndex], r, flush, 0)
+	PanelDrawFrame(storages[startIndex], r, flush, startIndex)
 
 	if global.Config.ShowInputLabel {
 		addLabel(imageOut, sp.X, sp.Y, global.Config.InputConfigs[startIndex].Label)
