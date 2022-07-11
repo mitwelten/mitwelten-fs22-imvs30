@@ -5,7 +5,7 @@ package imageUtils
 import (
 	"bytes"
 	_ "embed"
-	"github.com/pixiv/go-libjpeg/jpeg"
+	"github.com/TobiasKunzFHNW/go-libjpeg/jpeg"
 	"image"
 	"image/color"
 	"log"
@@ -24,6 +24,9 @@ import (
 //go:embed arial.ttf
 var arial []byte
 
+var imageOut *image.RGBA
+var imageInContainers []*image.RGBA
+
 var DecodeOptions = jpeg.DecoderOptions{ScaleTarget: image.Rectangle{}, DCTMethod: jpeg.DCTIFast, DisableFancyUpsampling: true, DisableBlockSmoothing: true}
 var EncodingOptions = jpeg.EncoderOptions{Quality: 80, OptimizeCoding: false, ProgressiveMode: false, DCTMethod: jpeg.DCTIFast}
 
@@ -37,6 +40,14 @@ func DecodeAll(storages ...*mjpeg.FrameStorage) []image.Image {
 }
 
 func Decode(storage *mjpeg.FrameStorage) image.Image {
+	return decode(storage, nil)
+}
+
+func DecodeContainer(storage *mjpeg.FrameStorage, imageContainer *image.RGBA) image.Image {
+	return decode(storage, imageContainer)
+}
+
+func decode(storage *mjpeg.FrameStorage, imageContainer *image.RGBA) image.Image {
 	frame := storage.GetFrame()
 
 	//try to read from the cache
@@ -44,7 +55,12 @@ func Decode(storage *mjpeg.FrameStorage) image.Image {
 		var img *image.RGBA
 		var err error
 
-		img, err = jpeg.DecodeIntoRGBA(bytes.NewReader(frame.Body), &DecodeOptions)
+		if imageContainer != nil {
+			err = jpeg.DecodeIntoRGBA2(&imageContainer, bytes.NewReader(frame.Body), &DecodeOptions)
+			img = imageContainer
+		} else {
+			img, err = jpeg.DecodeIntoRGBA(bytes.NewReader(frame.Body), &DecodeOptions)
+		}
 		frame.CachedImage = img
 
 		if err != nil {
@@ -83,8 +99,6 @@ func Encode(image image.Image) *mjpeg.MjpegFrame {
 
 	return &mjpeg.MjpegFrame{Body: buff.Bytes()}
 }
-
-var imageOut *image.RGBA
 
 func getImageOut(width int, height int) *image.RGBA {
 	if imageOut == nil || imageOut.Rect.Max.X != width || imageOut.Rect.Max.Y != height {

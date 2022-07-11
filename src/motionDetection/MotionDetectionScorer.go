@@ -17,11 +17,6 @@ const imageSize = 128
 
 // FrameDifferenceScore implements Scorer.FrameDifferenceScore Method
 func FrameDifferenceScore(img1 image.Image, img2 image.Image) float64 {
-	/*	ratio := float64(img1.Bounds().Dy()) / float64(img1.Bounds().Dx())
-		height := int(imageSize * ratio)
-		img1 = imageUtils.Resize(img1, imageSize, height)
-		img2 = imageUtils.Resize(img2, imageSize, height)
-	*/
 	nPixels := float64(img1.Bounds().Dx() * img1.Bounds().Dy())
 	return float64(kernelPixelChangedThreshold(img1, img2)) / nPixels
 }
