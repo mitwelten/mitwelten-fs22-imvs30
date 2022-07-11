@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-const minWaitBetweenChanges = 2000 * time.Millisecond
+const minWaitBetweenChanges = 3000 * time.Millisecond
 
 type AggregatorCarousel struct {
 	data           AggregatorData

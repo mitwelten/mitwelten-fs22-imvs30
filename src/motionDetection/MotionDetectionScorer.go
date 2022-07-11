@@ -13,19 +13,21 @@ import (
 )
 
 const threshold = 20
-const imageSize = 100
+const imageSize = 128
 
 // FrameDifferenceScore implements Scorer.FrameDifferenceScore Method
 func FrameDifferenceScore(img1 image.Image, img2 image.Image) float64 {
-	img1 = imageUtils.Resize(img1, imageSize, imageSize)
-	img2 = imageUtils.Resize(img2, imageSize, imageSize)
-
+	/*	ratio := float64(img1.Bounds().Dy()) / float64(img1.Bounds().Dx())
+		height := int(imageSize * ratio)
+		img1 = imageUtils.Resize(img1, imageSize, height)
+		img2 = imageUtils.Resize(img2, imageSize, height)
+	*/
 	nPixels := float64(img1.Bounds().Dx() * img1.Bounds().Dy())
-	return kernelPixelChangedThreshold(img1, img2) / nPixels
+	return float64(kernelPixelChangedThreshold(img1, img2)) / nPixels
 }
 
-func kernelPixelChangedThreshold(img1 image.Image, img2 image.Image) float64 {
-	score := 0.0
+func kernelPixelChangedThreshold(img1 image.Image, img2 image.Image) int {
+	score := 0
 
 	for y := 0; y < img1.Bounds().Dy(); y++ {
 		for x := 0; x < img1.Bounds().Dx(); x++ {
@@ -43,9 +45,11 @@ func kernelPixelChangedThreshold(img1 image.Image, img2 image.Image) float64 {
 }
 
 func FrameDifferenceImage(img1 image.Image, img2 image.Image) image.Image {
-	/*	img1 = imageUtils.Resize(img1, 100, 100)
-		img2 = imageUtils.Resize(img2, 100, 100)
-	*/
+	ratio := float64(img1.Bounds().Dy()) / float64(img1.Bounds().Dx())
+	height := int(imageSize * ratio)
+	img1 = imageUtils.Resize(img1, imageSize, height)
+	img2 = imageUtils.Resize(img2, imageSize, height)
+
 	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
 
 	buff := bytes.NewBuffer([]byte{})

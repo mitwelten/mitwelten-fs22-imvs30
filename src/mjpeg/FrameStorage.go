@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-const nOfStoredFrames = 2
+const nOfStoredFrames = 1
 
 // FrameStorage stores multiple MJPEG frames
 type FrameStorage struct {

@@ -46,7 +46,8 @@ Options:
   --verbose                        Shows details. 
   --version                        Shows version.
   --always_active                  (hidden) Disables the 'fast mode' when no client is connected
-  --disable_passthrough                 (hidden) Disables passthrough mode
+  --disable_passthrough            (hidden) Disables passthrough mode
+  --debug                          (hidden)
   -h --help                        Shows this screen.
 `
 )
@@ -152,6 +153,7 @@ func ParseArgs() (config multiplexer.MultiplexerConfig, err error) {
 	//hidden
 	alwaysActive, _ := arguments.Bool("--always_active")
 	disablePassthrough, _ := arguments.Bool("--disable_passthrough")
+	enableDebug, _ := arguments.Bool("--debug")
 
 	// inputURL and label parsing
 	parseInputUrls(&config, input)
@@ -221,6 +223,7 @@ func ParseArgs() (config multiplexer.MultiplexerConfig, err error) {
 	//hidden
 	global.Config.AlwaysActive = alwaysActive
 	global.Config.DisablePassthrough = disablePassthrough
+	global.Config.Debug = enableDebug
 
 	// non error case, return nil
 	return config, nil

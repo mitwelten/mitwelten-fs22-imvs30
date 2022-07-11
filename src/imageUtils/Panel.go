@@ -106,25 +106,18 @@ var Slots8 = PanelLayout{
 	},
 }
 
-func PanelDrawFrame(storage *mjpeg.FrameStorage, r image.Rectangle, flush bool, i int) {
+func PanelDrawFrame(storage *mjpeg.FrameStorage, r image.Rectangle, flush bool) {
 	frame := storage.GetLatestPtr()
 	if flush {
 		frame.CachedImage = nil
 	}
 
-	if imageInContainers[i] != nil {
-		DecodeContainer(storage, imageInContainers[i])
-	} else {
-		image_ := Decode(storage)
-		imageInContainers[i] = image_.(*image.RGBA)
-	}
-	var img image.Image
-	img = imageInContainers[i]
+	img := Decode(storage)
 
 	// Check for resizing
 	if img.Bounds().Dx() != r.Dx() || img.Bounds().Dy() != r.Dy() {
 		img = ResizeOutputFrame(img, r.Dx(), r.Dy())
-		frame.CachedImage = img
+		//frame.CachedImage = img
 	}
 
 	draw.Draw(imageOut, r, img, image.Point{}, draw.Src)
@@ -137,10 +130,6 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 	if previousIndex == -1 || previousIndex != startIndex {
 		previousIndex = startIndex
 		flush = true
-	}
-
-	if imageInContainers == nil {
-		imageInContainers = make([]*image.RGBA, len(storages))
 	}
 
 	firstWidthInitial, firstHeightInitial := storages[0].GetImageSize()
@@ -156,7 +145,7 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 	sp := image.Point{}
 	r := image.Rectangle{Min: sp, Max: image.Point{X: int(float64(totalWidth) * layout.FirstWidth), Y: int(float64(totalHeight) * layout.FirstHeight)}}
 
-	PanelDrawFrame(storages[startIndex], r, flush, startIndex)
+	PanelDrawFrame(storages[startIndex], r, flush)
 
 	if global.Config.ShowInputLabel {
 		addLabel(imageOut, sp.X, sp.Y, global.Config.InputConfigs[startIndex].Label)
@@ -171,7 +160,7 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 		delta := image.Point{X: int(float64(totalWidth) * layout.ChildrenWidth), Y: int(float64(totalHeight) * layout.ChildrenHeight)}
 		r = image.Rectangle{Min: sp, Max: sp.Add(delta)}
 
-		PanelDrawFrame(storages[index], r, flush, index)
+		PanelDrawFrame(storages[index], r, flush)
 
 		if global.Config.ShowInputLabel {
 			// add offset to avoid overlap with the borders

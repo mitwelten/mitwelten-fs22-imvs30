@@ -1,7 +1,9 @@
 package motionDetection
 
 import (
+	"fmt"
 	"image"
+	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/imageUtils"
 	"mjpeg_multiplexer/src/mjpeg"
 	"mjpeg_multiplexer/src/utils"
@@ -12,10 +14,11 @@ import (
 type MotionDetector struct {
 	storages        []*mjpeg.FrameStorage
 	previousScores  []utils.RingBuffer[float64]
+	previousFrames  []image.Image
 	lastScoreUpdate time.Time
 }
 
-const updateDelay = 1000 * time.Millisecond
+const updateDelay = 750 * time.Millisecond
 const minScore = 0.001
 const nPreviousScores = 3
 
@@ -23,6 +26,7 @@ func NewMotionDetector(storages ...*mjpeg.FrameStorage) *MotionDetector {
 	motionDetector := MotionDetector{}
 	motionDetector.storages = storages
 	motionDetector.previousScores = make([]utils.RingBuffer[float64], len(storages))
+	motionDetector.previousFrames = make([]image.Image, len(storages))
 
 	for i := range storages {
 		// init the buffers for the average change scores
@@ -40,11 +44,18 @@ func (motionDetector *MotionDetector) UpdateScores() {
 	}
 
 	for i, storage := range motionDetector.storages {
-		if len(storage.GetAllPtr()) >= 2 {
-			//todo cache last frame to reuse it next second?
-			score := FrameDifferenceScore(imageUtils.DecodeAt(storage, 0, nil), imageUtils.DecodeAt(storage, 1, nil))
+		currentFrame := imageUtils.Decode(storage)
+		ratio := float64(currentFrame.Bounds().Dy()) / float64(currentFrame.Bounds().Dx())
+		height := int(imageSize * ratio)
+		currentFrame = imageUtils.Resize(currentFrame, imageSize, height)
+
+		previousFrame := motionDetector.previousFrames[i]
+
+		if previousFrame != nil {
+			score := FrameDifferenceScore(currentFrame, previousFrame)
 			motionDetector.previousScores[i].Push(score)
 		}
+		motionDetector.previousFrames[i] = currentFrame
 	}
 
 	motionDetector.lastScoreUpdate = time.Now()
@@ -60,13 +71,20 @@ func (motionDetector *MotionDetector) GetMostActiveIndex() int {
 			continue
 		}
 		scores[i] = averageScore(*data, size)
-		//fmt.Printf("Frame %v scores: %v\n", i, scores[i])
+
+		if global.Config.Debug {
+			global.Config.InputConfigs[i].Label = fmt.Sprintf("%.3f", scores[i])
+		}
 	}
 
 	index, score := argmax(scores)
-	//fmt.Printf("Best score: %v from index %v\n", score, index)
 
 	if score >= minScore {
+
+		if global.Config.Debug {
+			global.Config.InputConfigs[index].Label = fmt.Sprintf("!%.3f", scores[index])
+		}
+
 		return index
 	} else {
 		return -1
@@ -99,7 +117,10 @@ func argmax(data []float64) (int, float64) {
 func (motionDetector *MotionDetector) GetMostActiveImage() image.Image {
 
 	index := motionDetector.GetMostActiveIndex()
+	if index == -1 {
+		return mjpeg.NewMJPEGFrame().CachedImage
+	}
 
-	return FrameDifferenceImage(imageUtils.DecodeAt(motionDetector.storages[index], 0, nil), imageUtils.DecodeAt(motionDetector.storages[index], 4, nil))
+	return FrameDifferenceImage(imageUtils.DecodeAt(motionDetector.storages[index], 0), imageUtils.DecodeAt(motionDetector.storages[index], 4))
 
 }

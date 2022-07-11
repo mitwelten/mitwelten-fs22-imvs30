@@ -28,6 +28,7 @@ type GlobalConfig struct {
 	//hidden
 	DisablePassthrough bool
 	AlwaysActive       bool
+	Debug              bool
 }
 
 var Config GlobalConfig
@@ -49,6 +50,7 @@ func initialConfig() GlobalConfig {
 		//hidden
 		DisablePassthrough: false,
 		AlwaysActive:       false,
+		Debug:              false,
 	}
 }
 func SetupInitialConfig() {

@@ -9,18 +9,20 @@ import (
 )
 
 type AggregatorPanel struct {
-	data           AggregatorData
-	layout         imageUtils.PanelLayout
-	CycleFrames    bool
-	Duration       time.Duration
-	lastSwitch     time.Time
-	currentIndex   int
-	motionDetector *motionDetection.MotionDetector
+	data                    AggregatorData
+	layout                  imageUtils.PanelLayout
+	CycleFrames             bool
+	Duration                time.Duration
+	lastSwitch              time.Time
+	lastMotionInActiveFrame time.Time
+	currentIndex            int
+	motionDetector          *motionDetection.MotionDetector
 }
 
 func (aggregator *AggregatorPanel) Setup(storages ...*mjpeg.FrameStorage) {
 	aggregator.data.passthrough = false //only valid for 3 or more inputs
 	aggregator.lastSwitch = time.Now()
+	aggregator.lastMotionInActiveFrame = time.Now()
 	aggregator.currentIndex = 0
 
 	nStorages := len(storages)
@@ -50,7 +52,7 @@ func (aggregator *AggregatorPanel) aggregate(storages ...*mjpeg.FrameStorage) *m
 		index = aggregator.motionDetector.GetMostActiveIndex()
 	}
 
-	if index == -1 && time.Since(aggregator.lastSwitch) >= aggregator.Duration {
+	if index == -1 && time.Since(aggregator.lastSwitch) >= aggregator.Duration && time.Since(aggregator.lastMotionInActiveFrame) >= minWaitBetweenChanges {
 		// duration update
 		aggregator.currentIndex = (aggregator.currentIndex + 1) % len(storages)
 		aggregator.lastSwitch = time.Now()
@@ -58,7 +60,12 @@ func (aggregator *AggregatorPanel) aggregate(storages ...*mjpeg.FrameStorage) *m
 		//  motion update
 		aggregator.currentIndex = index
 		aggregator.lastSwitch = time.Now()
+	} else if index != -1 && index == aggregator.currentIndex {
+		//motion in the same frame
+		aggregator.lastMotionInActiveFrame = time.Now()
+
 	}
 
+	//return imageUtils.Encode(motionDetection.FrameDifferenceImage(imageUtils.DecodeAt(storages[0], 0), imageUtils.DecodeAt(storages[0], 1)))
 	return imageUtils.Panel(aggregator.layout, aggregator.currentIndex, storages...)
 }
