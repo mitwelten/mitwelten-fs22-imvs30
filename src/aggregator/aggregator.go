@@ -71,7 +71,7 @@ func StartAggregator(agg *Aggregator, inputs ...input.Input) {
 			// process the new frame...
 			var frame *mjpeg.MjpegFrame
 			if aggregatorData.passthrough && len(inputStorages) == 1 && passthroughMode {
-				frame = inputStorages[0].GetLatestPtr()
+				frame = inputStorages[0].GetFrame()
 			} else {
 				frame = aggregator.aggregate(inputStorages...)
 			}
@@ -82,7 +82,7 @@ func StartAggregator(agg *Aggregator, inputs ...input.Input) {
 
 			// and store it
 			if aggregatorData.AggregatorStorage != nil {
-				aggregatorData.AggregatorStorage.StorePtr(frame)
+				aggregatorData.AggregatorStorage.Store(frame)
 			}
 
 			currentFPS++

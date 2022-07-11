@@ -107,7 +107,7 @@ var Slots8 = PanelLayout{
 }
 
 func PanelDrawFrame(storage *mjpeg.FrameStorage, r image.Rectangle, flush bool) {
-	frame := storage.GetLatestPtr()
+	frame := storage.GetFrame()
 	if flush {
 		frame.CachedImage = nil
 	}

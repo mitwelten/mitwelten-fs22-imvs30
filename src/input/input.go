@@ -47,7 +47,7 @@ func StartInput(input Input) {
 		frame, err := input.ReceiveFrame()
 		// store and encode the first frame to get information about its size
 		if err == nil {
-			inputData.InputStorage.Store(frame)
+			inputData.InputStorage.Store(&frame)
 			imageUtils.Decode(inputData.InputStorage)
 		}
 
@@ -64,7 +64,7 @@ func StartInput(input Input) {
 				reconnectInput(input)
 				continue
 			}
-			inputData.InputStorage.Store(frame)
+			inputData.InputStorage.Store(&frame)
 		}
 	}()
 }

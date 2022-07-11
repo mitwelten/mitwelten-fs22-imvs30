@@ -181,7 +181,7 @@ func (output *OutputHTTP) connectionLoop() {
 func (output *OutputHTTP) distributeFramesLoop() {
 	for {
 		output.condition.Wait()
-		frame := output.aggregator.GetAggregatorData().AggregatorStorage.GetLatestPtr()
+		frame := output.aggregator.GetAggregatorData().AggregatorStorage.GetFrame()
 		output.lastFrame = frame
 		output.SendFrame(frame)
 	}

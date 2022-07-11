@@ -19,8 +19,8 @@ type MotionDetector struct {
 }
 
 const updateDelay = 750 * time.Millisecond
-const minScore = 0.001
-const nPreviousScores = 3
+const minScore = 0.002
+const nPreviousScores = 5
 
 func NewMotionDetector(storages ...*mjpeg.FrameStorage) *MotionDetector {
 	motionDetector := MotionDetector{}
@@ -121,6 +121,6 @@ func (motionDetector *MotionDetector) GetMostActiveImage() image.Image {
 		return mjpeg.NewMJPEGFrame().CachedImage
 	}
 
-	return FrameDifferenceImage(imageUtils.DecodeAt(motionDetector.storages[index], 0), imageUtils.DecodeAt(motionDetector.storages[index], 4))
+	return FrameDifferenceImage(imageUtils.Decode(motionDetector.storages[index]), imageUtils.Decode(motionDetector.storages[index]))
 
 }

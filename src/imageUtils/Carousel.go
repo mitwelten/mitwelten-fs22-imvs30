@@ -9,7 +9,7 @@ import (
 func Carousel(input *mjpeg.FrameStorage, index int) *mjpeg.MjpegFrame {
 	// with default settings (no resize, no quality change) the image doesn't need to be decoded and encoded at all
 	if !global.DecodingNecessary() {
-		return input.GetLatestPtr()
+		return input.GetFrame()
 	}
 
 	img := Decode(input)

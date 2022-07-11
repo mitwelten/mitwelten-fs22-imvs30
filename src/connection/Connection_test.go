@@ -23,10 +23,10 @@ func TestInAndOutput(t *testing.T) {
 	frame := mjpeg.MjpegFrame{}
 	frame.Body = []byte{1, 2, 3}
 
-	utils.Assert(t, frame.Body, input.GetInputData().InputStorage.GetLatestPtr().Body, false)
-	input.GetInputData().InputStorage.Store(frame)
+	utils.Assert(t, frame.Body, input.GetInputData().InputStorage.GetFrame().Body, false)
+	input.GetInputData().InputStorage.Store(&frame)
 
 	time.Sleep(200 * time.Millisecond)
 
-	utils.Assert(t, frame.Body, input.GetInputData().InputStorage.GetLatestPtr().Body, true)
+	utils.Assert(t, frame.Body, input.GetInputData().InputStorage.GetFrame().Body, true)
 }

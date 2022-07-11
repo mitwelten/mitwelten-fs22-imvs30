@@ -11,12 +11,13 @@ import (
 const minWaitBetweenChanges = 3000 * time.Millisecond
 
 type AggregatorCarousel struct {
-	data           AggregatorData
-	Duration       time.Duration
-	lastSwitch     time.Time
-	currentIndex   int
-	previousIndex  int
-	motionDetector *motionDetection.MotionDetector
+	data                    AggregatorData
+	Duration                time.Duration
+	lastSwitch              time.Time
+	lastMotionInActiveFrame time.Time
+	currentIndex            int
+	previousIndex           int
+	motionDetector          *motionDetection.MotionDetector
 
 	lastFrame       *mjpeg.MjpegFrame
 	lastFrameUpdate time.Time
@@ -26,6 +27,7 @@ func (aggregator *AggregatorCarousel) Setup(storages ...*mjpeg.FrameStorage) {
 
 	aggregator.data.passthrough = false
 	aggregator.lastSwitch = time.Now()
+	aggregator.lastMotionInActiveFrame = time.Now()
 	aggregator.currentIndex = 0
 	aggregator.previousIndex = 0
 
@@ -45,14 +47,17 @@ func (aggregator *AggregatorCarousel) aggregate(storages ...*mjpeg.FrameStorage)
 	if aggregator.motionDetector != nil {
 		index = aggregator.motionDetector.GetMostActiveIndex()
 	}
-	if index == -1 && time.Since(aggregator.lastSwitch) >= aggregator.Duration {
+	if index == -1 && time.Since(aggregator.lastSwitch) >= aggregator.Duration && time.Since(aggregator.lastMotionInActiveFrame) >= minWaitBetweenChanges {
 		// duration update
 		aggregator.currentIndex = (aggregator.currentIndex + 1) % len(storages)
 		aggregator.lastSwitch = time.Now()
-	} else if index != -1 && time.Since(aggregator.lastSwitch) >= minWaitBetweenChanges {
+	} else if index != -1 && index != aggregator.currentIndex && time.Since(aggregator.lastSwitch) >= minWaitBetweenChanges {
 		//  motion update
 		aggregator.currentIndex = index
 		aggregator.lastSwitch = time.Now()
+	} else if index != -1 && index == aggregator.currentIndex {
+		//motion in the same frame
+		aggregator.lastMotionInActiveFrame = time.Now()
 	}
 
 	if aggregator.previousIndex == aggregator.currentIndex && storages[aggregator.currentIndex].LastUpdated == aggregator.lastFrameUpdate {

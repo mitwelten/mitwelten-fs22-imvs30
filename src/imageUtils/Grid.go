@@ -49,7 +49,7 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 			marginStartPoints = append(marginStartPoints, sp)
 		}
 
-		frame := storages[i].GetLatestPtr()
+		frame := storages[i].GetFrame()
 
 		// don't redraw already drawn images
 		if frame.CachedImage != nil {

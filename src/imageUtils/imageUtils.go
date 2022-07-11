@@ -36,8 +36,8 @@ func DecodeAll(storages ...*mjpeg.FrameStorage) []image.Image {
 	return images
 }
 
-func DecodeAt(storage *mjpeg.FrameStorage, index int) image.Image {
-	frame := storage.GetAllPtr()[index]
+func Decode(storage *mjpeg.FrameStorage) image.Image {
+	frame := storage.GetFrame()
 
 	//try to read from the cache
 	if frame.CachedImage == nil {
@@ -64,14 +64,6 @@ func DecodeAt(storage *mjpeg.FrameStorage, index int) image.Image {
 	} else {
 		return frame.CachedImage
 	}
-}
-
-func DecodeContainer(storage *mjpeg.FrameStorage) image.Image {
-	return DecodeAt(storage, 0)
-}
-
-func Decode(storage *mjpeg.FrameStorage) image.Image {
-	return DecodeAt(storage, 0)
 }
 
 func Encode(image image.Image) *mjpeg.MjpegFrame {
