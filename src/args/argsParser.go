@@ -30,7 +30,7 @@ var (
 Options:
   --grid_dimension=ROWS,COLUMNS    todo
   --motion                         Enables motion detection to focus the most active frame on selected mode
-  --duration=n                     frame duration [default: 10]
+  --duration=n                     frame duration [default: 15]
   --cycle                          todo
   --width=n                        output width in pixel [default: -1]
   --height=n                       output height in pixel [default: -1]
