@@ -106,16 +106,8 @@ var Slots8 = PanelLayout{
 	},
 }
 
-var previousIndex = -1
-
 //Panel combines frames by showing all at once, one frame being focused top left
 func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFrame {
-	flush := false
-	if previousIndex == -1 || previousIndex != startIndex {
-		previousIndex = startIndex
-		flush = true
-	}
-
 	if imageInContainers == nil {
 		imageInContainers = make([]*image.RGBA, len(storages))
 	}
@@ -133,7 +125,7 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 	sp := image.Point{}
 	r := image.Rectangle{Min: sp, Max: image.Point{X: int(float64(totalWidth) * layout.FirstWidth), Y: int(float64(totalHeight) * layout.FirstHeight)}}
 
-	drawFrame(storages[startIndex], r, flush, startIndex)
+	drawFrame(storages[startIndex], r, startIndex)
 
 	if global.Config.ShowInputLabel {
 		addLabel(imageOut, sp.X, sp.Y, global.Config.InputConfigs[startIndex].Label)
@@ -148,7 +140,7 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 		delta := image.Point{X: int(float64(totalWidth) * layout.ChildrenWidth), Y: int(float64(totalHeight) * layout.ChildrenHeight)}
 		r = image.Rectangle{Min: sp, Max: sp.Add(delta)}
 
-		drawFrame(storages[index], r, flush, index)
+		drawFrame(storages[index], r, index)
 
 		if global.Config.ShowInputLabel {
 			// add offset to avoid overlap with the borders
@@ -204,13 +196,7 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 }
 
 //drawFrame is a helper method to draw the frame at the given location
-func drawFrame(storage *mjpeg.FrameStorage, r image.Rectangle, flush bool, i int) {
-	frame := storage.GetFrame()
-	if flush {
-		//todo remove flushed?
-		frame.CachedImage = nil
-	}
-
+func drawFrame(storage *mjpeg.FrameStorage, r image.Rectangle, i int) {
 	if imageInContainers[i] != nil {
 		DecodeContainer(storage, imageInContainers[i])
 	} else {
@@ -223,7 +209,6 @@ func drawFrame(storage *mjpeg.FrameStorage, r image.Rectangle, flush bool, i int
 	// Check for resizing
 	if img.Bounds().Dx() != r.Dx() || img.Bounds().Dy() != r.Dy() {
 		img = ResizeOutputFrame(img, r.Dx(), r.Dy())
-		//frame.CachedImage = img
 	}
 
 	draw.Draw(imageOut, r, img, image.Point{}, draw.Src)
