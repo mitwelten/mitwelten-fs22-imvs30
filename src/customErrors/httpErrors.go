@@ -21,12 +21,12 @@ func (e *ErrHttpOpenInputSocketDial) Error() string {
 }
 
 type ErrHttpOpenInputAuthentication struct {
-	Str string
-	err error
+	Text string
+	err  error
 }
 
 func (e *ErrHttpOpenInputAuthentication) Error() string {
-	return fmt.Sprintf("Can't receive first frame,  %s", e.Str)
+	return fmt.Sprintf("Can't receive first frame,  %s", e.Text)
 }
 
 type ErrHttpWriteHeader struct {

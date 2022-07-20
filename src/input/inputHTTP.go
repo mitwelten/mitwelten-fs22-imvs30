@@ -3,6 +3,7 @@ package input
 import (
 	"bufio"
 	"io"
+	"log"
 	"mjpeg_multiplexer/src/customErrors"
 	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/mjpeg"
@@ -12,12 +13,13 @@ import (
 	"time"
 )
 
-const header = "GET /?action=stream HTTP/1.1\r\n" +
-	"Host:%s\r\n"
-
-const delim = "\r\n"
-
-const authentication = "Authorization: Basic "
+const (
+	header = "GET /?action=stream HTTP/1.1\r\n" +
+		"Host:%s\r\n"
+	delim          = "\r\n"
+	field          = "Content-Length: "
+	authentication = "Authorization: Basic "
+)
 
 type InputHTTP struct {
 	data               InputData
@@ -59,6 +61,9 @@ func (source *InputHTTP) sendHeader() error {
 
 	// Also send the authentication if available
 	if global.Config.UseAuth && source.config.Authentication != "" {
+		if global.Config.Debug {
+			log.Printf("DEBUG: Sending authenticaion to input source %v\n", source.url)
+		}
 		_, err = source.connection.Write([]byte(authentication + source.config.Authentication + delim))
 		if err != nil {
 			return &customErrors.ErrHttpWriteHeader{IP: source.connection.LocalAddr().String()}
@@ -73,7 +78,7 @@ func (source *InputHTTP) sendHeader() error {
 	// Get the first frame to test if we have permission to access the source
 	_, err = source.ReceiveFrame()
 	if err != nil {
-		return &customErrors.ErrHttpOpenInputAuthentication{Str: err.Error()}
+		return &customErrors.ErrHttpOpenInputAuthentication{Text: err.Error()}
 	}
 
 	return nil
@@ -101,7 +106,6 @@ func (source *InputHTTP) ReceiveFrame() (mjpeg.MjpegFrame, error) {
 		return mjpeg.MjpegFrame{}, err
 	}
 
-	field := "Content-Length: "
 	startIndex := strings.LastIndex(header, field)
 	if startIndex == -1 {
 		return mjpeg.MjpegFrame{}, &customErrors.ErrInvalidFrame{Text: "invalid header: no content length"}
