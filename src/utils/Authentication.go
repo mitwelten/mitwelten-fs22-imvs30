@@ -42,12 +42,12 @@ func ParseAuthenticationFile() {
 		jsonIndex := findIndex(&el, data)
 		if jsonIndex == -1 {
 			if global.Config.Debug {
-				log.Printf("No entry for URL %v found\n", el.Url)
+				log.Printf("No authentication entry for URL %v found\n", el.Url)
 			}
 			continue
 		}
 		auth := data[jsonIndex]
-		log.Printf("Entry for URL %v found\n", auth.Url)
+		log.Printf("Authentication entry for URL %v found\n", auth.Url)
 		if global.Config.Debug {
 			log.Printf("   => %v\n", auth.Username+":"+auth.Password)
 		}
