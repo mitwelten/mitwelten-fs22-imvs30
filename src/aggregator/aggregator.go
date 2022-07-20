@@ -13,9 +13,12 @@ import (
 // takes multiple frameStorages (one frame storage for each input Connection) and
 // aggregates them to one frameStorage
 type Aggregator interface {
-	aggregate(channels ...*mjpeg.FrameStorage) *mjpeg.MjpegFrame
+	//Setup initiates all the aggregator's fields
 	Setup(storages ...*mjpeg.FrameStorage)
+	//GetAggregatorData is the getter for the AggregatorData struct
 	GetAggregatorData() *AggregatorData
+	//aggregate Combines the input frames into a combined mjpeg-jpeg frame
+	aggregate(channels ...*mjpeg.FrameStorage) *mjpeg.MjpegFrame
 }
 
 type AggregatorData struct {

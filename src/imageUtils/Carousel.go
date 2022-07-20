@@ -6,6 +6,7 @@ import (
 	"mjpeg_multiplexer/src/mjpeg"
 )
 
+//Carousel combines frames by showing one after the other
 func Carousel(input *mjpeg.FrameStorage, index int) *mjpeg.MjpegFrame {
 	// with default settings (no resize, no quality change) the image doesn't need to be decoded and encoded at all
 	if !global.DecodingNecessary() {

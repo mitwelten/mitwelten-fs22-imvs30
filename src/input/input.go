@@ -34,6 +34,7 @@ func reconnectInput(input Input) {
 
 }
 
+//StartInput starts the input source by calling the Init() method and running ReceiveFrame() in a loop
 func StartInput(input Input) {
 
 	inputData := input.GetInputData()

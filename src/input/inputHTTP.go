@@ -94,6 +94,7 @@ func (source *InputHTTP) Init() error {
 	return nil
 }
 
+//ReceiveFrame reads an mjpeg stream and parses the next received frame as mjpeg.MjpegFrame
 func (source *InputHTTP) ReceiveFrame() (mjpeg.MjpegFrame, error) {
 	header, err := source.bufferedConnection.ReadString(mjpeg.JPEG_PREFIX[0])
 	if err != nil {

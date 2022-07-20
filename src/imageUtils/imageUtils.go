@@ -30,19 +30,12 @@ var imageInContainers []*image.RGBA
 var DecodeOptions = jpeg.DecoderOptions{ScaleTarget: image.Rectangle{}, DCTMethod: jpeg.DCTIFast, DisableFancyUpsampling: true, DisableBlockSmoothing: true}
 var EncodingOptions = jpeg.EncoderOptions{Quality: 80, OptimizeCoding: false, ProgressiveMode: false, DCTMethod: jpeg.DCTIFast}
 
-func DecodeAll(storages ...*mjpeg.FrameStorage) []image.Image {
-	var images []image.Image
-	for _, storage := range storages {
-		var img = Decode(storage)
-		images = append(images, img)
-	}
-	return images
-}
-
+//Decode decodes an mjpeg image using the DecodeOptions (if not already decoded), caches the result and return the image
 func Decode(storage *mjpeg.FrameStorage) image.Image {
 	return decode(storage, nil)
 }
 
+//DecodeContainer is a more optimized version of Decode, which doesn't allocate a new image.Image instance
 func DecodeContainer(storage *mjpeg.FrameStorage, imageContainer *image.RGBA) image.Image {
 	return decode(storage, imageContainer)
 }
@@ -82,6 +75,7 @@ func decode(storage *mjpeg.FrameStorage, imageContainer *image.RGBA) image.Image
 	}
 }
 
+//Encode encodes the image using the EncodingOptions
 func Encode(image image.Image) *mjpeg.MjpegFrame {
 	buff := bytes.NewBuffer([]byte{})
 	config := EncodingOptions

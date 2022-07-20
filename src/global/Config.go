@@ -33,6 +33,7 @@ type GlobalConfig struct {
 
 var Config GlobalConfig
 
+//initialConfig returns the default values to the global fields
 func initialConfig() GlobalConfig {
 	return GlobalConfig{
 		LogFPS:             false,
@@ -53,10 +54,13 @@ func initialConfig() GlobalConfig {
 		Debug:              false,
 	}
 }
+
+//SetupInitialConfig Assigns the default values to the global config
 func SetupInitialConfig() {
 	Config = initialConfig()
 }
 
+//DecodingNecessary checks whether an jpeg image needs to be decoded based on the configs or if a passthrough is possible
 func DecodingNecessary() bool {
 	return Config.Height != -1 || Config.Width != -1 || (Config.EncodeQuality != 100 && Config.EncodeQuality != -1) || Config.ShowInputLabel || Config.DisablePassthrough
 }

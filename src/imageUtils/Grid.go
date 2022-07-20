@@ -8,6 +8,7 @@ import (
 	"mjpeg_multiplexer/src/mjpeg"
 )
 
+//Grid combines frames by showing all at once, each having the same size
 func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFrame {
 	var nCells = nRows * nCols
 	var nFrames = len(storages)
