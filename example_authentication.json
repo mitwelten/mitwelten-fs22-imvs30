@@ -1,0 +1,17 @@
+[
+    {
+        "Url": "192.168.0.42:8080",
+        "Username": "username",
+        "Password": "password"
+    },
+    {
+        "Url": "localhost:8081",
+        "Username": "username",
+        "Password": "password"
+    },
+    {
+        "Url": "hostname:8082",
+        "Username": "username",
+        "Password": "password"
+    }
+]
