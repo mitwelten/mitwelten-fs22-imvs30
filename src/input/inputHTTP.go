@@ -60,6 +60,9 @@ func (source *InputHTTP) sendHeader() error {
 	}
 
 	// Also send the authentication if available
+	if global.Config.Debug {
+		log.Printf("InputConfig is %+v\n", source.config)
+	}
 	if global.Config.UseAuth && source.config.Authentication != "" {
 		if global.Config.Debug {
 			log.Printf("DEBUG: Sending authenticaion to input source %v\n", source.url)

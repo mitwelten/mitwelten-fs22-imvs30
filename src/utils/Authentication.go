@@ -46,7 +46,7 @@ func ParseAuthenticationFile() {
 		}
 		log.Printf("Entry for URL %v found\n", entry.Url)
 		if global.Config.Debug {
-			log.Printf("   => %v", auth.Username+":"+auth.Password)
+			log.Printf("   => %v\n", auth.Username+":"+auth.Password)
 		}
 		global.Config.InputConfigs[index].Authentication = payload
 	}
