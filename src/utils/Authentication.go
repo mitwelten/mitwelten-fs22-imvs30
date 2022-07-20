@@ -16,12 +16,14 @@ type JSONAuthentication struct {
 
 const authenticationFileLocation = "authentication.json"
 
-func findInputConfigIndex(url string) int {
-	for i, el := range global.Config.InputConfigs {
-		if el.Url == url {
+func findIndex(config *global.InputConfig, data []JSONAuthentication) int {
+	for i, entry := range data {
+		auth := entry
+		if auth.Url == config.Url {
 			return i
 		}
 	}
+
 	return -1
 }
 func ParseAuthenticationFile() {
@@ -36,18 +38,20 @@ func ParseAuthenticationFile() {
 		log.Fatalf("Can't parse authentication file json: %v\n", err.Error())
 	}
 
-	for _, entry := range data {
-		auth := entry
-		payload := base64.StdEncoding.EncodeToString([]byte(auth.Username + ":" + auth.Password))
-
-		index := findInputConfigIndex(auth.Url)
-		if index == -1 {
+	for i, el := range global.Config.InputConfigs {
+		jsonIndex := findIndex(&el, data)
+		if jsonIndex == -1 {
+			if global.Config.Debug {
+				log.Printf("No entry for URL %v found\n", el.Url)
+			}
 			continue
 		}
-		log.Printf("Entry for URL %v found\n", entry.Url)
+		auth := data[jsonIndex]
+		log.Printf("Entry for URL %v found\n", auth.Url)
 		if global.Config.Debug {
 			log.Printf("   => %v\n", auth.Username+":"+auth.Password)
 		}
-		global.Config.InputConfigs[index].Authentication = payload
+		payload := base64.StdEncoding.EncodeToString([]byte(auth.Username + ":" + auth.Password))
+		global.Config.InputConfigs[i].Authentication = payload
 	}
 }
