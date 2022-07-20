@@ -36,18 +36,15 @@ func ParseAuthenticationFile() {
 		log.Fatalf("Can't parse authentication file json: %v\n", err.Error())
 	}
 
-	counter := 0
 	for _, entry := range data {
 		auth := entry
 		payload := base64.StdEncoding.EncodeToString([]byte(auth.Username + ":" + auth.Password))
 
 		index := findInputConfigIndex(auth.Url)
 		if index == -1 {
-			log.Printf("Warning: Authentication entry with URL %v does not match any input\n", entry.Url)
 			continue
 		}
+		log.Printf("Entry for URL %v found\n", entry.Url)
 		global.Config.InputConfigs[index].Authentication = payload
-		counter++
 	}
-	log.Printf("Parsed %v authentication entries\n", counter)
 }

@@ -43,7 +43,7 @@ func StartInput(input Input) {
 	go func() {
 		err := input.Init()
 		if err != nil {
-			log.Fatalf("Can't open input stream: %s", err.Error())
+			log.Fatalf("Can't open input stream for %v: %s", input.Info(), err.Error())
 		}
 		frame, err := input.ReceiveFrame()
 		// store and encode the first frame to get information about its size
