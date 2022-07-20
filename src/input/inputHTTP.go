@@ -23,16 +23,18 @@ const (
 
 type InputHTTP struct {
 	data               InputData
-	config             *global.InputConfig
+	configIndex        int
 	url                string
 	connection         net.Conn
 	bufferedConnection *bufio.Reader
 }
 
 // NewInputHTTP todo TEST: Test this function by creating an input and checking if it runs
-func NewInputHTTP(config *global.InputConfig, url string) *InputHTTP {
-	return &InputHTTP{config: config, url: url}
+func NewInputHTTP(configIndex int, url string) *InputHTTP {
+	global.Config.InputConfigs = append(global.Config.InputConfigs, global.InputConfig{Url: url, Label: url})
+	return &InputHTTP{configIndex: configIndex, url: url}
 }
+
 func (source *InputHTTP) GetInputData() *InputData {
 	return &source.data
 }
@@ -61,13 +63,13 @@ func (source *InputHTTP) sendHeader() error {
 
 	// Also send the authentication if available
 	if global.Config.Debug {
-		log.Printf("InputConfig is %+v\n", source.config)
+		log.Printf("InputConfig is %+v\n", global.Config.InputConfigs[source.configIndex])
 	}
-	if global.Config.UseAuth && source.config.Authentication != "" {
+	if global.Config.UseAuth && global.Config.InputConfigs[source.configIndex].Authentication != "" {
 		if global.Config.Debug {
 			log.Printf("DEBUG: Sending authenticaion to input source %v\n", source.url)
 		}
-		_, err = source.connection.Write([]byte(authentication + source.config.Authentication + delim))
+		_, err = source.connection.Write([]byte(authentication + global.Config.InputConfigs[source.configIndex].Authentication + delim))
 		if err != nil {
 			return &customErrors.ErrHttpWriteHeader{IP: source.connection.LocalAddr().String()}
 		}

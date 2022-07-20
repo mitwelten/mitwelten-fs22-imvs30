@@ -94,8 +94,7 @@ func parseInputUrls(config *multiplexer.MultiplexerConfig, inputStr string) {
 	arr := strings.Split(inputStr, ArgumentSeparator)
 	config.Inputs = []input.Input{}
 	for i, url := range arr {
-		global.Config.InputConfigs = append(global.Config.InputConfigs, global.InputConfig{Url: url, Label: url})
-		config.Inputs = append(config.Inputs, input.NewInputHTTP(&global.Config.InputConfigs[i], url))
+		config.Inputs = append(config.Inputs, input.NewInputHTTP(i, url))
 	}
 }
 

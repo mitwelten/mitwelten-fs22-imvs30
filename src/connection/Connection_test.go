@@ -14,7 +14,7 @@ func TestInAndOutput(t *testing.T) {
 
 	var agg aggregator.Aggregator = &aggregator.AggregatorCarousel{}
 	output := output2.NewOutputHTTP("8123")
-	input := input2.NewInputHTTP(nil, "localhost:8123")
+	input := input2.NewInputHTTP(0, "localhost:8123")
 	input2.StartInput(input)
 
 	aggregator.StartAggregator(&agg, input)
