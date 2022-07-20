@@ -73,7 +73,7 @@ func (source *InputHTTP) sendHeader() error {
 	// Get the first frame to test if we have permission to access the source
 	_, err = source.ReceiveFrame()
 	if err != nil {
-		return err
+		return &customErrors.ErrHttpOpenInputAuthentication{Str: err.Error()}
 	}
 
 	return nil

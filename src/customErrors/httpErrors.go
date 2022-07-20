@@ -20,6 +20,15 @@ func (e *ErrHttpOpenInputSocketDial) Error() string {
 	return fmt.Sprintf("dial input socket failed for IP address %s", e.IP)
 }
 
+type ErrHttpOpenInputAuthentication struct {
+	Str string
+	err error
+}
+
+func (e *ErrHttpOpenInputAuthentication) Error() string {
+	return fmt.Sprintf("Can't receive first frame,  %s", e.Str)
+}
+
 type ErrHttpWriteHeader struct {
 	IP  string
 	err error
