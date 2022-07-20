@@ -47,13 +47,3 @@ type ErrArgParserInvalidGridDimension struct {
 func (*ErrArgParserInvalidGridDimension) Error() string {
 	return fmt.Sprintf("when using -method 'grid', the grid dimension must be specified. Usage '-grid_dimension \"<row> <col>\"'")
 }
-
-// Invalid Argument Error
-type ErrArgParserInvalidArgument struct {
-	Argument string
-	err      error
-}
-
-func (e *ErrArgParserInvalidArgument) Error() string {
-	return fmt.Sprintf("invalid output argument: -output argument '" + e.Argument + "' not valid. Use -output 'stream' or -output 'file'")
-}

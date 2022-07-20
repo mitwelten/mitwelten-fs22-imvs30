@@ -1,12 +1,12 @@
 package args
 
 import (
+	"errors"
 	"fmt"
 	"github.com/docopt/docopt.go"
 	"log"
 	"math"
 	"mjpeg_multiplexer/src/aggregator"
-	"mjpeg_multiplexer/src/customErrors"
 	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/input"
 	"mjpeg_multiplexer/src/multiplexer"
@@ -116,6 +116,8 @@ var printUsage = func(err error, usage_ string) {
 
 // ParseArgs parses all arguments derived from command line
 func ParseArgs() (config multiplexer.MultiplexerConfig, err error) {
+	//todo validate args by parsing os.Args
+
 	// init custom handler to print full usage on error
 	parser := &docopt.Parser{
 		HelpHandler:  printUsage,
@@ -184,7 +186,7 @@ func ParseArgs() (config multiplexer.MultiplexerConfig, err error) {
 	} else if panel {
 		config.Aggregator = &aggregator.AggregatorPanel{Duration: time.Duration(duration) * time.Second, CycleFrames: panelCycle}
 	} else {
-		return multiplexer.MultiplexerConfig{}, &customErrors.ErrArgParserInvalidArgument{}
+		return multiplexer.MultiplexerConfig{}, errors.New("invalid mode")
 	}
 
 	// output stream
