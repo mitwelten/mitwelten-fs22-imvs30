@@ -22,6 +22,7 @@ const updateDelay = 750 * time.Millisecond
 const minScore = 0.002
 const nPreviousScores = 5
 
+//NewMotionDetector creates a new instances and allocates all needed memory
 func NewMotionDetector(storages ...*mjpeg.FrameStorage) *MotionDetector {
 	motionDetector := MotionDetector{}
 	motionDetector.storages = storages
@@ -38,6 +39,7 @@ func NewMotionDetector(storages ...*mjpeg.FrameStorage) *MotionDetector {
 	return &motionDetector
 }
 
+//UpdateScores will update the scores if enough time has passed since the last update (more than 'updateDelay')
 func (motionDetector *MotionDetector) UpdateScores() {
 	if time.Since(motionDetector.lastScoreUpdate) < updateDelay {
 		return
@@ -61,6 +63,8 @@ func (motionDetector *MotionDetector) UpdateScores() {
 	motionDetector.lastScoreUpdate = time.Now()
 }
 
+// GetMostActiveIndex calls `UpdateScores` and then returns the index of the most active stream
+// A small threshold has to be reached for a stream to be considered active, if no stream is considered active `-1` is returned
 func (motionDetector *MotionDetector) GetMostActiveIndex() int {
 	motionDetector.UpdateScores()
 
@@ -70,7 +74,7 @@ func (motionDetector *MotionDetector) GetMostActiveIndex() int {
 		if size == 0 {
 			continue
 		}
-		scores[i] = averageScore(*data, size)
+		scores[i] = average(*data, size)
 
 		if global.Config.Debug {
 			global.Config.InputConfigs[i].Label = fmt.Sprintf("%.3f", scores[i])
@@ -91,7 +95,8 @@ func (motionDetector *MotionDetector) GetMostActiveIndex() int {
 	}
 }
 
-func averageScore(arr []float64, size int) float64 {
+//average takes the average of a float array, only considering the first `size` elements
+func average(arr []float64, size int) float64 {
 	sum := 0.0
 	for i := 0; i < size; i++ {
 		sum += arr[i]
@@ -114,8 +119,8 @@ func argmax(data []float64) (int, float64) {
 	return maxIndex, max
 }
 
+//GetMostActiveImage todo REMOVE
 func (motionDetector *MotionDetector) GetMostActiveImage() image.Image {
-
 	index := motionDetector.GetMostActiveIndex()
 	if index == -1 {
 		return mjpeg.NewMJPEGFrame().CachedImage

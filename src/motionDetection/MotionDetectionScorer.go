@@ -13,9 +13,10 @@ import (
 )
 
 const threshold = 20
-const imageSize = 128
 
-// FrameDifferenceScore implements Scorer.FrameDifferenceScore Method
+// FrameDifferenceScore compares the two images by comparing  pixel and counting how many pixels are different.
+// Different means that the grayscale value has a difference of `threshold` or more.
+// Img1 and Img2 must have the same size
 func FrameDifferenceScore(img1 image.Image, img2 image.Image) float64 {
 	nPixels := float64(img1.Bounds().Dx() * img1.Bounds().Dy())
 	return float64(kernelPixelChangedThreshold(img1, img2)) / nPixels
@@ -38,6 +39,9 @@ func kernelPixelChangedThreshold(img1 image.Image, img2 image.Image) int {
 	}
 	return score
 }
+
+//todo remove rest down below
+const imageSize = 128
 
 func FrameDifferenceImage(img1 image.Image, img2 image.Image) image.Image {
 	ratio := float64(img1.Bounds().Dy()) / float64(img1.Bounds().Dx())
