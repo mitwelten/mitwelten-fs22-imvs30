@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"mjpeg_multiplexer/src/args"
@@ -36,9 +37,10 @@ func main() {
 	setupLog()
 	global.SetupInitialConfig()
 
-	multiplexerConfig, err := args.ParseArgs()
+	multiplexerConfig, err := args.ParseArgs(os.Args[1:])
 	if err != nil {
-		panic(err.Error())
+		fmt.Println(err.Error())
+		os.Exit(1)
 	}
 	multiplexer.Multiplexer(multiplexerConfig)
 }

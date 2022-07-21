@@ -31,7 +31,6 @@ type InputHTTP struct {
 
 // NewInputHTTP todo TEST: Test this function by creating an input and checking if it runs
 func NewInputHTTP(configIndex int, url string) *InputHTTP {
-	global.Config.InputConfigs = append(global.Config.InputConfigs, global.InputConfig{Url: url, Label: url})
 	return &InputHTTP{configIndex: configIndex, url: url}
 }
 
@@ -63,7 +62,7 @@ func (source *InputHTTP) sendHeader() error {
 
 	// Also send the authentication if available
 	if global.Config.Debug {
-		log.Printf("InputConfig is %+v\n", global.Config.InputConfigs[source.configIndex])
+		log.Printf("InputConfigs is %+v\n", global.Config.InputConfigs[source.configIndex])
 	}
 	if global.Config.UseAuth && global.Config.InputConfigs[source.configIndex].Authentication != "" {
 		if global.Config.Debug {

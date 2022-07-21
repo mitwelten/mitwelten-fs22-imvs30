@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/docopt/docopt.go"
 	"golang.org/x/exp/slices"
-	"log"
 	"math"
 	"mjpeg_multiplexer/src/aggregator"
 	"mjpeg_multiplexer/src/global"
@@ -44,7 +43,6 @@ Options:
   --labels=n                       comma separated list of names to show instead of the camera input url
   --label_font_size=n              input label font size in pixel [default: 32]
   --log_fps                        Log Time verbose
-  --verbose                        Shows details. 
   --version                        Shows version.
   --always_active                  (hidden) Disables the 'fast mode' when no client is connected
   --disable_passthrough            (hidden) Disables passthrough mode
@@ -84,30 +82,32 @@ Options:
   --labels=n                       Comma separated list of names to show instead of the camera input url
   --label_font_size=n              Input label font size in pixel [default: 32]
   --log_fps                        Logs the current FPS 
-  --verbose                        Shows details. 
   --version                        Shows version.
-  -h --help                        Shows this screen.
-`
+  -h --help                        Shows this screen.`
 )
 
 // parseInput parses input URLS derived from command line arguments
 func parseInputUrls(config *multiplexer.MultiplexerConfig, inputStr string) {
 	arr := strings.Split(inputStr, ArgumentSeparator)
 	config.Inputs = []input.Input{}
+	config.InputConfigs = []global.InputConfig{}
 	for i, url := range arr {
 		config.Inputs = append(config.Inputs, input.NewInputHTTP(i, url))
+		config.InputConfigs = append(config.InputConfigs, global.InputConfig{Url: url, Label: url})
+
 	}
 }
 
 // todo: evtl. trim
-func parseSeparatedString(inputStr string) {
+func parseSeparatedString(config *multiplexer.MultiplexerConfig, inputStr string) error {
 	arr := strings.Split(inputStr, ArgumentSeparator)
-	if len(global.Config.InputConfigs) != len(arr) {
-		log.Fatalf("%v input location present, but %v labels found\n", len(global.Config.InputConfigs), len(arr))
+	if len(config.Inputs) != len(arr) {
+		return abort(fmt.Sprintf("%v input location present, but %v labels found\n", len(config.Inputs), len(arr)))
 	}
 	for i, label := range arr {
-		global.Config.InputConfigs[i].Label = label
+		config.InputConfigs[i].Label = label
 	}
+	return nil
 }
 
 var printUsage = func(err error, usage_ string) {
@@ -116,25 +116,38 @@ var printUsage = func(err error, usage_ string) {
 }
 
 var mode = []string{"grid", "panel", "carousel"}
-var optionalFlags = []string{"--cycle", "--ignore_aspect_ratio", "--use_auth", "--show_border", "--show_label", "--log_fps", "--verbose", "--version", "--always_active", "--debug"}
-var optionalValues = []string{"--grid_dimension", "--duration", "--width", "--height", "--framerate", "--quality", "--label_font_size"}
+var optionalFlags = []string{"--motion", "--cycle", "--ignore_aspect_ratio", "--use_auth", "--show_border", "--show_label", "--log_fps", "--version", "--always_active", "--debug"}
+var optionalValues = []string{"--grid_dimension", "--duration", "--width", "--height", "--framerate", "--quality", "--label_font_size", "--labels"}
 
 func containsHelp(args []string) bool {
 	return slices.Contains(args, "--help") || slices.Contains(args, "-h")
 }
 
-func containsMode(args []string) bool {
-	return slices.Contains(args, "grid") || slices.Contains(args, "panel") || slices.Contains(args, "carousel")
+func abort(msg string) error {
+	return errors.New(fmt.Sprintf("%s See help by adding -h or --help for more information.\n", msg))
 }
 
-func containsInput(args []string) bool {
-	return slices.Contains(args, "input")
+func checkMode(args []string) error {
+	if !slices.Contains(args, "grid") && !slices.Contains(args, "panel") && !slices.Contains(args, "carousel") {
+		return abort("Mode missing! Please specify a mode [grid|panel|carousel].")
+	}
+	return nil
 }
 
-func containsOutput(args []string) bool {
-	return slices.Contains(args, "output")
+func checkInput(args []string) error {
+	if !slices.Contains(args, "input") {
+		return abort("Input missing! Please specify an input (eg. 'input localhost:8080').")
+	}
+	return nil
 }
-func checkOptions(args []string) int {
+
+func checkOutput(args []string) error {
+	if !slices.Contains(args, "output") {
+		return abort("Output missing! Please specify an output (eg. 'output 8088').")
+	}
+	return nil
+}
+func checkOptions(args []string) error {
 
 	for i := 0; i < len(args); i++ {
 		el := args[i]
@@ -156,82 +169,118 @@ func checkOptions(args []string) int {
 		}
 
 		// value fields (skip the specified values)
-		if slices.Contains(optionalValues, el) {
-			if i == len(args)-1 {
-				abort(fmt.Sprintf("Missing value for option '%s'.", el))
-			}
-			value := args[i+1]
+		containsEquals := strings.Contains(el, "=")
 
-			if el == "--grid-dimension" {
+		// '--quality=100' or 'quality 100' are both legal
+		var field string
+		if containsEquals {
+			arr := strings.Split(el, "=")
+			field = arr[0]
+		} else {
+			field = el
+		}
+
+		if slices.Contains(optionalValues, field) {
+			var value string
+
+			if containsEquals {
+				arr := strings.Split(el, "=")
+				value = arr[1]
+				if len(value) == 0 {
+					return abort(fmt.Sprintf("Missing value for option '%s'.", field))
+				}
+			} else {
+				if i == len(args)-1 {
+					return abort(fmt.Sprintf("Missing value for option '%s'.", field))
+				}
+				value = args[i+1]
+			}
+
+			// if a value option is followed by another one (eg. '--quality --log_fps') we assume that the value is missing
+			if slices.Contains(optionalFlags, value) || slices.Contains(optionalValues, value) {
+				return abort(fmt.Sprintf("Missing value for option '%s'.", field))
+			}
+
+			// special cases:
+			// --grid_dimension x,y
+			// --label text1,text2,...,textN
+
+			if field == "--grid_dimension" {
 				arr := strings.Split(value, ArgumentSeparator)
 				if len(arr) != 2 {
-					abort(fmt.Sprintf("Malformed argument '%s'. Expected numerical arguments in '%s x', but got '%s %s'", el, el, el, value))
+					return abort(fmt.Sprintf("Malformed argument '--grid_dimension'. Expected numerical arguments in '--grid_dimension x,y', but got '--grid_dimension %s'", value))
 				}
-				_, err1 := strconv.Atoi(arr[0])
-				_, err2 := strconv.Atoi(arr[1])
-
-				if err1 != nil || err2 != nil {
-					abort(fmt.Sprintf("Malformed argument '%s'. Expected numerical arguments in '%s x', but got '%s %s'", el, el, el, value))
-				}
-
-			} else {
+			} else if field != "--labels" {
 				_, err := strconv.Atoi(value)
 				if err != nil {
-					abort(fmt.Sprintf("Malformed argument '%s'. Expected numerical arguments in '%s x', but got '%s %s'", el, el, el, value))
+					return abort(fmt.Sprintf("Malformed argument '%s'. Expected numerical arguments in '%s x', but got '%s'", el, field, el))
 				}
 			}
 
-			i++
+			if !containsEquals {
+				i++
+			}
 			continue
 		}
 
-		return i
+		return abort(fmt.Sprintf("Invalid option '%s'.", args[i]))
 	}
-	return -1
+	return nil
+
 }
 
-func abort(msg string) {
-	fmt.Printf("%s See help by adding -h or --help for more information\n", msg)
-	os.Exit(1)
-}
-
-func validateArgs() {
-	args := os.Args[1:]
-
-	if len(args) == 0 || containsHelp(args) {
-		printUsage(nil, "")
+func validateArgs(args []string) error {
+	if len(args) == 0 {
+		fmt.Println(helpString)
+		os.Exit(0)
 	}
 
-	if !containsMode(args) {
-		abort("Mode missing! Please specify a mode [grid|panel|carousel].")
+	if containsHelp(args) {
+		fmt.Println(helpString)
+		os.Exit(1)
 	}
 
-	if !containsInput(args) {
-		abort("Input missing! Please specify an input (eg. 'input localhost:8080').")
+	var err error
+
+	err = checkMode(args)
+	if err != nil {
+		return err
 	}
 
-	if !containsOutput(args) {
-		abort("Output missing! Please specify an output (eg. 'output 8088').")
+	err = checkInput(args)
+	if err != nil {
+		return err
 	}
 
-	i := checkOptions(args)
-	if i != -1 {
-		abort(fmt.Sprintf("Invalid option '%s'.", args[i]))
+	err = checkOutput(args)
+	if err != nil {
+		return err
 	}
+
+	err = checkOptions(args)
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }
 
 // ParseArgs parses all arguments derived from command line
-func ParseArgs() (config multiplexer.MultiplexerConfig, err error) {
+func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) {
 	//todo validate args by parsing os.Args
-	validateArgs()
+	err = validateArgs(args)
+	if err != nil {
+		return multiplexer.MultiplexerConfig{}, err
+	}
 
 	// init custom handler to print full usage on error
+
 	parser := &docopt.Parser{
 		HelpHandler:  printUsage,
 		OptionsFirst: false,
 	}
-	arguments, err := parser.ParseArgs(usage, nil, "")
+	arguments, err := parser.ParseArgs(usage, args, "")
 
 	// mode
 	grid, _ := arguments.Bool("grid")
@@ -267,7 +316,10 @@ func ParseArgs() (config multiplexer.MultiplexerConfig, err error) {
 	// inputURL and label parsing
 	parseInputUrls(&config, input)
 	if len(inputLabels) != 0 {
-		parseSeparatedString(inputLabels)
+		err = parseSeparatedString(&config, inputLabels)
+		if err != nil {
+			return multiplexer.MultiplexerConfig{}, err
+		}
 	}
 
 	// mode
@@ -275,17 +327,16 @@ func ParseArgs() (config multiplexer.MultiplexerConfig, err error) {
 		var gridX int
 		var gridY int
 		if len(gridDimension) == 0 {
-			gridX = int(math.Ceil(math.Sqrt(float64(len(global.Config.InputConfigs)))))
+			gridX = int(math.Ceil(math.Sqrt(float64(len(config.Inputs)))))
 			gridY = gridX
 		} else {
 			arr := strings.Split(gridDimension, ArgumentSeparator)
-			gridX, err = strconv.Atoi(arr[0])
-			if err != nil {
-				log.Fatalf("Invalid grid dimension input %v: %v", arr[0], err.Error())
-			}
-			gridY, err = strconv.Atoi(arr[1])
-			if err != nil {
-				log.Fatalf("Invalid grid dimension input %v: %v", arr[1], err.Error())
+			var err1, err2 error
+			gridX, err1 = strconv.Atoi(arr[0])
+			gridY, err2 = strconv.Atoi(arr[1])
+
+			if err1 != nil || err2 != nil {
+				return multiplexer.MultiplexerConfig{}, abort(fmt.Sprintf("Malformed argument '--grid_dimension'. Expected numerical arguments in '--grid_dimension x,y', but got '--grid_dimension %s'", gridDimension))
 			}
 		}
 		config.Aggregator = &aggregator.AggregatorGrid{Row: gridX, Col: gridY}

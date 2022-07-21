@@ -11,14 +11,17 @@ import (
 )
 
 type MultiplexerConfig struct {
-	Inputs     []input.Input
-	Output     output.Output
-	Aggregator aggregator.Aggregator
+	Inputs       []input.Input
+	Output       output.Output
+	Aggregator   aggregator.Aggregator
+	InputConfigs []global.InputConfig
 }
 
 func Multiplexer(multiplexerConfig MultiplexerConfig) {
 	log.Println("Running the MJPEG-multiFLEXer")
 	var wg sync.WaitGroup
+
+	global.Config.InputConfigs = multiplexerConfig.InputConfigs
 
 	if global.Config.UseAuth {
 		utils.ParseAuthenticationFile()
