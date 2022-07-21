@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/docopt/docopt.go"
+	"golang.org/x/exp/slices"
 	"log"
 	"math"
 	"mjpeg_multiplexer/src/aggregator"
@@ -68,21 +69,21 @@ Examples:
   ./multiplexer carousel input 192.168.0.1:8080 192.168.0.2:8081 output 8088 --motion
 
 Options:
-  --grid_dimension=ROWS,COLUMNS    todo
+  --grid_dimension=ROWS,COLUMNS    Number of cells in the grid mode
   --motion                         Enables motion detection to focus the most active frame on selected mode
-  --duration=n                     frame duration [default: 10]
-  --cycle                          todo
-  --width=n                        output width in pixel [default: -1]
-  --height=n                       output height in pixel [default: -1]
-  --ignore_aspect_ratio            todo
-  --framerate=n                    output framerate in fps[default: -1]
-  --quality=n                      output jpeg quality in percentage [default: -1]
+  --cycle                          Enables cycling of the panel layout, see also [--duration] 
+  --duration=n                     Duration in seconds before changing the layout (panel and carousel only) [default: 15]
+  --width=n                        Output width in pixel [default: -1]
+  --height=n                       Output height in pixel [default: -1]
+  --ignore_aspect_ratio            Stretches the frames instead of adding a letterbox on resize
+  --framerate=n                    Output framerate in fps[default: -1]
+  --quality=n                      Output jpeg quality in percentage [default: -1]
   --use_auth                       Use Authentication
-  --show_border                    number of black pixels between each image
+  --show_border                    Enables a border in the grid and panel layout between the images
   --show_label                     Show label for input streams
-  --labels=n                       comma separated list of names to show instead of the camera input url
-  --label_font_size=n              input label font size in pixel [default: 32]
-  --log_fps                        Log Time verbose
+  --labels=n                       Comma separated list of names to show instead of the camera input url
+  --label_font_size=n              Input label font size in pixel [default: 32]
+  --log_fps                        Logs the current FPS 
   --verbose                        Shows details. 
   --version                        Shows version.
   -h --help                        Shows this screen.
@@ -114,9 +115,116 @@ var printUsage = func(err error, usage_ string) {
 	os.Exit(1)
 }
 
+var mode = []string{"grid", "panel", "carousel"}
+var optionalFlags = []string{"--cycle", "--ignore_aspect_ratio", "--use_auth", "--show_border", "--show_label", "--log_fps", "--verbose", "--version", "--always_active", "--debug"}
+var optionalValues = []string{"--grid_dimension", "--duration", "--width", "--height", "--framerate", "--quality", "--label_font_size"}
+
+func containsHelp(args []string) bool {
+	return slices.Contains(args, "--help") || slices.Contains(args, "-h")
+}
+
+func containsMode(args []string) bool {
+	return slices.Contains(args, "grid") || slices.Contains(args, "panel") || slices.Contains(args, "carousel")
+}
+
+func containsInput(args []string) bool {
+	return slices.Contains(args, "input")
+}
+
+func containsOutput(args []string) bool {
+	return slices.Contains(args, "output")
+}
+func checkOptions(args []string) int {
+
+	for i := 0; i < len(args); i++ {
+		el := args[i]
+
+		// mode
+		if slices.Contains(mode, el) {
+			continue
+		}
+
+		// in- and output (skip the specified values)
+		if el == "input" || el == "output" {
+			i++
+			continue
+		}
+
+		// flags
+		if slices.Contains(optionalFlags, el) {
+			continue
+		}
+
+		// value fields (skip the specified values)
+		if slices.Contains(optionalValues, el) {
+			if i == len(args)-1 {
+				abort(fmt.Sprintf("Missing value for option '%s'.", el))
+			}
+			value := args[i+1]
+
+			if el == "--grid-dimension" {
+				arr := strings.Split(value, ArgumentSeparator)
+				if len(arr) != 2 {
+					abort(fmt.Sprintf("Malformed argument '%s'. Expected numerical arguments in '%s x', but got '%s %s'", el, el, el, value))
+				}
+				_, err1 := strconv.Atoi(arr[0])
+				_, err2 := strconv.Atoi(arr[1])
+
+				if err1 != nil || err2 != nil {
+					abort(fmt.Sprintf("Malformed argument '%s'. Expected numerical arguments in '%s x', but got '%s %s'", el, el, el, value))
+				}
+
+			} else {
+				_, err := strconv.Atoi(value)
+				if err != nil {
+					abort(fmt.Sprintf("Malformed argument '%s'. Expected numerical arguments in '%s x', but got '%s %s'", el, el, el, value))
+				}
+			}
+
+			i++
+			continue
+		}
+
+		return i
+	}
+	return -1
+}
+
+func abort(msg string) {
+	fmt.Printf("%s See help by adding -h or --help for more information\n", msg)
+	os.Exit(1)
+}
+
+func validateArgs() {
+	args := os.Args[1:]
+
+	if len(args) == 0 || containsHelp(args) {
+		printUsage(nil, "")
+	}
+
+	if !containsMode(args) {
+		abort("Mode missing! Please specify a mode [grid|panel|carousel].")
+	}
+
+	if !containsInput(args) {
+		abort("Input missing! Please specify an input (eg. 'input localhost:8080').")
+	}
+
+	if !containsOutput(args) {
+		abort("Output missing! Please specify an output (eg. 'output 8088').")
+	}
+
+	i := checkOptions(args)
+	if i != -1 {
+		abort(fmt.Sprintf("Invalid option '%s'.", args[i]))
+	}
+
+}
+
 // ParseArgs parses all arguments derived from command line
 func ParseArgs() (config multiplexer.MultiplexerConfig, err error) {
 	//todo validate args by parsing os.Args
+	validateArgs()
 
 	// init custom handler to print full usage on error
 	parser := &docopt.Parser{
