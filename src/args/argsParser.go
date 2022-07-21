@@ -116,6 +116,7 @@ var printUsage = func(err error, usage_ string) {
 }
 
 var mode = []string{"grid", "panel", "carousel"}
+var inOutput = []string{"input", "output"}
 var optionalFlags = []string{"--motion", "--cycle", "--ignore_aspect_ratio", "--use_auth", "--show_border", "--show_label", "--log_fps", "--version", "--always_active", "--debug"}
 var optionalValues = []string{"--grid_dimension", "--duration", "--width", "--height", "--framerate", "--quality", "--label_font_size", "--labels"}
 
@@ -135,18 +136,41 @@ func checkMode(args []string) error {
 }
 
 func checkInput(args []string) error {
-	if !slices.Contains(args, "input") {
-		return abort("Input missing! Please specify an input (eg. 'input localhost:8080').")
+	errMsg := "Input missing! Please specify an input with a value (eg. 'input localhost:8080')."
+
+	index := slices.Index(args, "input")
+	if index < 0 {
+		return abort(errMsg)
 	}
+
+	// abort if 'input' is the last word or follow by a keyword
+	if index == len(args)-1 || isKeyWord(args[index+1]) {
+		return abort(errMsg)
+	}
+
 	return nil
 }
 
 func checkOutput(args []string) error {
-	if !slices.Contains(args, "output") {
-		return abort("Output missing! Please specify an output (eg. 'output 8088').")
+	errMsg := "Output missing! Please specify an output (eg. 'output 8088')."
+
+	index := slices.Index(args, "output")
+	if index < 0 {
+		return abort(errMsg)
 	}
+
+	// abort if 'input' is the last word or follow by a keyword
+	if index == len(args)-1 || isKeyWord(args[index+1]) {
+		return abort(errMsg)
+	}
+
 	return nil
 }
+
+func isKeyWord(value string) bool {
+	return slices.Contains(mode, value) || slices.Contains(inOutput, value) || slices.Contains(optionalFlags, value) || slices.Contains(optionalValues, value)
+}
+
 func checkOptions(args []string) error {
 
 	for i := 0; i < len(args); i++ {
@@ -196,10 +220,11 @@ func checkOptions(args []string) error {
 				value = args[i+1]
 			}
 
-			// if a value option is followed by another one (eg. '--quality --log_fps') we assume that the value is missing
-			if slices.Contains(optionalFlags, value) || slices.Contains(optionalValues, value) {
+			if isKeyWord(value) {
 				return abort(fmt.Sprintf("Missing value for option '%s'.", field))
 			}
+
+			// if a value option is followed by another one (eg. '--quality --log_fps') we assume that the value is missing
 
 			// special cases:
 			// --grid_dimension x,y

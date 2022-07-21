@@ -99,6 +99,9 @@ func TestInputMissing(t *testing.T) {
 
 	err = parseArgs("grid input_ 192.168.137.76:8080,localhost:8081 output 8088 --log_fps --quality 100")
 	expectErrorMessage(t, prefixInputMissing, err)
+
+	err = parseArgs("grid input output 8088 --log_fps --quality 100")
+	expectErrorMessage(t, prefixInputMissing, err)
 }
 
 func TestOutputMissing(t *testing.T) {
@@ -108,6 +111,9 @@ func TestOutputMissing(t *testing.T) {
 	expectErrorMessage(t, prefixOutputMissing, err)
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output_ 8088 --log_fps --quality 100")
+	expectErrorMessage(t, prefixOutputMissing, err)
+
+	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output --log_fps --quality 100")
 	expectErrorMessage(t, prefixOutputMissing, err)
 }
 
