@@ -268,7 +268,6 @@ func validateArgs(args []string) error {
 
 // ParseArgs parses all arguments derived from command line
 func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) {
-	//todo validate args by parsing os.Args
 	err = validateArgs(args)
 	if err != nil {
 		return multiplexer.MultiplexerConfig{}, err
