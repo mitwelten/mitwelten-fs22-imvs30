@@ -10,6 +10,8 @@ import (
 	"sync"
 )
 
+const Version = "0.1"
+
 type MultiplexerConfig struct {
 	Inputs       []input.Input
 	Output       output.Output

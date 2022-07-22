@@ -82,7 +82,7 @@ Options:
   --labels=n                       Comma separated list of names to show instead of the camera input url
   --label_font_size=n              Input label font size in pixel [default: 32]
   --log_fps                        Logs the current FPS 
-  --version                        Shows version.
+  -v --version                     Shows version.
   -h --help                        Shows this screen.`
 )
 
@@ -102,7 +102,7 @@ func parseInputUrls(config *multiplexer.MultiplexerConfig, inputStr string) {
 func parseSeparatedString(config *multiplexer.MultiplexerConfig, inputStr string) error {
 	arr := strings.Split(inputStr, ArgumentSeparator)
 	if len(config.Inputs) != len(arr) {
-		return abort(fmt.Sprintf("%v input location present, but %v labels found\n", len(config.Inputs), len(arr)))
+		return createUsageError(fmt.Sprintf("%v input location present, but %v labels found\n", len(config.Inputs), len(arr)))
 	}
 	for i, label := range arr {
 		config.InputConfigs[i].Label = label
@@ -117,20 +117,24 @@ var printUsage = func(err error, usage_ string) {
 
 var mode = []string{"grid", "panel", "carousel"}
 var inOutput = []string{"input", "output"}
-var optionalFlags = []string{"--motion", "--cycle", "--ignore_aspect_ratio", "--use_auth", "--show_border", "--show_label", "--log_fps", "--version", "--always_active", "--debug"}
+var optionalFlags = []string{"--motion", "--cycle", "--ignore_aspect_ratio", "--use_auth", "--show_border", "--show_label", "--log_fps", "--always_active", "--debug"}
 var optionalValues = []string{"--grid_dimension", "--duration", "--width", "--height", "--framerate", "--quality", "--label_font_size", "--labels"}
 
 func containsHelp(args []string) bool {
 	return slices.Contains(args, "--help") || slices.Contains(args, "-h")
 }
 
-func abort(msg string) error {
+func containsVersion(args []string) bool {
+	return slices.Contains(args, "--version") || slices.Contains(args, "-v")
+}
+
+func createUsageError(msg string) error {
 	return errors.New(fmt.Sprintf("%s See help by adding -h or --help for more information.\n", msg))
 }
 
 func checkMode(args []string) error {
 	if !slices.Contains(args, "grid") && !slices.Contains(args, "panel") && !slices.Contains(args, "carousel") {
-		return abort("Mode missing! Please specify a mode [grid|panel|carousel].")
+		return createUsageError("Mode missing! Please specify a mode [grid|panel|carousel].")
 	}
 	return nil
 }
@@ -140,12 +144,12 @@ func checkInput(args []string) error {
 
 	index := slices.Index(args, "input")
 	if index < 0 {
-		return abort(errMsg)
+		return createUsageError(errMsg)
 	}
 
-	// abort if 'input' is the last word or follow by a keyword
+	// createUsageError if 'input' is the last word or follow by a keyword
 	if index == len(args)-1 || isKeyWord(args[index+1]) {
-		return abort(errMsg)
+		return createUsageError(errMsg)
 	}
 
 	return nil
@@ -156,12 +160,12 @@ func checkOutput(args []string) error {
 
 	index := slices.Index(args, "output")
 	if index < 0 {
-		return abort(errMsg)
+		return createUsageError(errMsg)
 	}
 
-	// abort if 'input' is the last word or follow by a keyword
+	// createUsageError if 'input' is the last word or follow by a keyword
 	if index == len(args)-1 || isKeyWord(args[index+1]) {
-		return abort(errMsg)
+		return createUsageError(errMsg)
 	}
 
 	return nil
@@ -211,17 +215,17 @@ func checkOptions(args []string) error {
 				arr := strings.Split(el, "=")
 				value = arr[1]
 				if len(value) == 0 {
-					return abort(fmt.Sprintf("Missing value for option '%s'.", field))
+					return createUsageError(fmt.Sprintf("Missing value for option '%s'.", field))
 				}
 			} else {
 				if i == len(args)-1 {
-					return abort(fmt.Sprintf("Missing value for option '%s'.", field))
+					return createUsageError(fmt.Sprintf("Missing value for option '%s'.", field))
 				}
 				value = args[i+1]
 			}
 
 			if isKeyWord(value) {
-				return abort(fmt.Sprintf("Missing value for option '%s'.", field))
+				return createUsageError(fmt.Sprintf("Missing value for option '%s'.", field))
 			}
 
 			// if a value option is followed by another one (eg. '--quality --log_fps') we assume that the value is missing
@@ -233,12 +237,12 @@ func checkOptions(args []string) error {
 			if field == "--grid_dimension" {
 				arr := strings.Split(value, ArgumentSeparator)
 				if len(arr) != 2 {
-					return abort(fmt.Sprintf("Malformed argument '--grid_dimension'. Expected numerical arguments in '--grid_dimension x,y', but got '--grid_dimension %s'", value))
+					return createUsageError(fmt.Sprintf("Malformed argument '--grid_dimension'. Expected numerical arguments in '--grid_dimension x,y', but got '--grid_dimension %s'", value))
 				}
 			} else if field != "--labels" {
 				_, err := strconv.Atoi(value)
 				if err != nil {
-					return abort(fmt.Sprintf("Malformed argument '%s'. Expected numerical arguments in '%s x', but got '%s'", el, field, el))
+					return createUsageError(fmt.Sprintf("Malformed argument '%s'. Expected numerical arguments in '%s x', but got '%s'", el, field, el))
 				}
 			}
 
@@ -248,40 +252,62 @@ func checkOptions(args []string) error {
 			continue
 		}
 
-		return abort(fmt.Sprintf("Invalid option '%s'.", args[i]))
+		return createUsageError(fmt.Sprintf("Invalid option '%s'.", args[i]))
 	}
 	return nil
 
 }
 
+//validateArgs Checks the program args before passing it into DocOpts
+// The following things will be checked:
+// - `-h` or `--help`
+// - `-v` or `--version`
+// - empty argument list
+// - missing mode
+// - missing input or input parameter
+// - missing output or output parameter
+// - invalid option or missing option parameter
+//
+// The method will terminate the program in the first two cases with return code 0 or return an error (or nil if everything is ok) in the other cases
 func validateArgs(args []string) error {
-	if len(args) == 0 {
+
+	// check for help or version string
+	if containsHelp(args) {
 		fmt.Println(helpString)
 		os.Exit(0)
 	}
 
-	if containsHelp(args) {
-		fmt.Println(helpString)
-		os.Exit(1)
+	if containsVersion(args) {
+		fmt.Printf("mjpeg_multiplexer version %v\n", multiplexer.Version)
+		os.Exit(0)
+	}
+
+	//no args => error
+	if len(args) == 0 {
+		return errors.New(helpString)
 	}
 
 	var err error
 
+	// one mode must be present
 	err = checkMode(args)
 	if err != nil {
 		return err
 	}
 
+	// input must be present
 	err = checkInput(args)
 	if err != nil {
 		return err
 	}
 
+	// output must be present
 	err = checkOutput(args)
 	if err != nil {
 		return err
 	}
 
+	// check for invalid options or missing option parameters
 	err = checkOptions(args)
 	if err != nil {
 		return err
@@ -299,7 +325,6 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	}
 
 	// init custom handler to print full usage on error
-
 	parser := &docopt.Parser{
 		HelpHandler:  printUsage,
 		OptionsFirst: false,
@@ -360,7 +385,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 			gridY, err2 = strconv.Atoi(arr[1])
 
 			if err1 != nil || err2 != nil {
-				return multiplexer.MultiplexerConfig{}, abort(fmt.Sprintf("Malformed argument '--grid_dimension'. Expected numerical arguments in '--grid_dimension x,y', but got '--grid_dimension %s'", gridDimension))
+				return multiplexer.MultiplexerConfig{}, createUsageError(fmt.Sprintf("Malformed argument '--grid_dimension'. Expected numerical arguments in '--grid_dimension x,y', but got '--grid_dimension %s'", gridDimension))
 			}
 		}
 		config.Aggregator = &aggregator.AggregatorGrid{Row: gridX, Col: gridY}
