@@ -4,6 +4,7 @@ import (
 	"errors"
 	"reflect"
 	"runtime/debug"
+	"strings"
 	"testing"
 )
 
@@ -18,5 +19,20 @@ func Assert(t *testing.T, exp, got interface{}, equal bool) {
 func AssertThrow(t *testing.T, exp error, got error) {
 	if !errors.As(exp, &got) {
 		t.Errorf("Wrong error thrown")
+	}
+}
+
+func ExpectErrorMessage(t *testing.T, expectedPrefix string, err error) {
+	if err == nil {
+		t.Fatalf("Expected error {'%v...'} but no error thrown\n", expectedPrefix)
+	}
+	if !strings.Contains(err.Error(), expectedPrefix) {
+		t.Fatalf("Expected error {'%v...'} but got {'%v'}\n", expectedPrefix, err.Error())
+	}
+}
+
+func ExpectNoError(t *testing.T, err error) {
+	if err != nil {
+		t.Fatalf("Unexpected error {%v}\n", err.Error())
 	}
 }

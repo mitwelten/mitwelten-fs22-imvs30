@@ -3,6 +3,8 @@ package utils
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
 	"mjpeg_multiplexer/src/global"
 	"os"
@@ -14,13 +16,10 @@ type JSONAuthentication struct {
 	Password string
 }
 
-const authenticationFileLocation = "authentication.json"
-
 //findIndex searches for an entry in the json for input by comparing the URL
-func findIndex(config *global.InputConfig, data []JSONAuthentication) int {
+func findIndex(url string, data []JSONAuthentication) int {
 	for i, entry := range data {
-		auth := entry
-		if auth.Url == config.Url {
+		if entry.Url == url {
 			return i
 		}
 	}
@@ -28,27 +27,30 @@ func findIndex(config *global.InputConfig, data []JSONAuthentication) int {
 	return -1
 }
 
-//ParseAuthenticationFile parses the authentication file and writes the results into the global config
+//ParseAuthenticationFile parses the authentication file and for each passed url the authentication string will be created.
+//If no entry is found for an url that index will be an empty string
 //A missing or malformed file will terminate the program
-func ParseAuthenticationFile() {
+func ParseAuthenticationFile(urls []string, authenticationFileLocation string) ([]string, error) {
+	authentications := make([]string, len(urls))
+
 	bytes, err := os.ReadFile(authenticationFileLocation)
 	if err != nil {
-		log.Fatalf("Can't open authentication file: %v\n", err.Error())
+		return nil, errors.New(fmt.Sprintf("Can't open authentication file: %v\n", err.Error()))
 	}
 
 	var data []JSONAuthentication
 
 	if err := json.Unmarshal(bytes, &data); err != nil {
-		log.Fatalf("Can't parse authentication file json: %v\n", err.Error())
+		return nil, errors.New(fmt.Sprintf("Can't parse authentication file json: %v\n", err.Error()))
 	}
 
 	// for each input, check if a json entry can be found
-	for i, el := range global.Config.InputConfigs {
-		jsonIndex := findIndex(&el, data)
+	for i, url := range urls {
+		jsonIndex := findIndex(url, data)
 		if jsonIndex == -1 {
 			//no entry found
 			if global.Config.Debug {
-				log.Printf("No authentication entry for URL %v found\n", el.Url)
+				log.Printf("No authentication entry for URL %v found\n", url)
 			}
 			continue
 		}
@@ -59,6 +61,7 @@ func ParseAuthenticationFile() {
 			log.Printf("   => %v\n", auth.Username+":"+auth.Password)
 		}
 		payload := base64.StdEncoding.EncodeToString([]byte(auth.Username + ":" + auth.Password))
-		global.Config.InputConfigs[i].Authentication = payload
+		authentications[i] = payload
 	}
+	return authentications, nil
 }

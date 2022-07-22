@@ -11,6 +11,7 @@ import (
 )
 
 const Version = "0.1"
+const authenticationFileLocation = "authentication.json"
 
 type MultiplexerConfig struct {
 	Inputs       []input.Input
@@ -23,11 +24,23 @@ func Multiplexer(multiplexerConfig MultiplexerConfig) {
 	log.Println("Running the MJPEG-multiFLEXer")
 	var wg sync.WaitGroup
 
-	global.Config.InputConfigs = multiplexerConfig.InputConfigs
-
 	if global.Config.UseAuth {
-		utils.ParseAuthenticationFile()
+		urls := make([]string, len(multiplexerConfig.InputConfigs))
+		for i := 0; i < len(urls); i++ {
+			urls[i] = multiplexerConfig.InputConfigs[i].Url
+		}
+
+		authentications, err := utils.ParseAuthenticationFile(urls, authenticationFileLocation)
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
+
+		for i := 0; i < len(authentications); i++ {
+			multiplexerConfig.InputConfigs[i].Authentication = authentications[i]
+		}
 	}
+
+	global.Config.InputConfigs = multiplexerConfig.InputConfigs
 
 	for _, inputConnection := range multiplexerConfig.Inputs {
 		wg.Add(1)
