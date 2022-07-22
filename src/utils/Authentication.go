@@ -29,7 +29,6 @@ func findIndex(url string, data []JSONAuthentication) int {
 
 //ParseAuthenticationFile parses the authentication file and for each passed url the authentication string will be created.
 //If no entry is found for an url that index will be an empty string
-//A missing or malformed file will terminate the program
 func ParseAuthenticationFile(urls []string, authenticationFileLocation string) ([]string, error) {
 	authentications := make([]string, len(urls))
 

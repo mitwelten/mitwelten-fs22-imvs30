@@ -87,15 +87,16 @@ Options:
 )
 
 // parseInput parses input URLS derived from command line arguments
-func parseInputUrls(config *multiplexer.MultiplexerConfig, inputStr string) {
+// return the number of parsed input urls
+func parseInputUrls(config *multiplexer.MultiplexerConfig, inputStr string) int {
 	arr := strings.Split(inputStr, ArgumentSeparator)
 	config.Inputs = []input.Input{}
 	config.InputConfigs = []global.InputConfig{}
 	for i, url := range arr {
 		config.Inputs = append(config.Inputs, input.NewInputHTTP(i, url))
 		config.InputConfigs = append(config.InputConfigs, global.InputConfig{Url: url, Label: url})
-
 	}
+	return len(arr)
 }
 
 // todo: evtl. trim
@@ -363,7 +364,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	enableDebug, _ := arguments.Bool("--debug")
 
 	// inputURL and label parsing
-	parseInputUrls(&config, input)
+	nInputs := parseInputUrls(&config, input)
 	if len(inputLabels) != 0 {
 		err = parseSeparatedString(&config, inputLabels)
 		if err != nil {
@@ -392,6 +393,10 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	} else if carousel {
 		config.Aggregator = &aggregator.AggregatorCarousel{Duration: time.Duration(duration) * time.Second}
 	} else if panel {
+		if nInputs > 8 {
+			return multiplexer.MultiplexerConfig{}, errors.New(fmt.Sprintf("Too many inputs for panel mode: %v inputs specified, but only up to 8 are supported. Use `carousel` or `grid` instead.\n", nInputs))
+
+		}
 		config.Aggregator = &aggregator.AggregatorPanel{Duration: time.Duration(duration) * time.Second, CycleFrames: panelCycle}
 	} else {
 		return multiplexer.MultiplexerConfig{}, errors.New("invalid mode")
