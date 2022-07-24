@@ -6,6 +6,7 @@ import (
 	"log"
 	"mjpeg_multiplexer/src/customErrors"
 	"mjpeg_multiplexer/src/global"
+	"mjpeg_multiplexer/src/imageUtils"
 	"mjpeg_multiplexer/src/mjpeg"
 	"net"
 	"strconv"
@@ -31,7 +32,7 @@ type InputHTTP struct {
 
 // NewInputHTTP todo TEST: Test this function by creating an input and checking if it runs
 func NewInputHTTP(configIndex int, url string) *InputHTTP {
-	return &InputHTTP{configIndex: configIndex, url: url}
+	return &InputHTTP{configIndex: configIndex, url: url, data: InputData{InputStorage: mjpeg.NewFrameStorage()}}
 }
 
 func (source *InputHTTP) GetInputData() *InputData {
@@ -80,10 +81,14 @@ func (source *InputHTTP) sendHeader() error {
 	}
 
 	// Get the first frame to test if we have permission to access the source
-	_, err = source.ReceiveFrame()
+	frame, err := source.ReceiveFrame()
+
 	if err != nil {
 		return &customErrors.ErrHttpOpenInputAuthentication{Text: err.Error()}
 	}
+
+	imageUtils.Decode(source.data.InputStorage)
+	source.data.InputStorage.Store(&frame)
 
 	return nil
 }

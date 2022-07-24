@@ -8,7 +8,7 @@ import (
 // FrameStorage stores multiple MJPEG frames
 type FrameStorage struct {
 	mu                     sync.RWMutex
-	StorateChangeCondition *sync.Cond
+	StorageChangeCondition *sync.Cond
 	frame                  MjpegFrame
 	//	buffer                 utils.RingBuffer[MjpegFrame]
 	LastUpdated time.Time
@@ -35,7 +35,7 @@ func CreateUpdateCondition(storages ...*FrameStorage) *sync.Cond {
 	lock.Lock()
 	condition := sync.NewCond(&lock)
 	for _, storage := range storages {
-		storage.StorateChangeCondition = condition
+		storage.StorageChangeCondition = condition
 	}
 
 	return condition
@@ -65,8 +65,8 @@ func (frameStorage *FrameStorage) Store(frame *MjpegFrame) {
 	frameStorage.frame = *frame
 	frameStorage.LastUpdated = time.Now()
 
-	if frameStorage.StorateChangeCondition != nil {
-		frameStorage.StorateChangeCondition.Signal()
+	if frameStorage.StorageChangeCondition != nil {
+		frameStorage.StorageChangeCondition.Signal()
 	}
 }
 

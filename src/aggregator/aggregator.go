@@ -30,8 +30,8 @@ type AggregatorData struct {
 // StartAggregator starts the aggregator loop for the passed aggregator in a separate go routine
 func StartAggregator(agg *Aggregator, inputs ...input.Input) {
 	var inputStorages []*mjpeg.FrameStorage
-	for _, input := range inputs {
-		inputStorages = append(inputStorages, input.GetInputData().InputStorage)
+	for _, in := range inputs {
+		inputStorages = append(inputStorages, in.GetInputData().InputStorage)
 	}
 	// Setup
 	aggregator := *agg

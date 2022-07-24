@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 	"mjpeg_multiplexer/src/customErrors"
-	"mjpeg_multiplexer/src/imageUtils"
 	"mjpeg_multiplexer/src/mjpeg"
 	"time"
 )
@@ -36,20 +35,12 @@ func reconnectInput(input Input) {
 
 //StartInput starts the input source by calling the Init() method and running ReceiveFrame() in a loop
 func StartInput(input Input) {
-
 	inputData := input.GetInputData()
-	inputData.InputStorage = mjpeg.NewFrameStorage()
 
 	go func() {
 		err := input.Init()
 		if err != nil {
 			log.Fatalf("Can't open input stream for %v: %s", input.Info(), err.Error())
-		}
-		frame, err := input.ReceiveFrame()
-		// store and encode the first frame to get information about its size
-		if err == nil {
-			inputData.InputStorage.Store(&frame)
-			imageUtils.Decode(inputData.InputStorage)
 		}
 
 		for {
