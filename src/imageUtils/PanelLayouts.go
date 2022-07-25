@@ -12,7 +12,7 @@ var Slots3 = PanelLayout{
 	ChildrenWidth:  fraction(1, 3),
 	ChildrenHeight: fraction(1, 2),
 	ChildrenPositions: []utils.FloatPoint{
-		{X: fraction(1, 3), Y: 0},
+		{X: fraction(2, 3), Y: 0},
 		{X: fraction(2, 3), Y: fraction(1, 2)},
 	},
 
