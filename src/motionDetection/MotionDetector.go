@@ -19,7 +19,7 @@ type MotionDetector struct {
 }
 
 const updateDelay = 750 * time.Millisecond
-const minScore = 0.002
+const minScore = 0.05
 const nPreviousScores = 5
 
 //NewMotionDetector creates a new instances and allocates all needed memory
