@@ -18,7 +18,7 @@ type MotionDetector struct {
 	lastScoreUpdate time.Time
 }
 
-const updateDelay = 750 * time.Millisecond
+const updateDelay = 1000 * time.Millisecond
 const minScore = 0.05
 const nPreviousScores = 5
 
