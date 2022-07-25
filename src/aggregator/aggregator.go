@@ -5,6 +5,7 @@ import (
 	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/input"
 	"mjpeg_multiplexer/src/mjpeg"
+	"mjpeg_multiplexer/src/utils"
 	"reflect"
 	"time"
 )
@@ -91,7 +92,13 @@ func StartAggregator(agg *Aggregator, inputs ...input.Input) {
 			currentFPS++
 			if lastUpdate.Second() != time.Now().Second() {
 				if global.Config.LogFPS {
-					log.Printf("%v FPS\n", currentFPS)
+					deltaSeconds := utils.Abs(lastUpdate.Second() - time.Now().Second())
+					fps := float64(currentFPS) / float64(deltaSeconds)
+					if fps >= 1 {
+						log.Printf("%.0f FPS\n", fps)
+					} else {
+						log.Printf("%.2f FPS\n", fps)
+					}
 				}
 				currentFPS = 0
 			}
