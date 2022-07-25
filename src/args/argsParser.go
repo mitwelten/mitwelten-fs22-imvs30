@@ -259,7 +259,7 @@ func checkOptions(args []string) error {
 
 }
 
-//validateArgs Checks the program args before passing it into DocOpts
+//validateArgs Checks the program args for syntactic errors before passing it into DocOpts
 // The following things will be checked:
 // - `-h` or `--help`
 // - `-v` or `--version`
@@ -374,6 +374,12 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 
 	// mode
 	if grid {
+
+		if useMotion {
+			return multiplexer.MultiplexerConfig{}, createUsageError("Option '--motion' only available for the modes 'panel' or 'carousel'.")
+
+		}
+
 		var gridX int
 		var gridY int
 		if len(gridDimension) == 0 {
