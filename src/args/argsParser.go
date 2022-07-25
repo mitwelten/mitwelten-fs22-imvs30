@@ -118,7 +118,7 @@ var printUsage = func(err error, usage_ string) {
 
 var mode = []string{"grid", "panel", "carousel"}
 var inOutput = []string{"input", "output"}
-var optionalFlags = []string{"--motion", "--cycle", "--ignore_aspect_ratio", "--use_auth", "--show_border", "--show_label", "--log_fps", "--always_active", "--debug"}
+var optionalFlags = []string{"--motion", "--cycle", "--ignore_aspect_ratio", "--use_auth", "--show_border", "--show_label", "--log_fps", "--always_active", "--debug", "--disable_passthrough"}
 var optionalValues = []string{"--grid_dimension", "--duration", "--width", "--height", "--framerate", "--quality", "--label_font_size", "--labels"}
 
 func containsHelp(args []string) bool {
