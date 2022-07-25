@@ -26,6 +26,7 @@ func TestInToOutput(t *testing.T) {
 	outTest := output.NewOutputHTTP("8120")
 	aggregator.StartAggregator(&dummyAgg, dummyIn)
 	outTest.StartOutput(&dummyAgg)
+	time.Sleep(25 * time.Millisecond)
 
 	//multiplexer:
 	in := input.NewInputHTTP(1, "localhost:8120")
@@ -34,6 +35,7 @@ func TestInToOutput(t *testing.T) {
 	input.StartInput(in)
 	aggregator.StartAggregator(&agg, in)
 	out.StartOutput(&agg)
+	time.Sleep(25 * time.Millisecond)
 
 	//inTest: listen to 8121 - output of multiplexer
 	inTest := input.NewInputHTTP(2, "localhost:8121")
