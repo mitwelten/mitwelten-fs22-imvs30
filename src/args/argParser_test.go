@@ -13,6 +13,7 @@ const prefixValueMissing = "Missing value"
 const prefixMalformedArgument = "Malformed argument"
 const prefixInvalidOption = "Invalid option"
 const prefixMotionWithGrid = "Option '--motion' only available for the modes 'panel' or 'carousel'."
+const prefixGridDimensionWithoutGrid = "Option '----grid_dimension=ROWS,COLUMNS' only available for the mode 'grid'."
 
 const separator = " "
 
@@ -169,12 +170,25 @@ func TestInvalidOption(t *testing.T) {
 func TestMotionWithGrid(t *testing.T) {
 	var err error
 
-	err = parseArgs("panel input :8080,:8081,:8082,:8083 output 8088 --grid_dimension 2,2 --width 1000 --height 1000 --show_label --log_fps --motion")
+	err = parseArgs("panel input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --motion")
 	utils.ExpectNoError(t, err)
 
-	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --grid_dimension 2,2 --width 1000 --height 1000 --show_label --log_fps")
+	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps")
 	utils.ExpectNoError(t, err)
 
-	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --grid_dimension 2,2 --width 1000 --height 1000 --show_label --log_fps --motion")
+	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --motion")
 	utils.ExpectErrorMessage(t, prefixMotionWithGrid, err)
+}
+
+func TestGridDimensionWithoutGrid(t *testing.T) {
+	var err error
+
+	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --grid_dimension 3,3")
+	utils.ExpectNoError(t, err)
+
+	err = parseArgs("panel input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --grid_dimension 3,3")
+	utils.ExpectErrorMessage(t, prefixGridDimensionWithoutGrid, err)
+
+	err = parseArgs("carousel input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --grid_dimension 3,3")
+	utils.ExpectErrorMessage(t, prefixGridDimensionWithoutGrid, err)
 }

@@ -54,6 +54,9 @@ Options:
 var (
 	helpString = `Usage: multiplexer [grid | panel | carousel] input [URL] output [URL] [options...]
                    <--------- mode --------> <- input -> <- output ->
+
+The multiplexer combines multiple multiple input streams to an output stream using a mode.
+
 Mode:
   grid: static grid of images with X rows and Y columns
   panel: dynamic panel of.... Can be used with motion (see --motion)
@@ -71,11 +74,11 @@ Options:
   --motion                         Enables motion detection to focus the most active frame on selected mode
   --cycle                          Enables cycling of the panel layout, see also [--duration] 
   --duration=n                     Duration in seconds before changing the layout (panel and carousel only) [default: 15]
-  --width=n                        Output width in pixel [default: -1]
-  --height=n                       Output height in pixel [default: -1]
+  --width=n                        Output width in pixel, the height will be adjusted accordingly if not specified using [--height] [default: -1]
+  --height=n                       Output height in pixel, the width will be adjusted accordingly if not specified using [--width][default: -1]
   --ignore_aspect_ratio            Stretches the frames instead of adding a letterbox on resize
-  --framerate=n                    Output framerate in fps[default: -1]
-  --quality=n                      Output jpeg quality in percentage [default: -1]
+  --framerate=n                    Limit the output framerate per second
+  --quality=n                      Output jpeg quality in percentage [default: 80]
   --use_auth                       Use Authentication
   --show_border                    Enables a border in the grid and panel layout between the images
   --show_label                     Show label for input streams
@@ -83,7 +86,9 @@ Options:
   --label_font_size=n              Input label font size in pixel [default: 32]
   --log_fps                        Logs the current FPS 
   -v --version                     Shows version.
-  -h --help                        Shows this screen.`
+  -h --help                        Shows this screen
+
+Authentication to connect to mjpeg_streamer streams secured by credentials can be enabled using the [--use_auth] flag. Add the credentials to the 'authentication.json' file. See 'authentication_example.json' as an example.`
 )
 
 // parseInput parses input URLS derived from command line arguments
@@ -372,6 +377,10 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 		}
 	}
 
+	//--grid_dimension without mode grid
+	if !grid && len(gridDimension) != 0 {
+		return multiplexer.MultiplexerConfig{}, createUsageError("Option '----grid_dimension=ROWS,COLUMNS' only available for the mode 'grid'.")
+	}
 	// mode
 	if grid {
 
