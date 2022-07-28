@@ -30,7 +30,7 @@ var (
 Options:
   --grid_dimension=ROWS,COLUMNS    todo
   --motion                         Enables motion detection to focus the most active frame on selected mode
-  --duration=n                     frame duration [default: 15]
+  --duration=n                     frame duration [default: -1]
   --panel_cycle                    todo
   --width=n                        output width in pixel [default: -1]
   --height=n                       output height in pixel [default: -1]
@@ -380,6 +380,11 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	//--grid_dimension without mode grid
 	if !grid && len(gridDimension) != 0 {
 		return multiplexer.MultiplexerConfig{}, createUsageError("Option '--grid_dimension=ROWS,COLUMNS' only available for the mode 'grid'.")
+	}
+
+	//--duration without mode panel or carousel
+	if !(panel || carousel) && duration != -1 {
+		return multiplexer.MultiplexerConfig{}, createUsageError("Option '--duration=n' only available for the mode 'panel' or 'carousel'.")
 	}
 
 	//--panel_cycle without mode panel
