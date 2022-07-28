@@ -14,6 +14,7 @@ const prefixMalformedArgument = "Malformed argument"
 const prefixInvalidOption = "Invalid option"
 const prefixMotionWithGrid = "Option '--motion' only available for the modes 'panel' or 'carousel'."
 const prefixGridDimensionWithoutGrid = "Option '--grid_dimension=ROWS,COLUMNS' only available for the mode 'grid'."
+const prefixPanelCycleWithoutPanel = "Option '--panel_cycle' only available for the mode 'panel'."
 
 const separator = " "
 
@@ -33,7 +34,7 @@ func TestAllOk(t *testing.T) {
 	err = parseArgs("grid input :8080,:8081,:8082,:8083,:8084 output 8088 --grid_dimension 2,3 --width 1000 --height 1000 --ignore_aspect_ratio")
 	utils.ExpectNoError(t, err)
 
-	err = parseArgs("panel input :8080,:8081,:8082 output 8088 --width 1000 --cycle --duration 5")
+	err = parseArgs("panel input :8080,:8081,:8082 output 8088 --width 1000 --panel_cycle --duration 5")
 	utils.ExpectNoError(t, err)
 
 	err = parseArgs("panel input :8080,:8081,:8082,:8083,:8084 output 8088 --motion --log_fps --debug --show_label")
@@ -191,4 +192,17 @@ func TestGridDimensionWithoutGrid(t *testing.T) {
 
 	err = parseArgs("carousel input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --grid_dimension 3,3")
 	utils.ExpectErrorMessage(t, prefixGridDimensionWithoutGrid, err)
+}
+
+func TestPanelCycleWithoutPanel(t *testing.T) {
+	var err error
+
+	err = parseArgs("panel input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --panel_cycle")
+	utils.ExpectNoError(t, err)
+
+	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --panel_cycle")
+	utils.ExpectErrorMessage(t, prefixPanelCycleWithoutPanel, err)
+
+	err = parseArgs("carousel input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --panel_cycle")
+	utils.ExpectErrorMessage(t, prefixPanelCycleWithoutPanel, err)
 }

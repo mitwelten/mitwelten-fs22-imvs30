@@ -31,7 +31,7 @@ Options:
   --grid_dimension=ROWS,COLUMNS    todo
   --motion                         Enables motion detection to focus the most active frame on selected mode
   --duration=n                     frame duration [default: 15]
-  --cycle                          todo
+  --panel_cycle                    todo
   --width=n                        output width in pixel [default: -1]
   --height=n                       output height in pixel [default: -1]
   --ignore_aspect_ratio            todo
@@ -66,13 +66,13 @@ Output: output url including port
 
 Examples: 
   ./multiplexer grid input localhost:8080,localhost:8081 output 8088
-  ./multiplexer panel input :8080,:8081,:8082 output 8088 --cycle --width 800 
+  ./multiplexer panel input :8080,:8081,:8082 output 8088 --panel_cycle --width 800 
   ./multiplexer carousel input 192.168.0.1:8080 192.168.0.2:8081 output 8088 --motion
 
 Options:
   --grid_dimension [list]          Comma separated list of the number of cells in the grid mode, eg. '--grid_dimension "3,2"'
   --motion                         Enables motion detection to focus the most active frame on selected mode
-  --cycle                          Enables cycling of the panel layout, see also [--duration] 
+  --panel_cycle                    Enables cycling of the panel layout, see also [--duration] 
   --duration [number]              Duration in seconds before changing the layout (panel and carousel only) [default: 15]
   --width [number]                 Output width in pixel, the height will be adjusted accordingly if not specified using [--height] [default: -1]
   --height [number of number]      Output height in pixel, the width will be adjusted accordingly if not specified using [--width][default: -1]
@@ -123,7 +123,7 @@ var printUsage = func(err error, usage_ string) {
 
 var mode = []string{"grid", "panel", "carousel"}
 var inOutput = []string{"input", "output"}
-var optionalFlags = []string{"--motion", "--cycle", "--ignore_aspect_ratio", "--use_auth", "--show_border", "--show_label", "--log_fps", "--always_active", "--debug", "--disable_passthrough"}
+var optionalFlags = []string{"--motion", "--panel_cycle", "--ignore_aspect_ratio", "--use_auth", "--show_border", "--show_label", "--log_fps", "--always_active", "--debug", "--disable_passthrough"}
 var optionalValues = []string{"--grid_dimension", "--duration", "--width", "--height", "--framerate", "--quality", "--label_font_size", "--labels"}
 
 func containsHelp(args []string) bool {
@@ -349,8 +349,8 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	//options
 	gridDimension, _ := arguments.String("--grid_dimension")
 	useMotion, _ := arguments.Bool("--motion")
-	duration, _ := arguments.Int("--duration") // carousel or panel-cycle duration in seconds
-	panelCycle, _ := arguments.Bool("--cycle") // panel cycle, default false
+	duration, _ := arguments.Int("--duration")       // carousel or panel-cycle duration in seconds
+	panelCycle, _ := arguments.Bool("--panel_cycle") // panel cycle, default false
 	width, _ := arguments.Int("--width")
 	height, _ := arguments.Int("--height")
 	ignoreAspectRatio, _ := arguments.Bool("--ignore_aspect_ratio")
@@ -381,6 +381,12 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	if !grid && len(gridDimension) != 0 {
 		return multiplexer.MultiplexerConfig{}, createUsageError("Option '--grid_dimension=ROWS,COLUMNS' only available for the mode 'grid'.")
 	}
+
+	//--panel_cycle without mode panel
+	if !panel && panelCycle {
+		return multiplexer.MultiplexerConfig{}, createUsageError("Option '--panel_cycle' only available for the mode 'panel'.")
+	}
+
 	// mode
 	if grid {
 
