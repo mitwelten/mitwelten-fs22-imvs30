@@ -70,20 +70,20 @@ Examples:
   ./multiplexer carousel input 192.168.0.1:8080 192.168.0.2:8081 output 8088 --motion
 
 Options:
-  --grid_dimension=ROWS,COLUMNS    Number of cells in the grid mode
+  --grid_dimension [list]          Comma separated list of the number of cells in the grid mode, eg. '--grid_dimension "3,2"'
   --motion                         Enables motion detection to focus the most active frame on selected mode
   --cycle                          Enables cycling of the panel layout, see also [--duration] 
-  --duration=n                     Duration in seconds before changing the layout (panel and carousel only) [default: 15]
-  --width=n                        Output width in pixel, the height will be adjusted accordingly if not specified using [--height] [default: -1]
-  --height=n                       Output height in pixel, the width will be adjusted accordingly if not specified using [--width][default: -1]
+  --duration [number]              Duration in seconds before changing the layout (panel and carousel only) [default: 15]
+  --width [number]                 Output width in pixel, the height will be adjusted accordingly if not specified using [--height] [default: -1]
+  --height [number of number]      Output height in pixel, the width will be adjusted accordingly if not specified using [--width][default: -1]
   --ignore_aspect_ratio            Stretches the frames instead of adding a letterbox on resize
-  --framerate=n                    Limit the output framerate per second
-  --quality=n                      Output jpeg quality in percentage [default: 80]
+  --framerate [number]             Limit the output framerate per second
+  --quality [number]               Output jpeg quality in percentage [default: 80]
   --use_auth                       Use Authentication
   --show_border                    Enables a border in the grid and panel layout between the images
   --show_label                     Show label for input streams
-  --labels=n                       Comma separated list of names to show instead of the camera input url
-  --label_font_size=n              Input label font size in pixel [default: 32]
+  --labels [list]                  Comma separated list of names to show instead of the camera input url, eg. '--labels "label 1, label 2"'
+  --label_font_size [number]       Input label font size in pixel [default: 32]
   --log_fps                        Logs the current FPS 
   -v --version                     Shows version.
   -h --help                        Shows this screen
