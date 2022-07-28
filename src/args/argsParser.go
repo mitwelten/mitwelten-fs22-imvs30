@@ -3,6 +3,7 @@ package args
 import (
 	"errors"
 	"fmt"
+	"github.com/arbovm/levenshtein"
 	"github.com/docopt/docopt.go"
 	"golang.org/x/exp/slices"
 	"math"
@@ -265,10 +266,28 @@ func checkOptions(args []string) error {
 			continue
 		}
 
-		return createUsageError(fmt.Sprintf("Invalid option '%s'.", args[i]))
+		possibleMatch := findPossibleMatch(args[i])
+		if possibleMatch != nil {
+			return createUsageError(fmt.Sprintf("Invalid option '%s'. Did you mean %s?", args[i], *possibleMatch))
+		} else {
+			return createUsageError(fmt.Sprintf("Invalid option '%s'.", args[i]))
+		}
 	}
 	return nil
 
+}
+
+const levenshteinCutoff = 3
+
+func findPossibleMatch(input string) *string {
+	values := append(optionalValues, optionalFlags...)
+
+	for _, value := range values {
+		if levenshtein.Distance(input, value) <= levenshteinCutoff {
+			return &value
+		}
+	}
+	return nil
 }
 
 //validateArgs Checks the program args for syntactic errors before passing it into DocOpts

@@ -12,6 +12,7 @@ const prefixOutputMissing = "Output missing"
 const prefixValueMissing = "Missing value"
 const prefixMalformedArgument = "Malformed argument"
 const prefixInvalidOption = "Invalid option"
+const levenshteinString = "Did you mean"
 
 const separator = " "
 
@@ -72,77 +73,77 @@ func TestModeMissing(t *testing.T) {
 	var err error
 
 	err = parseArgs("_ input 192.168.137.76:8080,localhost:8081 output 8088 --log_fps --quality 100")
-	utils.ExpectErrorMessage(t, prefixModeMissing, err)
+	utils.ExpectErrorContains(t, prefixModeMissing, err)
 
 	err = parseArgs("grid_ input 192.168.137.76:8080,localhost:8081 output 8088 --log_fps --quality 100")
-	utils.ExpectErrorMessage(t, prefixModeMissing, err)
+	utils.ExpectErrorContains(t, prefixModeMissing, err)
 }
 
 func TestInputMissing(t *testing.T) {
 	var err error
 
 	err = parseArgs("grid output 8088 --log_fps --quality 100")
-	utils.ExpectErrorMessage(t, prefixInputMissing, err)
+	utils.ExpectErrorContains(t, prefixInputMissing, err)
 
 	err = parseArgs("grid input_ 192.168.137.76:8080,localhost:8081 output 8088 --log_fps --quality 100")
-	utils.ExpectErrorMessage(t, prefixInputMissing, err)
+	utils.ExpectErrorContains(t, prefixInputMissing, err)
 
 	err = parseArgs("grid input output 8088 --log_fps --quality 100")
-	utils.ExpectErrorMessage(t, prefixInputMissing, err)
+	utils.ExpectErrorContains(t, prefixInputMissing, err)
 }
 
 func TestOutputMissing(t *testing.T) {
 	var err error
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 --log_fps --quality 100")
-	utils.ExpectErrorMessage(t, prefixOutputMissing, err)
+	utils.ExpectErrorContains(t, prefixOutputMissing, err)
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output_ 8088 --log_fps --quality 100")
-	utils.ExpectErrorMessage(t, prefixOutputMissing, err)
+	utils.ExpectErrorContains(t, prefixOutputMissing, err)
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output --log_fps --quality 100")
-	utils.ExpectErrorMessage(t, prefixOutputMissing, err)
+	utils.ExpectErrorContains(t, prefixOutputMissing, err)
 }
 
 func TestValueMissing(t *testing.T) {
 	var err error
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output 8088 --log_fps --quality")
-	utils.ExpectErrorMessage(t, prefixValueMissing, err)
+	utils.ExpectErrorContains(t, prefixValueMissing, err)
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output 8088 --log_fps --quality=")
-	utils.ExpectErrorMessage(t, prefixValueMissing, err)
+	utils.ExpectErrorContains(t, prefixValueMissing, err)
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output 8088 --quality --log_fps")
-	utils.ExpectErrorMessage(t, prefixValueMissing, err)
+	utils.ExpectErrorContains(t, prefixValueMissing, err)
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output 8088 --log_fps --quality --grid_dimension 3,2")
-	utils.ExpectErrorMessage(t, prefixValueMissing, err)
+	utils.ExpectErrorContains(t, prefixValueMissing, err)
 
 }
 func TestMalformedArgument(t *testing.T) {
 	var err error
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output 8088 --quality 100,")
-	utils.ExpectErrorMessage(t, prefixMalformedArgument, err)
+	utils.ExpectErrorContains(t, prefixMalformedArgument, err)
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output 8088 --quality=100,")
-	utils.ExpectErrorMessage(t, prefixMalformedArgument, err)
+	utils.ExpectErrorContains(t, prefixMalformedArgument, err)
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output 8088 --quality <invalid>")
-	utils.ExpectErrorMessage(t, prefixMalformedArgument, err)
+	utils.ExpectErrorContains(t, prefixMalformedArgument, err)
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output 8088 --log_fps --grid_dimension trash")
-	utils.ExpectErrorMessage(t, prefixMalformedArgument, err)
+	utils.ExpectErrorContains(t, prefixMalformedArgument, err)
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output 8088 --log_fps --grid_dimension 3,trash")
-	utils.ExpectErrorMessage(t, prefixMalformedArgument, err)
+	utils.ExpectErrorContains(t, prefixMalformedArgument, err)
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output 8088 --log_fps --grid_dimension 3,")
-	utils.ExpectErrorMessage(t, prefixMalformedArgument, err)
+	utils.ExpectErrorContains(t, prefixMalformedArgument, err)
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output 8088 --log_fps --grid_dimension 3")
-	utils.ExpectErrorMessage(t, prefixMalformedArgument, err)
+	utils.ExpectErrorContains(t, prefixMalformedArgument, err)
 
 }
 
@@ -150,19 +151,19 @@ func TestInvalidOption(t *testing.T) {
 	var err error
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output 8088 --log_fps --quality_")
-	utils.ExpectErrorMessage(t, prefixInvalidOption, err)
+	utils.ExpectErrorContains(t, prefixInvalidOption, err)
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output 8088 --log_fps -quality")
-	utils.ExpectErrorMessage(t, prefixInvalidOption, err)
+	utils.ExpectErrorContains(t, prefixInvalidOption, err)
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output 8088 --log_fps ---quality")
-	utils.ExpectErrorMessage(t, prefixInvalidOption, err)
+	utils.ExpectErrorContains(t, prefixInvalidOption, err)
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output 8088 --log_fps quality")
-	utils.ExpectErrorMessage(t, prefixInvalidOption, err)
+	utils.ExpectErrorContains(t, prefixInvalidOption, err)
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output 8088 --log_fps --grid")
-	utils.ExpectErrorMessage(t, prefixInvalidOption, err)
+	utils.ExpectErrorContains(t, prefixInvalidOption, err)
 }
 
 func TestMotionWithGrid(t *testing.T) {
@@ -175,7 +176,7 @@ func TestMotionWithGrid(t *testing.T) {
 	utils.ExpectNoError(t, err)
 
 	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --motion")
-	utils.ExpectErrorMessage(t, errMotionWithGrid, err)
+	utils.ExpectErrorContains(t, errMotionWithGrid, err)
 }
 
 func TestGridDimensionWithoutGrid(t *testing.T) {
@@ -185,10 +186,10 @@ func TestGridDimensionWithoutGrid(t *testing.T) {
 	utils.ExpectNoError(t, err)
 
 	err = parseArgs("panel input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --grid_dimension 3,3")
-	utils.ExpectErrorMessage(t, errGridDimensionWithoutGrid, err)
+	utils.ExpectErrorContains(t, errGridDimensionWithoutGrid, err)
 
 	err = parseArgs("carousel input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --grid_dimension 3,3")
-	utils.ExpectErrorMessage(t, errGridDimensionWithoutGrid, err)
+	utils.ExpectErrorContains(t, errGridDimensionWithoutGrid, err)
 }
 
 func TestPanelCycleWithoutPanel(t *testing.T) {
@@ -198,16 +199,16 @@ func TestPanelCycleWithoutPanel(t *testing.T) {
 	utils.ExpectNoError(t, err)
 
 	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --panel_cycle")
-	utils.ExpectErrorMessage(t, errPanelCycleWithoutPanel, err)
+	utils.ExpectErrorContains(t, errPanelCycleWithoutPanel, err)
 
 	err = parseArgs("carousel input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --panel_cycle")
-	utils.ExpectErrorMessage(t, errPanelCycleWithoutPanel, err)
+	utils.ExpectErrorContains(t, errPanelCycleWithoutPanel, err)
 }
 func TestDurationWithGrid(t *testing.T) {
 	var err error
 
 	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --duration 10")
-	utils.ExpectErrorMessage(t, errDurationWithGrid, err)
+	utils.ExpectErrorContains(t, errDurationWithGrid, err)
 
 	err = parseArgs("panel input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --duration 10")
 	utils.ExpectNoError(t, err)
@@ -223,7 +224,7 @@ func TestLabelWithoutShowLabel(t *testing.T) {
 	utils.ExpectNoError(t, err)
 
 	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --labels=l1,l2,l3,l4")
-	utils.ExpectErrorMessage(t, errLabelWithoutShowLabel, err)
+	utils.ExpectErrorContains(t, errLabelWithoutShowLabel, err)
 
 }
 
@@ -234,5 +235,24 @@ func TestLabelFontSizeWithoutShowLabel(t *testing.T) {
 	utils.ExpectNoError(t, err)
 
 	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --label_font_size 100")
-	utils.ExpectErrorMessage(t, errLabelFontSizeWithoutShowLabel, err)
+	utils.ExpectErrorContains(t, errLabelFontSizeWithoutShowLabel, err)
+}
+
+func TestLevenshtein(t *testing.T) {
+	var err error
+
+	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --label_font_size 100")
+	utils.ExpectNoError(t, err)
+
+	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --wdth 1000 --height 1000 --label_font_size 100")
+	utils.ExpectErrorContains(t, levenshteinString, err)
+
+	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --heihgt 1000 --label_font_size 100")
+	utils.ExpectErrorContains(t, levenshteinString, err)
+
+	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --labels_font_size 100")
+	utils.ExpectErrorContains(t, levenshteinString, err)
+
+	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_labels")
+	utils.ExpectErrorContains(t, levenshteinString, err)
 }

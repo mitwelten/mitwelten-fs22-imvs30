@@ -22,7 +22,7 @@ func AssertThrow(t *testing.T, exp error, got error) {
 	}
 }
 
-func ExpectErrorMessage(t *testing.T, expectedPrefix string, err error) {
+func ExpectErrorContains(t *testing.T, expectedPrefix string, err error) {
 	if err == nil {
 		t.Fatalf("Expected error {'%v...'} but no error thrown\n", expectedPrefix)
 	}

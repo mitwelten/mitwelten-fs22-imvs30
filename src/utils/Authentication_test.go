@@ -14,12 +14,12 @@ var urls = []string{"192.168.0.42:8080", "localhost:8081", "hostname:8082"}
 
 func TestParseAuthenticationFileMissing(t *testing.T) {
 	_, err := ParseAuthenticationFile(urls, fileMissing)
-	ExpectErrorMessage(t, prefixMissing, err)
+	ExpectErrorContains(t, prefixMissing, err)
 }
 
 func TestParseAuthenticationFileInvalidFile(t *testing.T) {
 	_, err := ParseAuthenticationFile(urls, fileInvalid)
-	ExpectErrorMessage(t, prefixInvalidFile, err)
+	ExpectErrorContains(t, prefixInvalidFile, err)
 }
 
 func TestParseAuthenticationFileAllUrls(t *testing.T) {
