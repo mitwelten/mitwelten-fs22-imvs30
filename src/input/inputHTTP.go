@@ -87,8 +87,8 @@ func (source *InputHTTP) sendHeader() error {
 		return &customErrors.ErrHttpOpenInputAuthentication{Text: err.Error()}
 	}
 
-	imageUtils.Decode(source.data.InputStorage)
 	source.data.InputStorage.Store(&frame)
+	imageUtils.Decode(source.data.InputStorage)
 
 	return nil
 }
