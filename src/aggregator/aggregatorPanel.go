@@ -26,7 +26,6 @@ func (aggregator *AggregatorPanel) Setup(storages ...*mjpeg.FrameStorage) {
 	aggregator.currentIndex = 0
 
 	nStorages := len(storages)
-	//todo input validation in parser
 	if nStorages > 6 {
 		aggregator.layout = imageUtils.Slots8
 	} else if nStorages > 4 {
@@ -47,6 +46,10 @@ func (aggregator *AggregatorPanel) GetAggregatorData() *AggregatorData {
 }
 
 func (aggregator *AggregatorPanel) aggregate(storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFrame {
+	if !aggregator.CycleFrames {
+		return imageUtils.Panel(aggregator.layout, aggregator.currentIndex, storages...)
+	}
+
 	index := -1
 	if aggregator.motionDetector != nil {
 		index = aggregator.motionDetector.GetMostActiveIndex()
