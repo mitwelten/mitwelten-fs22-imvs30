@@ -268,7 +268,7 @@ func checkOptions(args []string) error {
 
 		possibleMatch := findPossibleMatch(args[i])
 		if possibleMatch != nil {
-			return createUsageError(fmt.Sprintf("Invalid option '%s'. Did you mean %s?", args[i], *possibleMatch))
+			return createUsageError(fmt.Sprintf("Invalid option '%s'. Did you mean '%s'?", args[i], *possibleMatch))
 		} else {
 			return createUsageError(fmt.Sprintf("Invalid option '%s'.", args[i]))
 		}
