@@ -12,10 +12,6 @@ const prefixOutputMissing = "Output missing"
 const prefixValueMissing = "Missing value"
 const prefixMalformedArgument = "Malformed argument"
 const prefixInvalidOption = "Invalid option"
-const prefixMotionWithGrid = "Option '--motion' only available for the modes 'panel' or 'carousel'."
-const prefixGridDimensionWithoutGrid = "Option '--grid_dimension=ROWS,COLUMNS' only available for the mode 'grid'."
-const prefixPanelCycleWithoutPanel = "Option '--panel_cycle' only available for the mode 'panel'."
-const prefixDurationWithGrid = "Option '--duration=n' only available for the mode 'panel' or 'carousel'."
 
 const separator = " "
 
@@ -179,7 +175,7 @@ func TestMotionWithGrid(t *testing.T) {
 	utils.ExpectNoError(t, err)
 
 	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --motion")
-	utils.ExpectErrorMessage(t, prefixMotionWithGrid, err)
+	utils.ExpectErrorMessage(t, errMotionWithGrid, err)
 }
 
 func TestGridDimensionWithoutGrid(t *testing.T) {
@@ -189,10 +185,10 @@ func TestGridDimensionWithoutGrid(t *testing.T) {
 	utils.ExpectNoError(t, err)
 
 	err = parseArgs("panel input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --grid_dimension 3,3")
-	utils.ExpectErrorMessage(t, prefixGridDimensionWithoutGrid, err)
+	utils.ExpectErrorMessage(t, errGridDimensionWithoutGrid, err)
 
 	err = parseArgs("carousel input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --grid_dimension 3,3")
-	utils.ExpectErrorMessage(t, prefixGridDimensionWithoutGrid, err)
+	utils.ExpectErrorMessage(t, errGridDimensionWithoutGrid, err)
 }
 
 func TestPanelCycleWithoutPanel(t *testing.T) {
@@ -202,20 +198,41 @@ func TestPanelCycleWithoutPanel(t *testing.T) {
 	utils.ExpectNoError(t, err)
 
 	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --panel_cycle")
-	utils.ExpectErrorMessage(t, prefixPanelCycleWithoutPanel, err)
+	utils.ExpectErrorMessage(t, errPanelCycleWithoutPanel, err)
 
 	err = parseArgs("carousel input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --panel_cycle")
-	utils.ExpectErrorMessage(t, prefixPanelCycleWithoutPanel, err)
+	utils.ExpectErrorMessage(t, errPanelCycleWithoutPanel, err)
 }
 func TestDurationWithGrid(t *testing.T) {
 	var err error
 
 	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --duration 10")
-	utils.ExpectErrorMessage(t, prefixDurationWithGrid, err)
+	utils.ExpectErrorMessage(t, errDurationWithGrid, err)
 
 	err = parseArgs("panel input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --duration 10")
 	utils.ExpectNoError(t, err)
 
 	err = parseArgs("carousel input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --duration 10")
 	utils.ExpectNoError(t, err)
+}
+
+func TestLabelWithoutShowLabel(t *testing.T) {
+	var err error
+
+	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --labels=l1,l2,l3,l4")
+	utils.ExpectNoError(t, err)
+
+	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --labels=l1,l2,l3,l4")
+	utils.ExpectErrorMessage(t, errLabelWithoutShowLabel, err)
+
+}
+
+func TestLabelFontSizeWithoutShowLabel(t *testing.T) {
+	var err error
+
+	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --label_font_size 100")
+	utils.ExpectNoError(t, err)
+
+	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --label_font_size 100")
+	utils.ExpectErrorMessage(t, errLabelFontSizeWithoutShowLabel, err)
 }

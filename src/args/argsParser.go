@@ -20,6 +20,12 @@ import (
 const (
 	ArgumentSeparator = ","
 )
+const errMotionWithGrid = "Option '--motion' only available for the modes 'panel' or 'carousel'."
+const errGridDimensionWithoutGrid = "Option '--grid_dimension=ROWS,COLUMNS' only available for the mode 'grid'."
+const errPanelCycleWithoutPanel = "Option '--panel_cycle' only available for the mode 'panel'."
+const errDurationWithGrid = "Option '--duration=n' only available for the mode 'panel' or 'carousel'."
+const errLabelWithoutShowLabel = "Option '--labels [list]' requires option '--show_label'."
+const errLabelFontSizeWithoutShowLabel = "Option '--label_font_size [number]' requires option '--show_label'."
 
 var (
 	usage = `Usage:
@@ -41,7 +47,7 @@ Options:
   --show_border                    number of black pixels between each image
   --show_label                     Show label for input streams
   --labels=n                       comma separated list of names to show instead of the camera input url
-  --label_font_size=n              input label font size in pixel [default: 32]
+  --label_font_size=n              input label font size in pixel [default: -1]
   --log_fps                        Log Time verbose
   --version                        Shows version.
   --always_active                  (hidden) Disables the 'fast mode' when no client is connected
@@ -74,15 +80,16 @@ Options:
   --motion                         Enables motion detection to focus the most active frame on selected mode
   --panel_cycle                    Enables cycling of the panel layout, see also [--duration] 
   --duration [number]              Duration in seconds before changing the layout (panel and carousel only) [default: 15]
-  --width [number]                 Output width in pixel, the height will be adjusted accordingly if not specified using [--height] [default: -1]
-  --height [number of number]      Output height in pixel, the width will be adjusted accordingly if not specified using [--width][default: -1]
+  --width [number]                 Total output width in pixel
+  --height [number of number]      Total output height in pixel
+  => if only the height or width is specified, the other will be adjusted with regards to the ascpect ratio
   --ignore_aspect_ratio            Stretches the frames instead of adding a letterbox on resize
   --framerate [number]             Limit the output framerate per second
   --quality [number]               Output jpeg quality in percentage [default: 80]
   --use_auth                       Use Authentication
   --show_border                    Enables a border in the grid and panel layout between the images
   --show_label                     Show label for input streams
-  --labels [list]                  Comma separated list of names to show instead of the camera input url, eg. '--labels "label 1, label 2"'
+  --labels [list]                  Comma separated list of alternative label text, eg. '--labels "label 1, label 2"'
   --label_font_size [number]       Input label font size in pixel [default: 32]
   --log_fps                        Logs the current FPS 
   -v --version                     Shows version.
@@ -379,24 +386,34 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 
 	//--grid_dimension without mode grid
 	if !grid && len(gridDimension) != 0 {
-		return multiplexer.MultiplexerConfig{}, createUsageError("Option '--grid_dimension=ROWS,COLUMNS' only available for the mode 'grid'.")
+		return multiplexer.MultiplexerConfig{}, createUsageError(errGridDimensionWithoutGrid)
 	}
 
 	//--duration without mode panel or carousel
 	if !(panel || carousel) && duration != -1 {
-		return multiplexer.MultiplexerConfig{}, createUsageError("Option '--duration=n' only available for the mode 'panel' or 'carousel'.")
+		return multiplexer.MultiplexerConfig{}, createUsageError(errDurationWithGrid)
 	}
 
 	//--panel_cycle without mode panel
 	if !panel && panelCycle {
-		return multiplexer.MultiplexerConfig{}, createUsageError("Option '--panel_cycle' only available for the mode 'panel'.")
+		return multiplexer.MultiplexerConfig{}, createUsageError(errPanelCycleWithoutPanel)
+	}
+
+	//--labels without --show_label
+	if !showInputLabel && len(inputLabels) != 0 {
+		return multiplexer.MultiplexerConfig{}, createUsageError(errLabelWithoutShowLabel)
+	}
+
+	//--label_font_size without --show_label
+	if !showInputLabel && inputLabelFontSize != -1 {
+		return multiplexer.MultiplexerConfig{}, createUsageError(errLabelFontSizeWithoutShowLabel)
 	}
 
 	// mode
 	if grid {
 
 		if useMotion {
-			return multiplexer.MultiplexerConfig{}, createUsageError("Option '--motion' only available for the modes 'panel' or 'carousel'.")
+			return multiplexer.MultiplexerConfig{}, createUsageError(errMotionWithGrid)
 
 		}
 
@@ -455,7 +472,9 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 
 	// label
 	global.Config.ShowInputLabel = showInputLabel
-	global.Config.InputLabelFontSize = inputLabelFontSize
+	if inputLabelFontSize != -1 {
+		global.Config.InputLabelFontSize = inputLabelFontSize
+	}
 
 	//motion
 	global.Config.UseMotion = useMotion
