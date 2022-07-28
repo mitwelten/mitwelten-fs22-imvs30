@@ -13,7 +13,7 @@ const prefixValueMissing = "Missing value"
 const prefixMalformedArgument = "Malformed argument"
 const prefixInvalidOption = "Invalid option"
 const prefixMotionWithGrid = "Option '--motion' only available for the modes 'panel' or 'carousel'."
-const prefixGridDimensionWithoutGrid = "Option '----grid_dimension=ROWS,COLUMNS' only available for the mode 'grid'."
+const prefixGridDimensionWithoutGrid = "Option '--grid_dimension=ROWS,COLUMNS' only available for the mode 'grid'."
 
 const separator = " "
 

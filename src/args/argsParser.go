@@ -379,7 +379,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 
 	//--grid_dimension without mode grid
 	if !grid && len(gridDimension) != 0 {
-		return multiplexer.MultiplexerConfig{}, createUsageError("Option '----grid_dimension=ROWS,COLUMNS' only available for the mode 'grid'.")
+		return multiplexer.MultiplexerConfig{}, createUsageError("Option '--grid_dimension=ROWS,COLUMNS' only available for the mode 'grid'.")
 	}
 	// mode
 	if grid {
