@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+const defaultDuration = 15 * time.Second
+
 // Aggregator aggregates multiple frame storages to one frame storage
 // takes multiple frameStorages (one frame storage for each input Connection) and
 // aggregates them to one frameStorage

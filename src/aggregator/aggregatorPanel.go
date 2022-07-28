@@ -20,6 +20,10 @@ type AggregatorPanel struct {
 }
 
 func (aggregator *AggregatorPanel) Setup(storages ...*mjpeg.FrameStorage) {
+	if aggregator.Duration <= 0 {
+		aggregator.Duration = defaultDuration
+	}
+
 	aggregator.data.passthrough = false //only valid for 3 or more inputs
 	aggregator.lastSwitch = time.Now()
 	aggregator.lastMotionInActiveFrame = time.Now()

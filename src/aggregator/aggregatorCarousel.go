@@ -24,6 +24,9 @@ type AggregatorCarousel struct {
 }
 
 func (aggregator *AggregatorCarousel) Setup(storages ...*mjpeg.FrameStorage) {
+	if aggregator.Duration <= 0 {
+		aggregator.Duration = defaultDuration
+	}
 
 	aggregator.data.passthrough = false
 	aggregator.lastSwitch = time.Now()
