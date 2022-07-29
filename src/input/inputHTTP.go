@@ -38,7 +38,7 @@ func NewInputHTTP(configIndex int, url string) *InputHTTP {
 func (source *InputHTTP) GetInputData() *InputData {
 	return &source.data
 }
-func (source *InputHTTP) Info() string {
+func (source *InputHTTP) GetInfo() string {
 	return source.url
 }
 func (source *InputHTTP) open() error {

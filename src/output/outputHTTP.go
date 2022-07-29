@@ -10,12 +10,18 @@ import (
 )
 
 type OutputHTTP struct {
-	port         string
-	lastFrame    *mjpeg.MjpegFrame
-	clients      []ClientConnection
+	//port is the tcp port of the output
+	port string
+	//lastFrame is the last frame sent which may be resent in certain conditions
+	lastFrame *mjpeg.MjpegFrame
+	//clients is the list of connect tcp connections
+	clients []ClientConnection
+	//clientsMutex is the mutex which must be used when editing the clients list
 	clientsMutex *sync.RWMutex
-	aggregator   aggregator.Aggregator
-	condition    *sync.Cond
+	//aggregator provides the frames
+	aggregator aggregator.Aggregator
+	//condition is used to wait for new frames
+	condition *sync.Cond
 }
 
 type ClientConnection struct {

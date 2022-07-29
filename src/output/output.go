@@ -6,6 +6,8 @@ import (
 )
 
 type Output interface {
+	//SendFrame Sends a single frame to the output
 	SendFrame(frame *mjpeg.MjpegFrame)
+	//StartOutput Starts the Output
 	StartOutput(agg *aggregator.Aggregator)
 }

@@ -9,9 +9,13 @@ import (
 )
 
 type Input interface {
+	//ReceiveFrame receives a single frame from the input
 	ReceiveFrame() (mjpeg.MjpegFrame, error)
+	//Init starts the connection to the input
 	Init() error
-	Info() string
+	//GetInfo returns a description to of the connection
+	GetInfo() string
+	//GetInputData returns all other input data of the input
 	GetInputData() *InputData
 }
 
@@ -23,11 +27,11 @@ func reconnectInput(input Input) {
 	for {
 		err := input.Init()
 		if err == nil {
-			log.Printf("Successfully reconnected to %s\n", input.Info())
+			log.Printf("Successfully reconnected to %s\n", input.GetInfo())
 			return
 		}
 
-		log.Printf("Could not reconnect to %s\n", input.Info())
+		log.Printf("Could not reconnect to %s\n", input.GetInfo())
 		time.Sleep(5 * time.Minute)
 	}
 
@@ -40,7 +44,7 @@ func StartInput(input Input) {
 	go func() {
 		err := input.Init()
 		if err != nil {
-			log.Fatalf("Can't open input stream for %v: %s", input.Info(), err.Error())
+			log.Fatalf("Can't open input stream for %v: %s", input.GetInfo(), err.Error())
 		}
 
 		for {
@@ -48,11 +52,11 @@ func StartInput(input Input) {
 
 			if errors.As(err, &customErrors.ErrInvalidFrame{}) {
 				// retry when receiving invalid frame
-				log.Printf("Invalid frame read from socket %s: %s\n", input.Info(), err.Error())
+				log.Printf("Invalid frame read from socket %s: %s\n", input.GetInfo(), err.Error())
 				continue
 			} else if err != nil {
 				// reconnect on read error
-				log.Printf("Could not read from socket %s: %s\n", input.Info(), err.Error())
+				log.Printf("Could not read from socket %s: %s\n", input.GetInfo(), err.Error())
 				reconnectInput(input)
 				continue
 			}
