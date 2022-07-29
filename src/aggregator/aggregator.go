@@ -92,9 +92,19 @@ func StartAggregator(agg *Aggregator, inputs ...input.Input) {
 			}
 
 			currentFPS++
-			if lastUpdate.Second() != time.Now().Second() {
+			secondsNow := time.Now().Second()
+			if lastUpdate.Second() != secondsNow {
 				if global.Config.LogFPS {
-					deltaSeconds := utils.Abs(lastUpdate.Second() - time.Now().Second())
+					//we wanna either log
+					// X FPS if above zero
+					// or 0.XX FPS if below
+
+					//0:50 - 0:05 = 0:45, but should be 0:15
+					//fix this by turning 0:05 into 1:05
+					if secondsNow < lastUpdate.Second() {
+						secondsNow += 60
+					}
+					deltaSeconds := utils.Abs(lastUpdate.Second() - secondsNow)
 					fps := float64(currentFPS) / float64(deltaSeconds)
 					if fps >= 1 {
 						log.Printf("%.0f FPS\n", fps)
