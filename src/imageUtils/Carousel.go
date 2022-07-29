@@ -14,11 +14,12 @@ func Carousel(input *mjpeg.FrameStorage, index int) *mjpeg.MjpegFrame {
 	}
 
 	img := Decode(input)
-	width, height := input.GetImageSize()
 
-	// resizing
-	if (global.Config.Width != width) || (global.Config.Height != height) {
-		outputWidth, outputHeight := GetFinalImageSize(width, height)
+	currentWidth, currentHeight := input.GetImageSize()
+	outputWidth, outputHeight := GetFinalImageSize(currentWidth, currentHeight)
+
+	// check for resizing
+	if (outputWidth != currentWidth) || (outputHeight != currentHeight) {
 		img = ResizeOutputFrame(img, outputWidth, outputHeight)
 	}
 
