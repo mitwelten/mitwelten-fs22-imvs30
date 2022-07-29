@@ -456,6 +456,10 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 			if err1 != nil || err2 != nil {
 				return multiplexer.MultiplexerConfig{}, createUsageError(fmt.Sprintf("Malformed argument '--grid_dimension'. Expected numerical arguments in '--grid_dimension x,y', but got '--grid_dimension %s'", gridDimension))
 			}
+
+			if gridX*gridY < len(config.Inputs) {
+				return multiplexer.MultiplexerConfig{}, createUsageError(fmt.Sprintf("Invalid argument '--grid_dimension %d,%d'. At least %d spaces are needed, but only %d provided.", gridX, gridY, len(config.Inputs), gridX*gridY))
+			}
 		}
 		config.Aggregator = &aggregator.AggregatorGrid{Row: gridX, Col: gridY}
 	} else if carousel {

@@ -11,6 +11,7 @@ const prefixInputMissing = "Input missing"
 const prefixOutputMissing = "Output missing"
 const prefixValueMissing = "Missing value"
 const prefixMalformedArgument = "Malformed argument"
+const prefixGridTooSmall = "Invalid argument '--grid_dimension"
 const prefixInvalidOption = "Invalid option"
 const levenshteinString = "Did you mean"
 
@@ -164,6 +165,31 @@ func TestInvalidOption(t *testing.T) {
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output 8088 --log_fps --grid")
 	utils.ExpectErrorContains(t, prefixInvalidOption, err)
+}
+
+func TestGridTooSmall(t *testing.T) {
+	var err error
+
+	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output 8088 --log_fps --grid_dimension 0,0")
+	utils.ExpectErrorContains(t, prefixGridTooSmall, err)
+
+	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output 8088 --log_fps --grid_dimension 1,0")
+	utils.ExpectErrorContains(t, prefixGridTooSmall, err)
+
+	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output 8088 --log_fps --grid_dimension 1,1")
+	utils.ExpectErrorContains(t, prefixGridTooSmall, err)
+
+	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081,192.168.137.76:8080,localhost:8081 output 8088 --log_fps --grid_dimension 2,1")
+	utils.ExpectErrorContains(t, prefixGridTooSmall, err)
+
+	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081,192.168.137.76:8080,localhost:8081 output 8088 --log_fps --grid_dimension 2,2")
+	utils.ExpectNoError(t, err)
+
+	err = parseArgs("grid input 192.168.137.76:8080 output 8088 --log_fps --grid_dimension 1,1")
+	utils.ExpectNoError(t, err)
+
+	err = parseArgs("grid input 192.168.137.76:8080 output 8088 --log_fps")
+	utils.ExpectNoError(t, err)
 }
 
 func TestMotionWithGrid(t *testing.T) {
