@@ -1,11 +1,11 @@
 package output
 
 import (
+	"fmt"
 	"log"
 	"mjpeg_multiplexer/src/aggregator"
 	"mjpeg_multiplexer/src/mjpeg"
 	"net"
-	"strconv"
 	"sync"
 )
 
@@ -33,6 +33,10 @@ var HEADER = "HTTP/1.1 200 OK\r\n" +
 	"Content-Type: multipart/x-mixed-replace; boundary=--boundarydonotcross\r\n" +
 	"\r\n" +
 	"--boundarydonotcross\r\n"
+
+var CONTENT = "Content-Type: image/jpeg\r\n" +
+	"Content-Length: %d\r\n" +
+	"\r\n"
 
 var DELIM = "\r\n--boundarydonotcross\r\n"
 
@@ -132,11 +136,9 @@ func (client *ClientConnection) SendHeader() error {
 }
 func (client *ClientConnection) SendFrame(frame *mjpeg.MjpegFrame) error {
 	//Format must be not be changed, else it will not work on some browsers!
-	var header = "Content-Type: image/jpg\r\n" +
-		"Content-Length: " + strconv.Itoa(len(frame.Body)) + "\r\n" +
-		"\r\n"
+	content := fmt.Sprintf(CONTENT, len(frame.Body))
 
-	data := []byte(header)
+	data := []byte(content)
 	data = append(data, frame.Body...)
 	data = append(data, []byte(DELIM)...)
 
