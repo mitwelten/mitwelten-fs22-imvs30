@@ -25,6 +25,7 @@ const errMotionWithGrid = "Option '--motion' only available for the modes 'panel
 const errGridDimensionWithoutGrid = "Option '--grid_dimension=ROWS,COLUMNS' only available for the mode 'grid'."
 const errPanelCycleWithoutPanel = "Option '--panel_cycle' only available for the mode 'panel'."
 const errDurationWithGrid = "Option '--duration=n' only available for the mode 'panel' or 'carousel'."
+const errBorderWithCarousel = "Option '--show_border' only available for the mode 'grid' or 'panel'."
 const errLabelWithoutShowLabel = "Option '--labels [list]' requires option '--show_label'."
 const errLabelFontSizeWithoutShowLabel = "Option '--label_font_size [number]' requires option '--show_label'."
 
@@ -290,7 +291,7 @@ func findPossibleMatch(input string) *string {
 	return nil
 }
 
-//validateArgs Checks the program args for syntactic errors before passing it into DocOpts
+//syntacticArgCheck Checks the program args for syntactic errors before passing it into DocOpts
 // The following things will be checked:
 // - `-h` or `--help`
 // - `-v` or `--version`
@@ -301,7 +302,7 @@ func findPossibleMatch(input string) *string {
 // - invalid option or missing option parameter
 //
 // The method will terminate the program in the first two cases with return code 0 or return an error (or nil if everything is ok) in the other cases
-func validateArgs(args []string) error {
+func syntacticArgCheck(args []string) error {
 
 	// check for help or version string
 	if containsHelp(args) {
@@ -351,7 +352,7 @@ func validateArgs(args []string) error {
 
 // ParseArgs parses all arguments derived from command line
 func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) {
-	err = validateArgs(args)
+	err = syntacticArgCheck(args)
 	if err != nil {
 		return multiplexer.MultiplexerConfig{}, err
 	}
@@ -411,6 +412,11 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	//--duration without mode panel or carousel
 	if !(panel || carousel) && duration != -1 {
 		return multiplexer.MultiplexerConfig{}, createUsageError(errDurationWithGrid)
+	}
+
+	//--show_border without mode grid or panel
+	if !(grid || panel) && showBorder {
+		return multiplexer.MultiplexerConfig{}, createUsageError(errBorderWithCarousel)
 	}
 
 	//--panel_cycle without mode panel

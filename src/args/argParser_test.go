@@ -216,6 +216,18 @@ func TestDurationWithGrid(t *testing.T) {
 	err = parseArgs("carousel input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --duration 10")
 	utils.ExpectNoError(t, err)
 }
+func TestBorderWithCarousel(t *testing.T) {
+	var err error
+
+	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --show_border")
+	utils.ExpectNoError(t, err)
+
+	err = parseArgs("panel input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --show_border")
+	utils.ExpectNoError(t, err)
+
+	err = parseArgs("carousel input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --show_border")
+	utils.ExpectErrorContains(t, errBorderWithCarousel, err)
+}
 
 func TestLabelWithoutShowLabel(t *testing.T) {
 	var err error
