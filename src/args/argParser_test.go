@@ -11,7 +11,7 @@ const prefixInputMissing = "Input missing"
 const prefixOutputMissing = "Output missing"
 const prefixValueMissing = "Missing value"
 const prefixMalformedArgument = "Malformed argument"
-const prefixGridTooSmall = "Invalid argument '--grid_dimension"
+const prefixGridTooSmall = "Invalid configuration '--grid_dimension"
 const prefixInvalidOption = "Invalid option"
 const levenshteinString = "Did you mean"
 

@@ -458,7 +458,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 			}
 
 			if gridX*gridY < len(config.Inputs) {
-				return multiplexer.MultiplexerConfig{}, createUsageError(fmt.Sprintf("Invalid argument '--grid_dimension %d,%d'. At least %d spaces are needed, but only %d provided.", gridX, gridY, len(config.Inputs), gridX*gridY))
+				return multiplexer.MultiplexerConfig{}, createUsageError(fmt.Sprintf("Invalid configuration '--grid_dimension %d,%d'. At least %d spaces are needed, but only %d provided.", gridX, gridY, len(config.Inputs), gridX*gridY))
 			}
 		}
 		config.Aggregator = &aggregator.AggregatorGrid{Row: gridX, Col: gridY}
