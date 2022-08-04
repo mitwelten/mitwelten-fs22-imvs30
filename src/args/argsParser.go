@@ -60,7 +60,7 @@ Options:
 )
 
 var (
-	helpString = `Usage: multiplexer [grid | panel | carousel] input [URL] output [URL] [options...]
+	helpString = `Usage: $ ./mjpeg_multiplexer [grid | panel | carousel] input [URL] output [URL] [options...]
                    <--------- mode --------> <- input -> <- output ->
 
 The multiplexer combines multiple multiple input streams to an output stream using a mode.
@@ -73,9 +73,9 @@ Input:  comma separated list of urls including port
 Output: output url including port
 
 Examples: 
-  ./multiplexer grid input localhost:8080,localhost:8081 output 8088
-  ./multiplexer panel input :8080,:8081,:8082 output 8088 --panel_cycle --width 800 
-  ./multiplexer carousel input 192.168.0.1:8080 192.168.0.2:8081 output 8088 --activity
+  $ ./mjpeg_multiplexer grid input localhost:8080,localhost:8081 output 8088
+  $ ./mjpeg_multiplexer panel input :8080,:8081,:8082 output 8088 --panel_cycle --width 800 
+  $ ./mjpeg_multiplexer carousel input 192.168.0.1:8080 192.168.0.2:8081 output 8088 --activity
 
 Options:
   --grid_dimension [list]          Comma separated list of the number of cells in the grid mode, eg. '--grid_dimension "3,2"'
