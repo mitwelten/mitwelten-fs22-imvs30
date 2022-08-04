@@ -44,7 +44,7 @@ func StartInput(input Input) {
 	go func() {
 		err := input.Init()
 		if err != nil {
-			log.Fatalf("Can't open input stream for %v: %s", input.GetInfo(), err.Error())
+			log.Fatalf("Can't open input stream for %v: %s\nCheck URL and authentication settings", input.GetInfo(), err.Error())
 		}
 
 		for {
