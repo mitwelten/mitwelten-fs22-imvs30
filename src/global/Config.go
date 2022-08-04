@@ -23,7 +23,7 @@ type GlobalConfig struct {
 	UseAuth            bool
 	ShowInputLabel     bool
 	InputLabelFontSize int
-	UseMotion          bool
+	UseActivity        bool
 	InputConfigs       []InputConfig
 	//hidden
 	DisablePassthrough bool
@@ -46,7 +46,7 @@ func initialConfig() GlobalConfig {
 		UseAuth:            false,
 		ShowInputLabel:     false,
 		InputLabelFontSize: 32,
-		UseMotion:          false,
+		UseActivity:        false,
 		InputConfigs:       []InputConfig{},
 		//hidden
 		DisablePassthrough: false,

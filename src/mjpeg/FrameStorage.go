@@ -5,24 +5,25 @@ import (
 	"time"
 )
 
-// FrameStorage stores multiple MJPEG frames
+// FrameStorage stores an MJPEG-frame and Signals its condition on update
 type FrameStorage struct {
 	mu                     sync.RWMutex
 	StorageChangeCondition *sync.Cond
 	frame                  MjpegFrame
-	//	buffer                 utils.RingBuffer[MjpegFrame]
-	LastUpdated time.Time
+	LastUpdated            time.Time
 
 	imageWidth  int
 	imageHeight int
 }
 
+//GetImageSize gets the image size of the frames stored in this storage
 func (frameStorage *FrameStorage) GetImageSize() (int, int) {
 	frameStorage.mu.RLock()
 	defer frameStorage.mu.RUnlock()
 	return frameStorage.imageWidth, frameStorage.imageHeight
 }
 
+//SetImageSize updates the image size of the frames stored in this storage
 func (frameStorage *FrameStorage) SetImageSize(width, height int) {
 	frameStorage.mu.Lock()
 	defer frameStorage.mu.Unlock()
@@ -30,6 +31,7 @@ func (frameStorage *FrameStorage) SetImageSize(width, height int) {
 	frameStorage.imageHeight = height
 }
 
+//CreateUpdateCondition creates one condition for all the passed storages
 func CreateUpdateCondition(storages ...*FrameStorage) *sync.Cond {
 	lock := sync.Mutex{}
 	lock.Lock()
@@ -46,8 +48,6 @@ func NewFrameStorage() *FrameStorage {
 	frame := NewMJPEGFrame()
 
 	frameStorage := FrameStorage{}
-	//frameStorage.buffer = utils.NewRingBuffer[MjpegFrame](nOfStoredFrames)
-	//frameStorage.buffer.Push(frame)
 	frameStorage.frame = frame
 	frameStorage.LastUpdated = time.Now()
 	frameStorage.imageWidth = 0
@@ -58,10 +58,9 @@ func NewFrameStorage() *FrameStorage {
 
 // Store stores a MjpegFrame into the storage
 func (frameStorage *FrameStorage) Store(frame *MjpegFrame) {
-	frameStorage.mu.RLock()
-	defer frameStorage.mu.RUnlock()
+	frameStorage.mu.Lock()
+	defer frameStorage.mu.Unlock()
 
-	//frameStorage.buffer.Push(frame)
 	frameStorage.frame = *frame
 	frameStorage.LastUpdated = time.Now()
 
@@ -76,5 +75,4 @@ func (frameStorage *FrameStorage) GetFrame() *MjpegFrame {
 	defer frameStorage.mu.RUnlock()
 
 	return &frameStorage.frame
-	//return frameStorage.buffer.PeekPtr()
 }

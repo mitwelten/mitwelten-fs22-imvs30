@@ -36,13 +36,13 @@ func TestAllOk(t *testing.T) {
 	err = parseArgs("panel input :8080,:8081,:8082 output 8088 --width 1000 --panel_cycle --duration 5")
 	utils.ExpectNoError(t, err)
 
-	err = parseArgs("panel input :8080,:8081,:8082,:8083,:8084 output 8088 --motion --log_fps --debug --show_label")
+	err = parseArgs("panel input :8080,:8081,:8082,:8083,:8084 output 8088 --activity --log_fps --debug --show_label")
 	utils.ExpectNoError(t, err)
 
 	err = parseArgs("carousel input :8080,:8081,:8082,:8083,:8084 output 8088 --framerate 20 --log_fps")
 	utils.ExpectNoError(t, err)
 
-	err = parseArgs("carousel input :8080,:8081,:8082,:8083,:8084 output 8088 --quality 80 --motion --show_label --labels=1,2,3,4,5 --label_font_size=50 --log_fps")
+	err = parseArgs("carousel input :8080,:8081,:8082,:8083,:8084 output 8088 --quality 80 --activity --show_label --labels=1,2,3,4,5 --label_font_size=50 --log_fps")
 	utils.ExpectNoError(t, err)
 
 	err = parseArgs("grid input 192.168.137.76:8080,localhost:8081 output 8088")
@@ -192,17 +192,17 @@ func TestGridTooSmall(t *testing.T) {
 	utils.ExpectNoError(t, err)
 }
 
-func TestMotionWithGrid(t *testing.T) {
+func TestActivityWithGrid(t *testing.T) {
 	var err error
 
-	err = parseArgs("panel input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --motion")
+	err = parseArgs("panel input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --activity")
 	utils.ExpectNoError(t, err)
 
 	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps")
 	utils.ExpectNoError(t, err)
 
-	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --motion")
-	utils.ExpectErrorContains(t, errMotionWithGrid, err)
+	err = parseArgs("grid input :8080,:8081,:8082,:8083 output 8088 --width 1000 --height 1000 --show_label --log_fps --activity")
+	utils.ExpectErrorContains(t, errActivityWithGrid, err)
 }
 
 func TestGridDimensionWithoutGrid(t *testing.T) {

@@ -34,7 +34,7 @@ var img5 []byte
 
 func TestActivation(t *testing.T) {
 	global.SetupInitialConfig()
-	global.Config.UseMotion = true
+	global.Config.UseActivity = true
 
 	//outTest: dummy output to send frames
 	dummyIn := input.NewInputHTTP(0, "")

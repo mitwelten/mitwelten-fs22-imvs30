@@ -1,4 +1,4 @@
-package motionDetection
+package activityDetection
 
 import (
 	"bytes"

@@ -82,30 +82,14 @@ TODO update
 
 - Output stream (grid):
     ```
-    $ go run ./src/main.go grid --dimension 2 1 input localhost:8080,localhost:8080 output 8088 --log_time --use_auth --input_framerate 10 --output_framerate 10 
+    $ ./mjpeg_multiplexer input :8080,:8081,:8082,:8083 output 8088 --grid_dimension 2,2
     ```
 
-- Output stream (motion):
+- Output stream (panel with activity):
     ```
-    $ go run ./src/main.go motion input localhost:8080,localhost:8080 output 8088 --log_time --use_auth --input_framerate 10 --output_framerate 10  
+    $ ./mjpeg_multiplexer panel input :8080,:8081,:8082,:8083,:8084 output 8088 --activity --log_fps --debug --show_label
     ```
 
 - Output stream (carousel):
     ```
-    $ go run ./src/main.go carousel --duration 5 input localhost:8080,localhost:8080 output 8088 --log_time --use_auth --input_framerate 10 --output_framerate 10  
-    ```
-
-- Output stream (panel):
-    ```
-    $ go run ./src/main.go panel input localhost:8080,localhost:8080 output 8088 --log_time --use_auth --input_framerate 10 --output_framerate 10  
-    ```
-
-- Output stream (panel-cycling):
-    ```
-    $ go run ./src/main.go panel --cycle input localhost:8080,localhost:8080 output 8088 --log_time --use_auth --input_framerate 10 --output_framerate 10  
-    ```
-
-- Output stream (panel-cycling with custom duration [in seconds]):
-    ```
-    $ go run ./src/main.go panel --cycle --duration 10 input localhost:8080,localhost:8080 output 8088 --log_time --use_auth --input_framerate 10 --output_framerate 10  
-    ```
+    $ carousel input :8080,:8081,:8082,:8083,:8084 output 8088 --framerate 20 --log_fps"

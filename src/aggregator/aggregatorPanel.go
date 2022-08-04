@@ -1,10 +1,10 @@
 package aggregator
 
 import (
+	"mjpeg_multiplexer/src/activityDetection"
 	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/imageUtils"
 	"mjpeg_multiplexer/src/mjpeg"
-	"mjpeg_multiplexer/src/motionDetection"
 	"time"
 )
 
@@ -16,7 +16,7 @@ type AggregatorPanel struct {
 	lastSwitch              time.Time
 	lastMotionInActiveFrame time.Time
 	currentIndex            int
-	motionDetector          *motionDetection.MotionDetector
+	activityDetector        *activityDetection.ActivityDetector
 }
 
 func (aggregator *AggregatorPanel) Setup(storages ...*mjpeg.FrameStorage) {
@@ -24,7 +24,7 @@ func (aggregator *AggregatorPanel) Setup(storages ...*mjpeg.FrameStorage) {
 		aggregator.Duration = defaultDuration
 	}
 
-	aggregator.data.passthrough = false //only valid for 3 or more inputs
+	aggregator.data.passthrough = false
 	aggregator.lastSwitch = time.Now()
 	aggregator.lastMotionInActiveFrame = time.Now()
 	aggregator.currentIndex = 0
@@ -40,8 +40,8 @@ func (aggregator *AggregatorPanel) Setup(storages ...*mjpeg.FrameStorage) {
 		aggregator.layout = imageUtils.Slots3
 	}
 
-	if global.Config.UseMotion {
-		aggregator.motionDetector = motionDetection.NewMotionDetector(storages...)
+	if global.Config.UseActivity {
+		aggregator.activityDetector = activityDetection.NewActivityDetector(storages...)
 	}
 }
 
@@ -51,8 +51,8 @@ func (aggregator *AggregatorPanel) GetAggregatorData() *AggregatorData {
 
 func (aggregator *AggregatorPanel) aggregate(storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFrame {
 	index := -1
-	if aggregator.motionDetector != nil {
-		index = aggregator.motionDetector.GetMostActiveIndex()
+	if aggregator.activityDetector != nil {
+		index = aggregator.activityDetector.GetMostActiveIndex()
 	}
 
 	if aggregator.CycleFrames && index == -1 && time.Since(aggregator.lastSwitch) >= aggregator.Duration && time.Since(aggregator.lastMotionInActiveFrame) >= minWaitBetweenChanges {
@@ -60,7 +60,7 @@ func (aggregator *AggregatorPanel) aggregate(storages ...*mjpeg.FrameStorage) *m
 		aggregator.currentIndex = (aggregator.currentIndex + 1) % len(storages)
 		aggregator.lastSwitch = time.Now()
 	} else if index != -1 && index != aggregator.currentIndex && time.Since(aggregator.lastSwitch) >= minWaitBetweenChanges {
-		//  motion update
+		//motion update
 		aggregator.currentIndex = index
 		aggregator.lastSwitch = time.Now()
 	} else if index != -1 && index == aggregator.currentIndex {
@@ -69,6 +69,6 @@ func (aggregator *AggregatorPanel) aggregate(storages ...*mjpeg.FrameStorage) *m
 
 	}
 
-	//return imageUtils.Encode(motionDetection.FrameDifferenceImage(imageUtils.DecodeAt(storages[0], 0), imageUtils.DecodeAt(storages[0], 1)))
+	//return imageUtils.Encode(activityDetection.FrameDifferenceImage(imageUtils.DecodeAt(storages[0], 0), imageUtils.DecodeAt(storages[0], 1)))
 	return imageUtils.Panel(aggregator.layout, aggregator.currentIndex, storages...)
 }

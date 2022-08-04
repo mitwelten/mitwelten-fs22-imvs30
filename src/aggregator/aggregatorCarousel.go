@@ -1,10 +1,10 @@
 package aggregator
 
 import (
+	"mjpeg_multiplexer/src/activityDetection"
 	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/imageUtils"
 	"mjpeg_multiplexer/src/mjpeg"
-	"mjpeg_multiplexer/src/motionDetection"
 	"time"
 )
 
@@ -17,7 +17,7 @@ type AggregatorCarousel struct {
 	lastMotionInActiveFrame time.Time
 	CurrentIndex            int
 	previousIndex           int
-	motionDetector          *motionDetection.MotionDetector
+	activityDetector        *activityDetection.ActivityDetector
 
 	lastFrame       *mjpeg.MjpegFrame
 	lastFrameUpdate time.Time
@@ -36,8 +36,8 @@ func (aggregator *AggregatorCarousel) Setup(storages ...*mjpeg.FrameStorage) {
 
 	aggregator.lastFrameUpdate = time.Now()
 
-	if global.Config.UseMotion {
-		aggregator.motionDetector = motionDetection.NewMotionDetector(storages...)
+	if global.Config.UseActivity {
+		aggregator.activityDetector = activityDetection.NewActivityDetector(storages...)
 	}
 }
 
@@ -47,8 +47,8 @@ func (aggregator *AggregatorCarousel) GetAggregatorData() *AggregatorData {
 
 func (aggregator *AggregatorCarousel) aggregate(storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFrame {
 	index := -1
-	if aggregator.motionDetector != nil {
-		index = aggregator.motionDetector.GetMostActiveIndex()
+	if aggregator.activityDetector != nil {
+		index = aggregator.activityDetector.GetMostActiveIndex()
 	}
 	if index == -1 && time.Since(aggregator.lastSwitch) >= aggregator.Duration && time.Since(aggregator.lastMotionInActiveFrame) >= minWaitBetweenChanges {
 		// duration update

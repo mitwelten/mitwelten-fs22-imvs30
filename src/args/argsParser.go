@@ -21,7 +21,7 @@ import (
 const (
 	ArgumentSeparator = ","
 )
-const errMotionWithGrid = "Option '--motion' only available for the modes 'panel' or 'carousel'."
+const errActivityWithGrid = "Option --activity' only available for the modes 'panel' or 'carousel'."
 const errGridDimensionWithoutGrid = "Option '--grid_dimension=ROWS,COLUMNS' only available for the mode 'grid'."
 const errPanelCycleWithoutPanel = "Option '--panel_cycle' only available for the mode 'panel'."
 const errDurationWithGrid = "Option '--duration=n' only available for the mode 'panel' or 'carousel'."
@@ -37,7 +37,7 @@ var (
 
 Options:
   --grid_dimension=ROWS,COLUMNS    todo
-  --motion                         Enables motion detection to focus the most active frame on selected mode
+  --activity                       Enables activity detection to focus the most active frame on selected mode
   --duration=n                     frame duration [default: -1]
   --panel_cycle                    todo
   --width=n                        output width in pixel [default: -1]
@@ -67,19 +67,19 @@ The multiplexer combines multiple multiple input streams to an output stream usi
 
 Mode:
   grid: static grid of images with X rows and Y columns
-  panel: dynamic panel of.... Can be used with motion (see --motion)
-  carousel: dynamic carousel view.... Can be used with motion (see --motion)
+  panel: dynamic panel of.... Can be used with activity detection(see --activity)
+  carousel: dynamic carousel view.... Can be used with activity detection (see --activity)
 Input:  comma separated list of urls including port
 Output: output url including port
 
 Examples: 
   ./multiplexer grid input localhost:8080,localhost:8081 output 8088
   ./multiplexer panel input :8080,:8081,:8082 output 8088 --panel_cycle --width 800 
-  ./multiplexer carousel input 192.168.0.1:8080 192.168.0.2:8081 output 8088 --motion
+  ./multiplexer carousel input 192.168.0.1:8080 192.168.0.2:8081 output 8088 --activity
 
 Options:
   --grid_dimension [list]          Comma separated list of the number of cells in the grid mode, eg. '--grid_dimension "3,2"'
-  --motion                         Enables motion detection to focus the most active frame on selected mode
+  --activity                       Enables activity detection to focus the most active frame on selected mode
   --panel_cycle                    Enables cycling of the panel layout, see also [--duration] 
   --duration [number]              Duration in seconds before changing the layout (panel and carousel only) [default: 15]
   --width [number]                 Total output width in pixel
@@ -132,7 +132,7 @@ var printUsage = func(err error, usage_ string) {
 
 var mode = []string{"grid", "panel", "carousel"}
 var inOutput = []string{"input", "output"}
-var optionalFlags = []string{"--motion", "--panel_cycle", "--ignore_aspect_ratio", "--use_auth", "--show_border", "--show_label", "--log_fps", "--always_active", "--debug", "--disable_passthrough"}
+var optionalFlags = []string{"--activity", "--panel_cycle", "--ignore_aspect_ratio", "--use_auth", "--show_border", "--show_label", "--log_fps", "--always_active", "--debug", "--disable_passthrough"}
 var optionalValues = []string{"--grid_dimension", "--duration", "--width", "--height", "--framerate", "--quality", "--label_font_size", "--labels"}
 
 func containsHelp(args []string) bool {
@@ -375,7 +375,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 
 	//options
 	gridDimension, _ := arguments.String("--grid_dimension")
-	useMotion, _ := arguments.Bool("--motion")
+	useActivity, _ := arguments.Bool("--activity")
 	duration, _ := arguments.Int("--duration")       // carousel or panel-cycle duration in seconds
 	panelCycle, _ := arguments.Bool("--panel_cycle") // panel cycle, default false
 	width, _ := arguments.Int("--width")
@@ -437,8 +437,8 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	// mode
 	if grid {
 
-		if useMotion {
-			return multiplexer.MultiplexerConfig{}, createUsageError(errMotionWithGrid)
+		if useActivity {
+			return multiplexer.MultiplexerConfig{}, createUsageError(errActivityWithGrid)
 
 		}
 
@@ -505,8 +505,8 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 		global.Config.InputLabelFontSize = inputLabelFontSize
 	}
 
-	//motion
-	global.Config.UseMotion = useMotion
+	//activity
+	global.Config.UseActivity = useActivity
 
 	//hidden
 	global.Config.AlwaysActive = alwaysActive
