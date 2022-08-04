@@ -21,6 +21,7 @@ type MultiplexerConfig struct {
 }
 
 func Multiplexer(multiplexerConfig MultiplexerConfig) {
+	log.Printf("Running mjpeg_multiplexer version %v\n", Version)
 	var wg sync.WaitGroup
 
 	if global.Config.UseAuth {
