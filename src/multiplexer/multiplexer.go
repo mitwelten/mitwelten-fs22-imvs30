@@ -13,6 +13,7 @@ import (
 const Version = "0.1"
 const authenticationFileLocation = "authentication.json"
 
+// MultiplexerConfig config struct for specifying the Multiplexer configuration
 type MultiplexerConfig struct {
 	Inputs       []input.Input
 	Output       output.Output
@@ -20,6 +21,8 @@ type MultiplexerConfig struct {
 	InputConfigs []global.InputConfig
 }
 
+// Multiplexer starts the application with the given config
+// will not return
 func Multiplexer(multiplexerConfig MultiplexerConfig) {
 	log.Printf("Running mjpeg_multiplexer version %v\n", Version)
 	var wg sync.WaitGroup

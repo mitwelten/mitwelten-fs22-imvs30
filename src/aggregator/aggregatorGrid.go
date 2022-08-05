@@ -6,6 +6,8 @@ import (
 	"mjpeg_multiplexer/src/mjpeg"
 )
 
+// AggregatorGrid shows all images on the screen, filling them up from top left to bottom right.
+// Empty spaces will remain black.
 type AggregatorGrid struct {
 	data AggregatorData
 	Row  int

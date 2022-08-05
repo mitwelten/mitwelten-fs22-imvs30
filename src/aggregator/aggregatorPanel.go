@@ -8,6 +8,11 @@ import (
 	"time"
 )
 
+//AggregatorPanel shows all images on the screen in predefined layouts.
+//A fitting layout will be selected on the Setup call
+//--panel_cycle: Will switch the slots position over time
+//--activity: move most active panel into the panel top left
+//see also aggregatorCarousel
 type AggregatorPanel struct {
 	data                    AggregatorData
 	layout                  imageUtils.PanelLayout

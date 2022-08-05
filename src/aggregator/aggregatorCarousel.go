@@ -8,8 +8,12 @@ import (
 	"time"
 )
 
+//minimum time used to prevent changes too quickly, thus confusing the user
 const minWaitBetweenChanges = 3000 * time.Millisecond
 
+//AggregatorCarousel shows one images of the other.
+//It switches between these images after the by the --duration parameter specified time.
+//Can be used with --activity
 type AggregatorCarousel struct {
 	data                    AggregatorData
 	Duration                time.Duration

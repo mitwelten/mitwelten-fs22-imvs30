@@ -22,6 +22,8 @@ func FrameDifferenceScore(img1 image.Image, img2 image.Image) float64 {
 	return float64(kernelPixelChangedThreshold(img1, img2)) / nPixels
 }
 
+// kernelPixelChangedThreshold calculates the score by comparing the images pixel by pixel
+// returns the number of pixel which have a difference of lambda or more
 func kernelPixelChangedThreshold(img1 image.Image, img2 image.Image) int {
 	score := 0
 
@@ -40,7 +42,7 @@ func kernelPixelChangedThreshold(img1 image.Image, img2 image.Image) int {
 	return score
 }
 
-//todo remove rest down below
+// todo remove rest down below
 const imageSize = 128
 
 func FrameDifferenceImage(img1 image.Image, img2 image.Image) image.Image {

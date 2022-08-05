@@ -14,6 +14,7 @@ import (
 
 const logFile string = "multiplexer.log"
 
+// setupLog opens the log file and configures the log class such that all logs will be written to the terminal + log file
 func setupLog() {
 	// log setup
 	file, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -25,13 +26,15 @@ func setupLog() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 }
 
+// profile starts the profiler
+// usage: view with `go tool pprof http://localhost:6060/debug/pprof/profile\?seconds\=30`
 func profile() {
 	go func() {
 		log.Println(http.ListenAndServe("localhost:6060", nil))
 	}()
-	//view with `go tool pprof http://localhost:6060/debug/pprof/profile\?seconds\=30`
 }
 
+// main entry point: setup, argParsing, start multiplexer
 func main() {
 	profile()
 	setupLog()

@@ -20,7 +20,10 @@ const (
 	delim          = "\r\n"
 	field          = "Content-Length: "
 	authentication = "Authorization: Basic "
+	NewMJPEGFrameNewMJPEGFrame
 )
+
+var JPEG_PREFIX = []byte("\xff\xd8")
 
 type InputHTTP struct {
 	data               InputData
@@ -30,7 +33,7 @@ type InputHTTP struct {
 	bufferedConnection *bufio.Reader
 }
 
-// NewInputHTTP todo TEST: Test this function by creating an input and checking if it runs
+// NewInputHTTP ctor
 func NewInputHTTP(configIndex int, url string) *InputHTTP {
 	return &InputHTTP{configIndex: configIndex, url: url, data: InputData{InputStorage: mjpeg.NewFrameStorage()}}
 }
@@ -41,6 +44,8 @@ func (source *InputHTTP) GetInputData() *InputData {
 func (source *InputHTTP) GetInfo() string {
 	return source.url
 }
+
+// open tries to open a TCP connection to the sources URL
 func (source *InputHTTP) open() error {
 	var err error
 	source.connection, err = net.DialTimeout("tcp", source.url, 3*time.Second)
@@ -53,6 +58,7 @@ func (source *InputHTTP) open() error {
 	return nil
 }
 
+// sendHeader tries to send open the connection by sending a header to the contents of a mjpeg-streamer stream.
 func (source *InputHTTP) sendHeader() error {
 	var err error
 
@@ -92,6 +98,8 @@ func (source *InputHTTP) sendHeader() error {
 
 	return nil
 }
+
+// Init opens connection + sends header
 func (source *InputHTTP) Init() error {
 	var err error
 
@@ -108,9 +116,9 @@ func (source *InputHTTP) Init() error {
 	return nil
 }
 
-//ReceiveFrame reads an mjpeg stream and parses the next received frame as mjpeg.MjpegFrame
+// ReceiveFrame reads a mjpeg-stream and parses the next received frame as mjpeg.MjpegFrame
 func (source *InputHTTP) ReceiveFrame() (mjpeg.MjpegFrame, error) {
-	header, err := source.bufferedConnection.ReadString(mjpeg.JPEG_PREFIX[0])
+	header, err := source.bufferedConnection.ReadString(JPEG_PREFIX[0])
 	if err != nil {
 		return mjpeg.MjpegFrame{}, err
 	}
@@ -144,5 +152,5 @@ func (source *InputHTTP) ReceiveFrame() (mjpeg.MjpegFrame, error) {
 		return mjpeg.MjpegFrame{}, &customErrors.ErrInvalidFrame{Text: "cannot read all bytes"}
 	}
 
-	return mjpeg.MjpegFrame{Body: append(mjpeg.JPEG_PREFIX[0:1], body...)}, nil
+	return mjpeg.MjpegFrame{Body: append(JPEG_PREFIX[0:1], body...)}, nil
 }

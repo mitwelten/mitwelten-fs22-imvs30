@@ -30,12 +30,12 @@ var imageInContainers []*image.RGBA
 var DecodeOptions = jpeg.DecoderOptions{ScaleTarget: image.Rectangle{}, DCTMethod: jpeg.DCTIFast, DisableFancyUpsampling: true, DisableBlockSmoothing: true}
 var EncodingOptions = jpeg.EncoderOptions{Quality: 80, OptimizeCoding: false, ProgressiveMode: false, DCTMethod: jpeg.DCTIFast}
 
-//Decode decodes an mjpeg image using the DecodeOptions (if not already decoded), caches the result and return the image
+// Decode decodes an mjpeg image using the DecodeOptions (if not already decoded), caches the result and return the image
 func Decode(storage *mjpeg.FrameStorage) image.Image {
 	return decode(storage, nil)
 }
 
-//DecodeContainer is a more optimized version of Decode, which doesn't allocate a new image.Image instance
+// DecodeContainer is a more optimized version of Decode, which doesn't allocate a new image.Image instance
 func DecodeContainer(storage *mjpeg.FrameStorage, imageContainer *image.RGBA) image.Image {
 	return decode(storage, imageContainer)
 }
@@ -48,6 +48,7 @@ func decode(storage *mjpeg.FrameStorage, imageContainer *image.RGBA) image.Image
 		var img *image.RGBA
 		var err error
 
+		//try to use the optimized version if an imageContainer is provided
 		if imageContainer != nil {
 			err = jpeg.DecodeIntoRGBA2(&imageContainer, bytes.NewReader(frame.Body), &DecodeOptions)
 			img = imageContainer
@@ -75,7 +76,7 @@ func decode(storage *mjpeg.FrameStorage, imageContainer *image.RGBA) image.Image
 	}
 }
 
-//Encode encodes the image using the EncodingOptions
+// Encode encodes the image using the EncodingOptions
 func Encode(image image.Image) *mjpeg.MjpegFrame {
 	buff := bytes.NewBuffer([]byte{})
 	config := EncodingOptions
@@ -94,6 +95,7 @@ func Encode(image image.Image) *mjpeg.MjpegFrame {
 	return &mjpeg.MjpegFrame{Body: buff.Bytes()}
 }
 
+// getImageOut creates / returns the reference to the image used to draw the results into
 func getImageOut(width int, height int) *image.RGBA {
 	if imageOut == nil || imageOut.Rect.Max.X != width || imageOut.Rect.Max.Y != height {
 		pointMax := image.Point{X: width, Y: height}
@@ -103,9 +105,10 @@ func getImageOut(width int, height int) *image.RGBA {
 	return imageOut
 }
 
-//ResizeOutputFrame resizes an image with regard to letterbox
+// ResizeOutputFrame resizes an image with regard to letterbox
 func ResizeOutputFrame(img image.Image, width int, height int) image.Image {
 	if !global.Config.IgnoreAspectRatio {
+		//resizing using letterbox, this means we have to draw the black borders left + right or top + bottom
 
 		deltaW := float64(width) / float64(img.Bounds().Dx())
 		deltaH := float64(height) / float64(img.Bounds().Dy())
@@ -130,18 +133,19 @@ func ResizeOutputFrame(img image.Image, width int, height int) image.Image {
 		draw.NearestNeighbor.Scale(dst, image.Rect(offsetW, offsetH, width-offsetW, height-offsetH), img, img.Bounds(), draw.Over, nil)
 		return dst
 	} else {
+		// just resize the image
 		return Resize(img, width, height)
 	}
 }
 
-//Resize resizes an image
+// Resize resizes an image
 func Resize(img image.Image, width int, height int) image.Image {
 	dst := image.NewRGBA(image.Rect(0, 0, width, height))
 	draw.NearestNeighbor.Scale(dst, dst.Rect, img, img.Bounds(), draw.Src, nil)
 	return dst
 }
 
-//GetFinalImageSize returns the size of the image in regard to the globally set Width and MinWidth
+// GetFinalImageSize returns the size of the image in regard to the globally set Width and MinWidth
 func GetFinalImageSize(currentWidth int, currentHeight int) (int, int) {
 	if global.Config.Width != -1 && global.Config.Height != -1 {
 		// both dimensions may be resized to the desired size
@@ -163,6 +167,7 @@ func GetFinalImageSize(currentWidth int, currentHeight int) (int, int) {
 var labelSrc = image.NewUniform(color.RGBA{R: 255, G: 255, B: 255, A: 255})
 var f, _ = freetype.ParseFont(arial)
 
+// addLabel places the given label string onto the image at location x,y
 func addLabel(img *image.RGBA, x, y int, label string) {
 	padding := global.Config.InputLabelFontSize / 4
 	point := fixed.Point26_6{X: fixed.I(x + padding), Y: fixed.I(y + global.Config.InputLabelFontSize)}

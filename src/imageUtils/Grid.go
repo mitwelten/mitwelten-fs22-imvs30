@@ -33,8 +33,10 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 
 	imageOut := getImageOut(totalWidth, totalHeight)
 
+	//start points to draw the border
 	var marginStartPoints []image.Point
 
+	//draw all grid cells
 	for i := 0; i < nCells; i++ {
 		var row_ = i / nCols
 		var col_ = i % nCols
@@ -49,7 +51,7 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 
 		var sp = image.Point{X: cellWidth * col_, Y: cellHeight * row_}
 
-		//grid lines:
+		//Add point to border line
 		if row_ == 0 || col_ == 0 {
 			marginStartPoints = append(marginStartPoints, sp)
 		}
@@ -73,7 +75,6 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 
 		if img.Bounds().Dx() != cellWidth || img.Bounds().Dy() != cellHeight {
 			img = ResizeOutputFrame(img, cellWidth, cellHeight)
-			//frame.CachedImage = img
 		}
 		r := image.Rectangle{Min: sp, Max: sp.Add(img.Bounds().Size())}
 		draw.Draw(imageOut, r, img, image.Point{}, draw.Src)

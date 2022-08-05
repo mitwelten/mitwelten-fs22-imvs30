@@ -8,6 +8,7 @@ import (
 	"mjpeg_multiplexer/src/utils"
 )
 
+// PanelLayout describes a layout of a certain panel layout as described in PanelLayouts.go
 type PanelLayout struct {
 	FirstWidth  float64
 	FirstHeight float64
@@ -21,7 +22,7 @@ type PanelLayout struct {
 	HorizontalBorderPoints []utils.Tuple[utils.FloatPoint]
 }
 
-//Panel combines frames by showing all at once, one frame being focused top left
+// Panel combines frames by showing all at once, one frame being focused top left
 func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFrame {
 	if imageInContainers == nil {
 		imageInContainers = make([]*image.RGBA, len(storages))
@@ -36,27 +37,28 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 	//output img
 	imageOut := getImageOut(totalWidth, totalHeight)
 
-	//main character image
+	//focused image
 	sp := image.Point{}
 	r := image.Rectangle{Min: sp, Max: image.Point{X: int(float64(totalWidth) * layout.FirstWidth), Y: int(float64(totalHeight) * layout.FirstHeight)}}
-
 	drawFrame(storages[startIndex], r, startIndex)
-
 	if global.Config.ShowInputLabel {
 		addLabel(imageOut, sp.X, sp.Y, global.Config.InputConfigs[startIndex].Label)
 	}
 
+	//and all other images not in focus
 	for i, child := range layout.ChildrenPositions {
 		if i+1 >= len(storages) {
 			break
 		}
 		index := (startIndex + i + 1) % len(storages)
+
+		//draw the image
 		sp = image.Point{X: int(float64(totalWidth) * child.X), Y: int(float64(totalHeight) * child.Y)}
 		delta := image.Point{X: int(float64(totalWidth) * layout.ChildrenWidth), Y: int(float64(totalHeight) * layout.ChildrenHeight)}
 		r = image.Rectangle{Min: sp, Max: sp.Add(delta)}
-
 		drawFrame(storages[index], r, index)
 
+		//and add the label
 		if global.Config.ShowInputLabel {
 			// add offset to avoid overlap with the borders
 			offsetW := 0
@@ -74,6 +76,8 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 	}
 
 	// draw border
+	// this is more complicated than in the grid, because the lines can't just be draw over the whole image
+	// for each line, the start point of the cell + it's size determines the borders lines length
 	if global.Config.ShowBorder {
 		border := getBorderSize(totalWidth)
 
@@ -110,7 +114,7 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 	return Encode(imageOut)
 }
 
-//drawFrame is a helper method to draw the frame at the given location
+// drawFrame is a helper method to draw the frame at the given location
 func drawFrame(storage *mjpeg.FrameStorage, r image.Rectangle, i int) {
 	if imageInContainers[i] != nil {
 		DecodeContainer(storage, imageInContainers[i])

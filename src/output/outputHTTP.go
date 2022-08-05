@@ -46,6 +46,7 @@ var CONTENT = "Content-Type: image/jpeg\r\n" +
 
 var DELIM = "\r\n--boundarydonotcross\r\n"
 
+// NewOutputHTTP ctor
 func NewOutputHTTP(port string) Output {
 	output := OutputHTTP{}
 	output.port = port
@@ -56,6 +57,7 @@ func NewOutputHTTP(port string) Output {
 	return &output
 }
 
+// SendFrame sends a single frame to all connected outputs
 func (output *OutputHTTP) SendFrame(frame *mjpeg.MjpegFrame) {
 	defer output.clientsMutex.RUnlock()
 	output.clientsMutex.RLock()
@@ -68,6 +70,7 @@ func (output *OutputHTTP) SendFrame(frame *mjpeg.MjpegFrame) {
 	}
 }
 
+// remove removes a client from the list of connected clients
 func (output *OutputHTTP) remove(client ClientConnection) {
 	//remove this SimpleServer from the list of clients
 	for i, s := range output.clients {
@@ -79,6 +82,8 @@ func (output *OutputHTTP) remove(client ClientConnection) {
 	}
 }
 
+// serve handles the connection to a client by sending the header and all received frames
+// to be started in a new go routine
 func (output *OutputHTTP) serve(client ClientConnection) {
 	// On disconnect, close connection and cleanup
 	defer func(client_ ClientConnection) {
@@ -132,6 +137,8 @@ func (output *OutputHTTP) serve(client ClientConnection) {
 		errorCounter = 0
 	}
 }
+
+// SendHeader sends the MJPEG-header to the client
 func (client *ClientConnection) SendHeader() error {
 	var header = HEADER
 	_, err := client.Connection.Write([]byte(header))
@@ -140,6 +147,8 @@ func (client *ClientConnection) SendHeader() error {
 	}
 	return nil
 }
+
+// SendFrame sends a single MJPEG-Frame to the client
 func (client *ClientConnection) SendFrame(frame *mjpeg.MjpegFrame) error {
 	//Format must be not be changed, else it will not work on some browsers!
 	content := fmt.Sprintf(CONTENT, len(frame.Body))
@@ -156,6 +165,7 @@ func (client *ClientConnection) SendFrame(frame *mjpeg.MjpegFrame) error {
 	return nil
 }
 
+// connectionLoop listens to the specified tcp port and accepts new clients, before sending them to the serve method
 func (output *OutputHTTP) connectionLoop() {
 	listener, err := net.Listen("tcp", ":"+output.port)
 
@@ -165,14 +175,15 @@ func (output *OutputHTTP) connectionLoop() {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
+			//can't open connection => ignore
 			log.Printf("Invalid connection: %s", err.Error())
 			continue
 		}
 
 		log.Printf("%s connected\n", conn.RemoteAddr().String())
 
+		//handle new connection
 		client := ClientConnection{make(chan *mjpeg.MjpegFrame), conn}
-
 		output.clientsMutex.Lock()
 		output.clients = append(output.clients, client)
 		if len(output.clients) == 1 && output.aggregator != nil {
@@ -194,6 +205,7 @@ func (output *OutputHTTP) distributeFramesLoop() {
 	}
 }
 
+// StartOutput starts the output by waiting for new connections and distributing new frames to them
 func (output *OutputHTTP) StartOutput(agg *aggregator.Aggregator) {
 	output.aggregator = *agg
 	output.condition = mjpeg.CreateUpdateCondition(output.aggregator.GetAggregatorData().AggregatorStorage)
