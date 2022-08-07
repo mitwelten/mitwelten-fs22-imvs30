@@ -36,26 +36,26 @@ var (
   multiplexer --version
 
 Options:
-  --grid_dimension=ROWS,COLUMNS    todo
+  --grid_dimension=ROWS,COLUMNS    Comma separated list of 2 numbers of cells in the grid mode, eg. '--grid_dimension "3,2"'
   --activity                       Enables activity detection to focus the most active frame on selected mode
-  --duration=n                     frame duration [default: -1]
-  --panel_cycle                    todo
-  --width=n                        output width in pixel [default: -1]
-  --height=n                       output height in pixel [default: -1]
-  --ignore_aspect_ratio            todo
-  --framerate=n                    output framerate in fps[default: -1]
-  --quality=n                      output jpeg quality in percentage [default: -1]
+  --duration=n                     Duration in seconds before changing the layout (panel and carousel only) [default: -1]
+  --panel_cycle                    Enables cycling of the panel layout, see also [--duration]
+  --width=n                        Total output width in pixel [default: -1]
+  --height=n                       Total output height in pixel [default: -1]
+  --ignore_aspect_ratio            Stretches the frames instead of adding a letterbox on resize
+  --framerate=n                    Limit the output framerate per second [default: -1]
+  --quality=n                      Output jpeg quality in percentage [default: -1]
   --use_auth                       Use Authentication
-  --show_border                    number of black pixels between each image
+  --show_border                    Enables a border in the grid and panel layout between the images
   --show_label                     Show label for input streams
-  --labels=n                       comma separated list of names to show instead of the camera input url
-  --label_font_size=n              input label font size in pixel [default: -1]
-  --log_fps                        Log Time verbose
+  --labels=n                       Comma separated list of alternative label text
+  --label_font_size=n              Input label font size in pixel [default: -1]
+  --log_fps                        Logs the current FPS
   --version                        Shows version.
+  -h --help                        Shows this screen.
   --always_active                  (hidden) Disables the 'fast mode' when no client is connected
   --disable_passthrough            (hidden) Disables passthrough mode
   --debug                          (hidden)
-  -h --help                        Shows this screen.
 `
 )
 
@@ -78,7 +78,7 @@ Examples:
   $ ./mjpeg_multiplexer carousel input 192.168.0.1:8080 192.168.0.2:8081 output 8088 --activity
 
 Options:
-  --grid_dimension [list]          Comma separated list of the number of cells in the grid mode, eg. '--grid_dimension "3,2"'
+  --grid_dimension [list]          Comma separated list of 2 numbers of cells in the grid mode, eg. '--grid_dimension "3,2"'
   --activity                       Enables activity detection to focus the most active frame on selected mode
   --panel_cycle                    Enables cycling of the panel layout, see also [--duration] 
   --duration [number]              Duration in seconds before changing the layout (panel and carousel only) [default: 15]
@@ -291,7 +291,7 @@ func findPossibleMatch(input string) *string {
 	return nil
 }
 
-//syntacticArgCheck Checks the program args for syntactic errors before passing it into DocOpts
+// syntacticArgCheck Checks the program args for syntactic errors before passing it into DocOpts
 // The following things will be checked:
 // - `-h` or `--help`
 // - `-v` or `--version`
