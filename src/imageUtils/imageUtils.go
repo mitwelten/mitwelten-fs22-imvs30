@@ -58,7 +58,7 @@ func decode(storage *mjpeg.FrameStorage, imageContainer *image.RGBA) image.Image
 		frame.CachedImage = img
 
 		if err != nil {
-			log.Printf("Unable to decode jpg: %v\n", err.Error())
+			log.Printf("Unable to decode benchmark_jpeg_libraries: %v\n", err.Error())
 			// Create a fallback black image
 			rectangle := image.Rectangle{Min: image.Point{}, Max: image.Point{X: 640, Y: 360}}
 			return image.NewRGBA(rectangle)
