@@ -36,7 +36,6 @@ func profile() {
 
 // main entry point: setup, argParsing, start multiplexer
 func main() {
-	profile()
 	setupLog()
 	global.SetupInitialConfig()
 
@@ -45,5 +44,10 @@ func main() {
 		fmt.Println(err.Error())
 		os.Exit(1)
 	}
+
+	if global.Config.Debug {
+		profile()
+	}
+
 	multiplexer.Multiplexer(multiplexerConfig)
 }
