@@ -18,7 +18,7 @@ MJPEG stream as output, which combines the input streams.
 
 ## Building & Installation
 
-- Prerequisites: go 1.18+
+- Prerequisites: go 1.19+
 
 - Clone repo
 - Change into folder

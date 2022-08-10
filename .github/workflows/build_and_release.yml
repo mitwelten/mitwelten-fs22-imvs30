@@ -25,8 +25,8 @@ jobs:
           cpu: '${{ matrix.cpu }}'
           commands: |
             apt-get install --no-install-recommends -y libjpeg62-turbo-dev
-            wget 'https://go.dev/dl/go1.18.3.linux-armv6l.tar.gz'
-            sudo tar -C /usr/local -xzf go1.18.3.linux-armv6l.tar.gz
+            wget 'https://go.dev/dl/go1.19.linux-armv6l.tar.gz'
+            sudo tar -C /usr/local -xzf go1.19.linux-armv6l.tar.gz
             export PATH=$PATH:/usr/local/go/bin
             export GOPATH=$HOME/go          
             go build -o multiplexer_arm ./src/main.go 
