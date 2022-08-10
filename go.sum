@@ -1,11 +1,11 @@
-github.com/TobiasKunzFHNW/go-libjpeg v0.0.0-20220725082034-887d80df977b h1:vg+7R+Eux8hk+PG4TWj9X9KJ/xRiC7fW4BmlJVROCho=
-github.com/TobiasKunzFHNW/go-libjpeg v0.0.0-20220725082034-887d80df977b/go.mod h1:x50ttcJYpZZxApHrLPSfWpOgfOTLGOMfc0ySL84MjQc=
 github.com/arbovm/levenshtein v0.0.0-20160628152529-48b4e1c0c4d0 h1:jfIu9sQUG6Ig+0+Ap1h4unLjW6YQJpKZVmUzxsD4E/Q=
 github.com/arbovm/levenshtein v0.0.0-20160628152529-48b4e1c0c4d0/go.mod h1:t2tdKJDJF9BV14lnkjHmOQgcvEKgtqs5a1N3LNdJhGE=
 github.com/docopt/docopt.go v0.0.0-20180111231733-ee0de3bc6815 h1:HMAfwOa33y82IaQEKQDfUCiwNlxtM1iw7HLM9ru0RNc=
 github.com/docopt/docopt.go v0.0.0-20180111231733-ee0de3bc6815/go.mod h1:l7JNRynTRuqe45tpIyItHNqZWTxywYjp87MWTOnU5cg=
 github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 h1:DACJavvAHhabrF08vX0COfcOBJRhZ8lUbR+ZWIs0Y5g=
 github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0/go.mod h1:E/TSTwGwJL78qG/PmXZO1EjYhfJinVAhrmmHX6Z8B9k=
+github.com/mjpeg-multiplexer/go-libjpeg v0.0.0-20220810111145-4c823f83dccb h1:TvJ1Vrybr7Kwly/TnASBAIpBaWou3hqDA8/52ZkCS/c=
+github.com/mjpeg-multiplexer/go-libjpeg v0.0.0-20220810111145-4c823f83dccb/go.mod h1:RjDDc7hYfnY398jcdItw65dlABPacNxCk7hxV62pIAU=
 golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e h1:+WEEuIdZHnUeJJmEUjyYC2gfUMj69yZXw17EnHg/otA=
 golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e/go.mod h1:Kr81I6Kryrl9sr8s2FK3vxD90NdsKWRuOIl2O4CvYbA=
 golang.org/x/image v0.0.0-20220722155232-062f8c9fd539 h1:/eM0PCrQI2xd471rI+snWuu251/+/jpBpZqir2mPdnU=
