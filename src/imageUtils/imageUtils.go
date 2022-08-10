@@ -5,7 +5,7 @@ package imageUtils
 import (
 	"bytes"
 	_ "embed"
-	"github.com/TobiasKunzFHNW/go-libjpeg/jpeg"
+	"github.com/mjpeg-multiplexer/go-libjpeg/jpeg"
 	"image"
 	"image/color"
 	"log"
