@@ -193,11 +193,12 @@ func addLabel(img *image.RGBA, x, y int, label string) {
 	d.DrawString(label)
 }
 
-const borderFactor = 0.0025
+const borderFactor = 0.003
 
-func getBorderSize(totalWidth int) int {
+func getBorderSize(totalWidth int, totalHeight int) int {
 	if global.Config.ShowBorder {
-		return utils.Max(int(float64(totalWidth)*borderFactor), 2)
+		size := int((float64(totalWidth+totalHeight) / 2) * borderFactor)
+		return utils.Max(size, 2)
 	}
 	return 0
 }

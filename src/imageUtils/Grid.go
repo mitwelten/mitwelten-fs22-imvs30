@@ -8,7 +8,7 @@ import (
 	"mjpeg_multiplexer/src/mjpeg"
 )
 
-//Grid combines frames by showing all at once, each having the same size
+// Grid combines frames by showing all at once, each having the same size
 func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFrame {
 	var nCells = nRows * nCols
 	var nFrames = len(storages)
@@ -96,10 +96,10 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 			x := sp.X
 			y := sp.Y
 			if col_ != 0 {
-				x += getBorderSize(totalWidth) / 2
+				x += getBorderSize(totalWidth, totalHeight) / 2
 			}
 			if row_ != 0 {
-				y += getBorderSize(totalWidth) / 2
+				y += getBorderSize(totalWidth, totalHeight) / 2
 			}
 
 			addLabel(imageOut, x, y, global.Config.InputConfigs[i].Label)
@@ -109,7 +109,7 @@ func Grid(nRows int, nCols int, storages ...*mjpeg.FrameStorage) *mjpeg.MjpegFra
 
 	// draw border
 	if global.Config.ShowBorder {
-		border := getBorderSize(totalWidth)
+		border := getBorderSize(totalWidth, totalHeight)
 		borderVertical := image.Rectangle{Min: image.Point{X: -border / 2}, Max: image.Point{X: border / 2, Y: imageOut.Bounds().Dy()}}
 		borderHorizontal := image.Rectangle{Min: image.Point{Y: -border / 2}, Max: image.Point{X: imageOut.Bounds().Dx(), Y: border / 2}}
 		for i, p := range marginStartPoints {

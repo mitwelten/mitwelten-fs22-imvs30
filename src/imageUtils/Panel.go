@@ -66,10 +66,10 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 
 			//labels to the left / on top don't need an offset
 			if global.Config.ShowBorder && child.X != 0 {
-				offsetW = getBorderSize(totalWidth) / 2
+				offsetW = getBorderSize(totalWidth, totalHeight) / 2
 			}
 			if global.Config.ShowBorder && child.Y != 0 {
-				offsetH = getBorderSize(totalWidth) / 2
+				offsetH = getBorderSize(totalWidth, totalHeight) / 2
 			}
 			addLabel(imageOut, sp.X+offsetW, sp.Y+offsetH, global.Config.InputConfigs[index].Label)
 		}
@@ -79,7 +79,7 @@ func Panel(layout PanelLayout, startIndex int, storages ...*mjpeg.FrameStorage) 
 	// this is more complicated than in the grid, because the lines can't just be draw over the whole image
 	// for each line, the start point of the cell + it's size determines the borders lines length
 	if global.Config.ShowBorder {
-		border := getBorderSize(totalWidth)
+		border := getBorderSize(totalWidth, totalHeight)
 
 		//vertical lines
 		for _, el := range layout.VerticalBorderPoints {
