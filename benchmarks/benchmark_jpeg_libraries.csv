@@ -1,0 +1,19 @@
+library,function,width,height,time
+go std library,decode,640,480,4.05
+libjpeg-turbo,decode,640,480,0.70
+libvips,decode,640,480,2.32
+go std library,encode,640,480,7.22
+libjpeg-turbo,encode,640,480,0.61
+libvips,encode,640,480,3.22
+go std library,decode,1920,1080,32.58
+libjpeg-turbo,decode,1920,1080,10.71
+libvips,decode,1920,1080,14.78
+go std library,encode,1920,1080,47.62
+libjpeg-turbo,encode,1920,1080,4.48
+libvips,encode,1920,1080,21.02
+go std library,decode,3280,2464,255.49
+libjpeg-turbo,decode,3280,2464,64.95
+libvips,decode,3280,2464,86.95
+go std library,encode,3280,2464,238.01
+libjpeg-turbo,encode,3280,2464,21.91
+libvips,encode,3280,2464,113.86

@@ -21,15 +21,21 @@ func BenchmarkDecode(iterations int, imageData []byte) float64 {
 		_, _ = jpeg.Decode(reader, &DecodeOptions)
 	}
 
-	start := time.Now()
+	end := time.Duration(0)
+
 	for i := 0; i < iterations; i++ {
+		// calculate the time for decode + some operation
+		start_ := time.Now()
 		reader := bytes.NewReader(imageData)
 		_, _ = jpeg.Decode(reader, &DecodeOptions)
+		end += time.Since(start_)
+
 	}
-	end := time.Since(start).Milliseconds()
-	fmt.Printf("    Total: %v ms\n", end)
-	fmt.Printf("    Per iteration: %v ms\n", float64(end)/float64(iterations))
-	return float64(end) / float64(iterations)
+
+	avg := float64(end.Milliseconds()) / float64(iterations)
+	fmt.Printf("    Total: %v ms\n", end.Milliseconds())
+	fmt.Printf("    Per iteration: %.2f ms\n", avg)
+	return avg
 }
 func BenchmarkEncode(iterations int, imageData []byte) float64 {
 	fmt.Printf("  Encode libjpg\n")
@@ -46,17 +52,23 @@ func BenchmarkEncode(iterations int, imageData []byte) float64 {
 		}
 	}
 
-	start := time.Now()
+	end := time.Duration(0)
 	for i := 0; i < iterations; i++ {
+		// calculate the time for decode + some operation
+		start_ := time.Now()
 		buff := bytes.NewBuffer([]byte{})
 		err := jpeg.Encode(buff, img, &EncodingOptions)
 
 		if err != nil {
 			panic("can't encode benchmark_jpeg_libraries")
 		}
+		end += time.Since(start_)
+
 	}
-	end := time.Since(start).Milliseconds()
-	fmt.Printf("    Total: %v ms\n", end)
-	fmt.Printf("    Per iteration: %v ms\n", float64(end)/float64(iterations))
-	return float64(end) / float64(iterations)
+
+	avg := float64(end.Milliseconds()) / float64(iterations)
+	fmt.Printf("    Total: %v ms\n", end.Milliseconds())
+	fmt.Printf("    Per iteration: %.2f ms\n", avg)
+	return avg
+
 }

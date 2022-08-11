@@ -11,19 +11,31 @@ func BenchmarkDecode(iterations int, imageData []byte) float64 {
 	fmt.Printf("    Number of runs: %v\n", iterations)
 
 	for i := 0; i < iterations/10; i++ {
-		_, _ = govips.NewImageFromBuffer(imageData)
-	}
-
-	start := time.Now()
-	for i := 0; i < iterations; i++ {
 		img, _ := govips.NewImageFromBuffer(imageData)
-		img.Rotate(1)
+		_, _ = img.Average() // causes decode
 	}
 
-	end := time.Since(start).Milliseconds()
-	fmt.Printf("    Total: %v ms\n", end)
-	fmt.Printf("    Per iteration: %v ms\n", float64(end)/float64(iterations))
-	return float64(end) / float64(iterations)
+	// libvips works demand driven and won't decode until needed, so we'll force it with the addition of an image operation
+	end := time.Duration(0)
+
+	for i := 0; i < iterations; i++ {
+		// calculate the time for decode + some operation
+		start_ := time.Now()
+		img, _ := govips.NewImageFromBuffer(imageData)
+		_, _ = img.Average() // causes decode
+		end += time.Since(start_)
+
+		// subtract the time needed for the operation
+		start_ = time.Now()
+		_, _ = img.Average() // no more decode needed here
+		end -= time.Since(start_)
+
+	}
+
+	avg := float64(end.Milliseconds()) / float64(iterations)
+	fmt.Printf("    Total: %v ms\n", end.Milliseconds())
+	fmt.Printf("    Per iteration: %.2f ms\n", avg)
+	return avg
 }
 
 func BenchmarkEncode(iterations int, imageData []byte) float64 {
@@ -48,18 +60,22 @@ func BenchmarkEncode(iterations int, imageData []byte) float64 {
 		}
 	}
 
-	start := time.Now()
+	end := time.Duration(0)
+
 	for i := 0; i < iterations; i++ {
+		// calculate the time for decode + some operation
 		imgout, _ := govips.NewImageFromBuffer(imageData)
-		imgout.Rotate(1)
+		start_ := time.Now()
 		_, _, err := imgout.ExportJpeg(ep)
 		if err != nil {
 			panic("can't encode benchmark_jpeg_libraries")
 		}
+		end += time.Since(start_)
+
 	}
 
-	end := time.Since(start).Milliseconds()
-	fmt.Printf("    Total: %v ms\n", end)
-	fmt.Printf("    Per iteration: %v ms\n", float64(end)/float64(iterations))
-	return float64(end) / float64(iterations)
+	avg := float64(end.Milliseconds()) / float64(iterations)
+	fmt.Printf("    Total: %v ms\n", end.Milliseconds())
+	fmt.Printf("    Per iteration: %.2f ms\n", avg)
+	return avg
 }

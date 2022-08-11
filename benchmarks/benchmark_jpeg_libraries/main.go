@@ -42,6 +42,7 @@ func main() {
 	benchmark(*f, img1, iterations)
 	benchmark(*f, img2, iterations)
 	benchmark(*f, img3, iterations)
+
 }
 
 func log(f os.File, library string, function string, width int, height int, time float64) {
