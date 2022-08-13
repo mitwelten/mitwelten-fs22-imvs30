@@ -2,8 +2,7 @@
 
 # Mitwelten FS22 IMVS30
 
-mjpg-multiplexer is a command line tool that takes one or more MJPEG streams as input and returns an
-MJPEG stream as output, which combines the input streams.
+mjpeg-multiplexer is a command line tool which combines one or more MJPEG streams as input into an output steam.
 
 ## Prerequisites
 
@@ -14,6 +13,11 @@ MJPEG stream as output, which combines the input streams.
     Installation on Ubuntu:
     ```
     $ sudo apt-get install -y libjpeg-turbo8
+    ```
+  
+  Installation on Debian:
+    ```
+    $ sudo apt-get install -y libjpeg62-turbo
     ```
 
 ## Building & Installation
@@ -27,7 +31,7 @@ MJPEG stream as output, which combines the input streams.
     ```
     $ git clone git@github.com:mitwelten/mitwelten-fs22-imvs30.git
     $ cd mitwelten-fs22-imvs30
-    $ go build -o "multiplexer" ./src/main.go
+    $ go build -o "mjpeg_multiplexer" ./src/main.go
     ```
 
 ## Usage
