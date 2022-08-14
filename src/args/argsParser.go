@@ -61,7 +61,7 @@ Options:
 
 var (
 	helpString = `Usage: $ ./mjpeg_multiplexer [grid | panel | carousel] input [URL] output [URL] [options...]
-                   <--------- mode --------> <- input -> <- output ->
+                             <--------- mode --------> <- input -> <- output ->
 
 The multiplexer combines multiple multiple input streams to an output stream using a mode.
 
