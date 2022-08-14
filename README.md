@@ -1,7 +1,7 @@
 [![Run Tests](https://github.com/mitwelten/mitwelten-fs22-imvs30/actions/workflows/tests.yml/badge.svg)](https://github.com/mitwelten/mitwelten-fs22-imvs30/actions/workflows/tests.yml)
 
 # mjpeg-multiplexer
-
+![Preview](preview.png)
 The mjpeg-multiplexer is a command line tool which combines one or more MJPEG streams into an output stream.
 
 ## Prerequisites
