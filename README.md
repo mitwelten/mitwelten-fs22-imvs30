@@ -42,7 +42,7 @@ See help for detailed usage:
   $ ./mjpeg_multiplexer --help
   
   Usage: $ ./mjpeg_multiplexer [grid | panel | carousel] input [URL] output [URL] [options...]
-                             <--------- mode --------> <- input -> <- output ->
+                               <--------- mode --------> <- input -> <- output ->
 
   The multiplexer combines multiple MJPEG input streams to an output stream.
   
