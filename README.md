@@ -36,25 +36,22 @@ $ sudo apt-get install -y libjpeg62-turbo
 ## Usage
 
 This script can be parameterised and has different modes. First argument determines the mode.
-
-```
- $ ./mjpeg_multiplexer [grid | panel | carousel] input [URL] output [URL] [options...]
-                 <--------- mode --------> <- input -> <- output ->
-```
+See help for detailed usage:
 
 ```
   $ ./mjpeg_multiplexer --help
+  
   Usage: $ ./mjpeg_multiplexer [grid | panel | carousel] input [URL] output [URL] [options...]
-                               <--------- mode --------> <- input -> <- output ->
+                             <--------- mode --------> <- input -> <- output ->
 
-  The multiplexer combines multiple multiple input streams to an output stream using a mode.
+  The multiplexer combines multiple MJPEG input streams to an output stream.
   
   Mode:
     grid: static grid of images with X rows and Y columns
-    panel: dynamic panel of.... Can be used with activity detection(see --activity)
-    carousel: dynamic carousel view.... Can be used with activity detection (see --activity)
+    panel: dynamic panel of images. Can be used with activity detection (see --activity)
+    carousel: dynamic carousel view, switched between images. Can be used with activity detection (see --activity)
   Input:  comma separated list of urls including port
-  Output: output url including port
+  Output: output port
   
   Examples: 
     $ ./mjpeg_multiplexer grid input localhost:8080,localhost:8081 output 8088
@@ -81,22 +78,73 @@ This script can be parameterised and has different modes. First argument determi
     -v --version                     Shows version.
     -h --help                        Shows this screen
   
-  Authentication to connect to mjpeg_streamer streams secured by credentials can be enabled using the [--use_auth] flag. Add the credentials to the 'authentication.json' file. See 'authentication_example.json' as an example.
+  Authentication to connect to mjpeg_streamer streams secured by credentials can be enabled using the [--use_auth] flag. Add the credentials to the 'authentication.json' file. See 'authentication_example.json' as an example.`
 ```
 
 ## Examples
 
 - Grid 
 ```
-  $ ./mjpeg_multiplexer input :8080,:8081,:8082,:8083 output 8088 --grid_dimension 2,2 --width 1280
+  $ ./mjpeg_multiplexer grid input :8080,:8081,:8082,:8083 output 8088 --grid_dimension 2,2 --width 1280
 ```
 
 - Panel (with `--activity` and custom labels)
 ```
-  $ ./mjpeg_multiplexer panel input :8080,:8081,:8082,:8083,:8084 output 8088 --quality 100 --activity --log_fps --show_label --labels "Wild-Cam 1,Wild-Cam 2,Sea-Cam 1,Sea-Cam 2"
+  $ ./mjpeg_multiplexer panel input :8080,:8081,:8082,:8083 output 8088 --quality 100 --activity --log_fps --show_label --labels "Wild-Cam 1,Wild-Cam 2,Sea-Cam 1,Sea-Cam 2"
 ```
 
 - Carousel (with passthrough for high fps)
 ```
-  $ ./mjpeg_multiplexer carousel input :8080,:8081,:8082,:8083,:8084 output 8088"
+  $ ./mjpeg_multiplexer carousel input :8080,:8081,:8082,:8083,:8084 output 8088
+```
+
+- Panel (with `--panel_cycle` and `--duration`)
+```
+  $ ./mjpeg_multiplexer panel input localhost:8080,localhost:8081,localhost:8082 output 8088 --panel_cycle --duration 60
+```
+
+- Panel (resize output to width 1080 and adjust height accordingly)
+```
+  $ ./mjpeg_multiplexer panel input localhost:8080,localhost:8081,localhost:8082 output 8088 --width 1080
+```
+
+- Panel (resize output to width 1080 and height 1920)
+```
+  $ ./mjpeg_multiplexer panel input localhost:8080,localhost:8081,localhost:8082 output 8088 --width 1080 --height 1920
+```
+
+- Panel (resize output to width 1080 and height 1920, ignore aspect ratio)
+```
+  $ ./mjpeg_multiplexer panel input localhost:8080,localhost:8081,localhost:8082 output 8088 --width 1080 --height 1920 --ignore_aspect_ratio
+```
+- Grid (with default labels and adjusted label font size)
+```
+  $ ./mjpeg_multiplexer grid input :8080,:8081,:8082,:8083 output 8088 --show_label --label_font_size 100
+```
+
+- Grid (using authentication, adjust the `authentication.json` file)
+
+authentication.json
+```json
+[
+    {
+        "Url": "192.168.0.42:8080",
+        "Username": "username",
+        "Password": "password"
+    },
+    {
+        "Url": "localhost:8081",
+        "Username": "username",
+        "Password": "password"
+    },
+    {
+        "Url": "hostname:8082",
+        "Username": "username",
+        "Password": "password"
+    }
+]
+
+```
+```
+  $ ./mjpeg_multiplexer grid input 192.168.0.42:8080,localhost:8081,hostname:8082, output 8088 --use_auth
 ```

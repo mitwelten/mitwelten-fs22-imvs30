@@ -63,14 +63,14 @@ var (
 	helpString = `Usage: $ ./mjpeg_multiplexer [grid | panel | carousel] input [URL] output [URL] [options...]
                              <--------- mode --------> <- input -> <- output ->
 
-The multiplexer combines multiple multiple input streams to an output stream using a mode.
+The multiplexer combines multiple MJPEG input streams to an output stream.
 
 Mode:
   grid: static grid of images with X rows and Y columns
-  panel: dynamic panel of.... Can be used with activity detection(see --activity)
-  carousel: dynamic carousel view.... Can be used with activity detection (see --activity)
+  panel: dynamic panel of images. Can be used with activity detection (see --activity)
+  carousel: dynamic carousel view, switched between images. Can be used with activity detection (see --activity)
 Input:  comma separated list of urls including port
-Output: output url including port
+Output: output port
 
 Examples: 
   $ ./mjpeg_multiplexer grid input localhost:8080,localhost:8081 output 8088
