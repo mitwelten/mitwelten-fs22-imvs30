@@ -146,5 +146,5 @@ authentication.json
 
 ```
 ```
-  $ ./mjpeg_multiplexer grid input 192.168.0.42:8080,localhost:8081,hostname:8082, output 8088 --use_auth
+  $ ./mjpeg_multiplexer grid input 192.168.0.42:8080,localhost:8081,hostname:8082 output 8088 --use_auth
 ```
