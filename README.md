@@ -39,7 +39,7 @@ This script can be parameterised and has different modes. First argument determi
 See help for detailed usage:
 
 ```
-  $ ./mjpeg_multiplexer --help
+$ ./mjpeg_multiplexer --help
   
   Usage: $ ./mjpeg_multiplexer [grid | panel | carousel] input [URL] output [URL] [options...]
                                <--------- mode --------> <- input -> <- output ->
