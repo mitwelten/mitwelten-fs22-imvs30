@@ -1,4 +1,4 @@
-name: arm - build and upload binary to release page
+name: Raspberry Pi on ARM - build and upload binary to release page
 
 on: 
   push: null
