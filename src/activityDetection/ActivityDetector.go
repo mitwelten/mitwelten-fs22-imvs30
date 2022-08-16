@@ -22,7 +22,7 @@ const updateDelay = 1000 * time.Millisecond
 const minScore = 0.05
 const nPreviousScores = 5
 
-//NewActivityDetector creates a new instances and allocates all needed memory
+// NewActivityDetector creates a new instances and allocates all needed memory
 func NewActivityDetector(storages ...*mjpeg.FrameStorage) *ActivityDetector {
 	activityDetector := ActivityDetector{}
 	activityDetector.storages = storages
@@ -39,7 +39,7 @@ func NewActivityDetector(storages ...*mjpeg.FrameStorage) *ActivityDetector {
 	return &activityDetector
 }
 
-//UpdateScores will update the scores if enough time has passed since the last update (more than 'updateDelay')
+// UpdateScores will update the scores if enough time has passed since the last update (more than 'updateDelay')
 func (activityDetector *ActivityDetector) UpdateScores() {
 	if time.Since(activityDetector.lastScoreUpdate) < updateDelay {
 		return
@@ -95,7 +95,7 @@ func (activityDetector *ActivityDetector) GetMostActiveIndex() int {
 	}
 }
 
-//average takes the average of a float array, only considering the first `size` elements
+// average takes the average of a float array, only considering the first `size` elements
 func average(arr []float64, size int) float64 {
 	sum := 0.0
 	for i := 0; i < size; i++ {
@@ -117,15 +117,4 @@ func argmax(data []float64) (int, float64) {
 		}
 	}
 	return maxIndex, max
-}
-
-//GetMostActiveImage todo REMOVE
-func (activityDetector *ActivityDetector) GetMostActiveImage() image.Image {
-	index := activityDetector.GetMostActiveIndex()
-	if index == -1 {
-		return mjpeg.NewMJPEGFrame().CachedImage
-	}
-
-	return FrameDifferenceImage(imageUtils.Decode(activityDetector.storages[index]), imageUtils.Decode(activityDetector.storages[index]))
-
 }

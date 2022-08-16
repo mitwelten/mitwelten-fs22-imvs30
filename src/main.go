@@ -19,7 +19,7 @@ func setupLog() {
 	// log setup
 	file, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Could not open log file: %v\n", err.Error())
 	}
 	mw := io.MultiWriter(os.Stdout, file)
 	log.SetOutput(mw)

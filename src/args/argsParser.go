@@ -113,7 +113,6 @@ func parseInputUrls(config *multiplexer.MultiplexerConfig, inputStr string) int 
 	return len(arr)
 }
 
-// todo: evtl. trim
 func parseSeparatedString(config *multiplexer.MultiplexerConfig, inputStr string) error {
 	arr := strings.Split(inputStr, ArgumentSeparator)
 	if len(config.Inputs) != len(arr) {
