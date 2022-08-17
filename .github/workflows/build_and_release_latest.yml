@@ -1,4 +1,4 @@
-name: Raspberry Pi on ARM - build and upload binary to release page
+name: Raspberry Pi on ARM - build and upload latest binary to release page
 
 on: 
   push: null
@@ -36,10 +36,15 @@ jobs:
           name: multiplexer_arm
           path: multiplexer_arm
       # release artifact
-      - name: Release
+      - name: Release latest
         uses: softprops/action-gh-release@v1
         with:
           tag_name: latest
           files: multiplexer_arm
           prerelease: true
           name: latest
+      - name: Release tagged
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: multiplexer_arm
