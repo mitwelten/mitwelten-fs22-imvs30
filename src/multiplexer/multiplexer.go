@@ -10,7 +10,7 @@ import (
 	"sync"
 )
 
-const Version = "0.1"
+const Version = "1.0"
 const authenticationFileLocation = "authentication.json"
 
 // MultiplexerConfig config struct for specifying the Multiplexer configuration
