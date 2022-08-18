@@ -121,6 +121,7 @@ func (source *InputHTTP) Init() error {
 // ReceiveFrame reads a mjpeg-stream and parses the next received frame as mjpeg.MjpegFrame
 func (source *InputHTTP) ReceiveFrame(force bool) (mjpeg.MjpegFrame, error) {
 	if !force {
+		// aggregator not activated => don't parse anything
 		global.Config.AggregatorMutex.RLock()
 		if !global.Config.AggregatorEnabled {
 			global.Config.AggregatorMutex.RUnlock()
@@ -130,10 +131,11 @@ func (source *InputHTTP) ReceiveFrame(force bool) (mjpeg.MjpegFrame, error) {
 			return mjpeg.NewMJPEGFrame(), nil
 		}
 
+		// hitting fps limit => don't parse anything
 		if global.Config.OutputFramerate != -1 && time.Since(global.Config.AggregatorLastUpdate).Seconds()+0.5 < (1.0/global.Config.OutputFramerate) {
 			global.Config.AggregatorMutex.RUnlock()
 
-			time.Sleep(250 * time.Millisecond)
+			time.Sleep(100 * time.Millisecond)
 			source.bufferedConnection.Reset(source.connection)
 			return mjpeg.NewMJPEGFrame(), nil
 		}
