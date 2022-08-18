@@ -1,4 +1,4 @@
-[![Run Tests](https://github.com/mitwelten/mitwelten-fs22-imvs30/actions/workflows/tests.yml/badge.svg)](https://github.com/mitwelten/mitwelten-fs22-imvs30/actions/workflows/tests.yml)
+[![Run Tests](https://github.com/mitwelten/mitwelten-fs22-imvs30/actions/workflows/run_tests.yml/badge.svg)](https://github.com/mitwelten/mitwelten-fs22-imvs30/actions/workflows/run_tests.yml)
 
 # mjpeg-multiplexer
 ![Preview](preview.png)
