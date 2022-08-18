@@ -43,8 +43,8 @@ jobs:
           files: multiplexer_arm
           prerelease: true
           name: latest
-      - name: Release tagged
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: multiplexer_arm
+      #- name: Release tagged
+      #  uses: softprops/action-gh-release@v1
+      #  if: startsWith(github.ref, 'refs/tags/')
+      #  with:
+      #    files: multiplexer_arm
