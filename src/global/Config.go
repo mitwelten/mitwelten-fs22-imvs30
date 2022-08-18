@@ -1,6 +1,9 @@
 package global
 
-import "sync"
+import (
+	"sync"
+	"time"
+)
 
 type InputConfig struct {
 	//Url to connect to
@@ -40,8 +43,9 @@ type GlobalConfig struct {
 	AlwaysActive       bool
 	Debug              bool
 
-	AggregatorEnabled      bool
-	AggregatorEnabledMutex sync.RWMutex
+	AggregatorEnabled    bool
+	AggregatorLastUpdate time.Time
+	AggregatorMutex      sync.RWMutex
 }
 
 var Config GlobalConfig
@@ -66,8 +70,8 @@ func initialConfig() GlobalConfig {
 		AlwaysActive:       false,
 		Debug:              false,
 
-		AggregatorEnabled:      false,
-		AggregatorEnabledMutex: sync.RWMutex{},
+		AggregatorEnabled: false,
+		AggregatorMutex:   sync.RWMutex{},
 	}
 }
 

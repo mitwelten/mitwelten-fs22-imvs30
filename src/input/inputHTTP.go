@@ -121,16 +121,26 @@ func (source *InputHTTP) Init() error {
 // ReceiveFrame reads a mjpeg-stream and parses the next received frame as mjpeg.MjpegFrame
 func (source *InputHTTP) ReceiveFrame(force bool) (mjpeg.MjpegFrame, error) {
 	if !force {
-		global.Config.AggregatorEnabledMutex.RLock()
+		global.Config.AggregatorMutex.RLock()
 		if !global.Config.AggregatorEnabled {
-			global.Config.AggregatorEnabledMutex.RUnlock()
+			global.Config.AggregatorMutex.RUnlock()
 
 			time.Sleep(1 * time.Second)
 			source.bufferedConnection.Reset(source.connection)
 			return mjpeg.NewMJPEGFrame(), nil
 		}
-		global.Config.AggregatorEnabledMutex.RUnlock()
+
+		if global.Config.OutputFramerate != -1 && time.Since(global.Config.AggregatorLastUpdate).Seconds()+0.5 < (1.0/global.Config.OutputFramerate) {
+			global.Config.AggregatorMutex.RUnlock()
+
+			time.Sleep(250 * time.Millisecond)
+			source.bufferedConnection.Reset(source.connection)
+			return mjpeg.NewMJPEGFrame(), nil
+		}
+
+		global.Config.AggregatorMutex.RUnlock()
 	}
+
 	header, err := source.bufferedConnection.ReadString(JPEG_PREFIX[0])
 	if err != nil {
 		return mjpeg.MjpegFrame{}, err

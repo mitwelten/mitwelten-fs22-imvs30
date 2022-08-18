@@ -41,9 +41,9 @@ func StartAggregator(agg *Aggregator, inputs ...input.Input) {
 	aggregator.Setup(inputStorages...)
 	aggregatorData := aggregator.GetAggregatorData()
 	aggregatorData.AggregatorStorage = mjpeg.NewFrameStorage()
+
 	condition := mjpeg.CreateUpdateCondition(inputStorages...)
 
-	lastUpdate := time.Unix(0, 0)
 	currentFPS := 0
 
 	passthroughMode := false
@@ -60,6 +60,10 @@ func StartAggregator(agg *Aggregator, inputs ...input.Input) {
 		log.Printf("Passthorugh-Mode not active - Each frame will be decoded and encoded, which may be slow.\n=> Activate it by either using the 'carousel' mode or by only using one input source and by removing the width, height, quality and show_label options.\n")
 	}
 
+	global.Config.AggregatorMutex.Lock()
+	global.Config.AggregatorLastUpdate = time.Unix(0, 0)
+	global.Config.AggregatorMutex.Unlock()
+
 	go func() {
 		for {
 			condition.Wait()
@@ -67,16 +71,16 @@ func StartAggregator(agg *Aggregator, inputs ...input.Input) {
 			// not enabled => no client is connected and no work has to be done
 			if !global.Config.AlwaysActive {
 
-				global.Config.AggregatorEnabledMutex.RLock()
+				global.Config.AggregatorMutex.RLock()
 				if !global.Config.AggregatorEnabled {
-					global.Config.AggregatorEnabledMutex.RUnlock()
+					global.Config.AggregatorMutex.RUnlock()
 					time.Sleep(1 * time.Second)
 					continue
 				}
-				global.Config.AggregatorEnabledMutex.RUnlock()
+				global.Config.AggregatorMutex.RUnlock()
 			}
 
-			if global.Config.OutputFramerate != -1 && time.Since(lastUpdate).Seconds() < (1.0/global.Config.OutputFramerate) {
+			if global.Config.OutputFramerate != -1 && time.Since(global.Config.AggregatorLastUpdate).Seconds() < (1.0/global.Config.OutputFramerate) {
 				continue
 			}
 
@@ -99,7 +103,7 @@ func StartAggregator(agg *Aggregator, inputs ...input.Input) {
 
 			currentFPS++
 			secondsNow := time.Now().Second()
-			if lastUpdate.Second() != secondsNow {
+			if global.Config.AggregatorLastUpdate.Second() != secondsNow {
 				if global.Config.LogFPS {
 					//we wanna either log
 					// X FPS if above zero
@@ -107,10 +111,10 @@ func StartAggregator(agg *Aggregator, inputs ...input.Input) {
 
 					//0:50 - 0:05 = 0:45, but should be 0:15
 					//fix this by turning 0:05 into 1:05
-					if secondsNow < lastUpdate.Second() {
+					if secondsNow < global.Config.AggregatorLastUpdate.Second() {
 						secondsNow += 60
 					}
-					deltaSeconds := utils.Abs(lastUpdate.Second() - secondsNow)
+					deltaSeconds := utils.Abs(global.Config.AggregatorLastUpdate.Second() - secondsNow)
 					fps := float64(currentFPS) / float64(deltaSeconds)
 					if fps >= 1 {
 						log.Printf("%.0f FPS\n", fps)
@@ -121,7 +125,9 @@ func StartAggregator(agg *Aggregator, inputs ...input.Input) {
 				currentFPS = 0
 			}
 
-			lastUpdate = time.Now()
+			global.Config.AggregatorMutex.Lock()
+			global.Config.AggregatorLastUpdate = time.Now()
+			global.Config.AggregatorMutex.Unlock()
 		}
 	}()
 
