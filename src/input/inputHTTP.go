@@ -20,7 +20,6 @@ const (
 	delim          = "\r\n"
 	field          = "Content-Length: "
 	authentication = "Authorization: Basic "
-	NewMJPEGFrameNewMJPEGFrame
 )
 
 var JPEG_PREFIX = []byte("\xff\xd8")
@@ -38,9 +37,12 @@ func NewInputHTTP(configIndex int, url string) *InputHTTP {
 	return &InputHTTP{configIndex: configIndex, url: url, data: InputData{InputStorage: mjpeg.NewFrameStorage()}}
 }
 
+// GetInputData getter for input data
 func (source *InputHTTP) GetInputData() *InputData {
 	return &source.data
 }
+
+// GetInfo returns the URL
 func (source *InputHTTP) GetInfo() string {
 	return source.url
 }
@@ -87,7 +89,7 @@ func (source *InputHTTP) sendHeader() error {
 	}
 
 	// Get the first frame to test if we have permission to access the source
-	frame, err := source.ReceiveFrame()
+	frame, err := source.ReceiveFrame(true)
 
 	if err != nil {
 		return &customErrors.ErrHttpOpenInputAuthentication{Text: err.Error()}
@@ -117,7 +119,18 @@ func (source *InputHTTP) Init() error {
 }
 
 // ReceiveFrame reads a mjpeg-stream and parses the next received frame as mjpeg.MjpegFrame
-func (source *InputHTTP) ReceiveFrame() (mjpeg.MjpegFrame, error) {
+func (source *InputHTTP) ReceiveFrame(force bool) (mjpeg.MjpegFrame, error) {
+	if !force {
+		global.Config.AggregatorEnabledMutex.RLock()
+		if !global.Config.AggregatorEnabled {
+			global.Config.AggregatorEnabledMutex.RUnlock()
+
+			time.Sleep(1 * time.Second)
+			source.bufferedConnection.Reset(source.connection)
+			return mjpeg.NewMJPEGFrame(), nil
+		}
+		global.Config.AggregatorEnabledMutex.RUnlock()
+	}
 	header, err := source.bufferedConnection.ReadString(JPEG_PREFIX[0])
 	if err != nil {
 		return mjpeg.MjpegFrame{}, err

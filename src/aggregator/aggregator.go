@@ -25,8 +25,8 @@ type Aggregator interface {
 }
 
 type AggregatorData struct {
-	passthrough       bool
-	Enabled           bool
+	passthrough bool
+	//Enabled           bool
 	AggregatorStorage *mjpeg.FrameStorage
 }
 
@@ -50,7 +50,7 @@ func StartAggregator(agg *Aggregator, inputs ...input.Input) {
 
 	if !global.DecodingNecessary() && reflect.TypeOf(aggregator) == reflect.TypeOf(&AggregatorCarousel{}) {
 		passthroughMode = true
-	} else if !global.DecodingNecessary() && len(inputStorages) == 1 {
+	} else if !global.DecodingNecessary() && reflect.TypeOf(aggregator) == reflect.TypeOf(&AggregatorGrid{}) && len(inputStorages) == 1 {
 		passthroughMode = true
 	}
 
@@ -65,9 +65,15 @@ func StartAggregator(agg *Aggregator, inputs ...input.Input) {
 			condition.Wait()
 
 			// not enabled => no client is connected and no work has to be done
-			if !global.Config.AlwaysActive && !aggregator.GetAggregatorData().Enabled {
-				time.Sleep(1 * time.Second)
-				continue
+			if !global.Config.AlwaysActive {
+
+				global.Config.AggregatorEnabledMutex.RLock()
+				if !global.Config.AggregatorEnabled {
+					global.Config.AggregatorEnabledMutex.RUnlock()
+					time.Sleep(1 * time.Second)
+					continue
+				}
+				global.Config.AggregatorEnabledMutex.RUnlock()
 			}
 
 			if global.Config.OutputFramerate != -1 && time.Since(lastUpdate).Seconds() < (1.0/global.Config.OutputFramerate) {

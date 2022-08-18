@@ -1,5 +1,7 @@
 package global
 
+import "sync"
+
 type InputConfig struct {
 	//Url to connect to
 	Url string
@@ -37,6 +39,9 @@ type GlobalConfig struct {
 	DisablePassthrough bool
 	AlwaysActive       bool
 	Debug              bool
+
+	AggregatorEnabled      bool
+	AggregatorEnabledMutex sync.RWMutex
 }
 
 var Config GlobalConfig
@@ -60,6 +65,9 @@ func initialConfig() GlobalConfig {
 		DisablePassthrough: false,
 		AlwaysActive:       false,
 		Debug:              false,
+
+		AggregatorEnabled:      false,
+		AggregatorEnabledMutex: sync.RWMutex{},
 	}
 }
 

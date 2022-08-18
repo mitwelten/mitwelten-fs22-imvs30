@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"mjpeg_multiplexer/src/aggregator"
+	"mjpeg_multiplexer/src/global"
 	"mjpeg_multiplexer/src/mjpeg"
 	"net"
 	"sync"
@@ -92,7 +93,9 @@ func (output *OutputHTTP) serve(client ClientConnection) {
 		output.remove(client_)
 		close(client_.channel)
 		if len(output.clients) == 0 && output.aggregator != nil {
-			output.aggregator.GetAggregatorData().Enabled = false
+			global.Config.AggregatorEnabledMutex.Lock()
+			global.Config.AggregatorEnabled = false
+			global.Config.AggregatorEnabledMutex.Unlock()
 			log.Printf("No more clients, stopping aggregator\n")
 		}
 		output.clientsMutex.Unlock()
@@ -187,7 +190,9 @@ func (output *OutputHTTP) connectionLoop() {
 		output.clientsMutex.Lock()
 		output.clients = append(output.clients, client)
 		if len(output.clients) == 1 && output.aggregator != nil {
-			output.aggregator.GetAggregatorData().Enabled = true
+			global.Config.AggregatorEnabledMutex.Lock()
+			global.Config.AggregatorEnabled = true
+			global.Config.AggregatorEnabledMutex.Unlock()
 			log.Printf("Client connected, starting aggregator\n")
 		}
 		output.clientsMutex.Unlock()

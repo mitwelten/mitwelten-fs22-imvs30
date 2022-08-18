@@ -10,7 +10,7 @@ import (
 
 type Input interface {
 	//ReceiveFrame receives a single frame from the input
-	ReceiveFrame() (mjpeg.MjpegFrame, error)
+	ReceiveFrame(force bool) (mjpeg.MjpegFrame, error)
 	//Init starts the connection to the input
 	Init() error
 	//GetInfo returns a description to of the connection
@@ -37,7 +37,7 @@ func reconnectInput(input Input) {
 
 }
 
-//StartInput starts the input source by calling the Init() method and running ReceiveFrame() in a loop
+// StartInput starts the input source by calling the Init() method and running ReceiveFrame() in a loop
 func StartInput(input Input) {
 	inputData := input.GetInputData()
 
@@ -48,7 +48,7 @@ func StartInput(input Input) {
 		}
 
 		for {
-			var frame, err = input.ReceiveFrame()
+			var frame, err = input.ReceiveFrame(false)
 
 			if errors.As(err, &customErrors.ErrInvalidFrame{}) {
 				// retry when receiving invalid frame
@@ -60,7 +60,10 @@ func StartInput(input Input) {
 				reconnectInput(input)
 				continue
 			}
-			inputData.InputStorage.Store(&frame)
+
+			if !frame.Empty {
+				inputData.InputStorage.Store(&frame)
+			}
 		}
 	}()
 }
