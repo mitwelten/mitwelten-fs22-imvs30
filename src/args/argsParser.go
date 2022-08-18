@@ -28,6 +28,7 @@ const errDurationWithGrid = "Option '--duration=n' only available for the mode '
 const errBorderWithCarousel = "Option '--show_border' only available for the mode 'grid' or 'panel'."
 const errLabelWithoutShowLabel = "Option '--labels [list]' requires option '--show_label'."
 const errLabelFontSizeWithoutShowLabel = "Option '--label_font_size [number]' requires option '--show_label'."
+const errInvalidFramerate = "Option '--framerate [number] must be followed by a number > 0."
 
 var (
 	usage = `Usage:
@@ -253,6 +254,11 @@ func checkOptions(args []string) error {
 				if len(arr) != 2 {
 					return createUsageError(fmt.Sprintf("Malformed argument '--grid_dimension'. Expected numerical arguments in '--grid_dimension x,y', but got '--grid_dimension %s'", value))
 				}
+			} else if field == "--framerate" {
+				_, err := strconv.ParseFloat(value, 64)
+				if err != nil {
+					return createUsageError(fmt.Sprintf("Malformed argument '%s'. Expected numerical arguments in '%s x', but got '%s'", el, field, el))
+				}
 			} else if field != "--labels" {
 				_, err := strconv.Atoi(value)
 				if err != nil {
@@ -433,6 +439,10 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 		return multiplexer.MultiplexerConfig{}, createUsageError(errLabelFontSizeWithoutShowLabel)
 	}
 
+	if framerate != -1 && framerate <= 0 {
+		return multiplexer.MultiplexerConfig{}, createUsageError(errInvalidFramerate)
+	}
+
 	// mode
 	if grid {
 
@@ -490,6 +500,7 @@ func ParseArgs(args []string) (config multiplexer.MultiplexerConfig, err error) 
 	global.Config.LogFPS = logFPS
 
 	// InputRates
+
 	global.Config.OutputFramerate = framerate
 
 	// quality
