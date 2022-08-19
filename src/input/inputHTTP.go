@@ -2,6 +2,7 @@ package input
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"log"
 	"mjpeg_multiplexer/src/customErrors"
@@ -16,7 +17,7 @@ import (
 
 const (
 	header = "GET /?action=stream HTTP/1.1\r\n" +
-		"Host:%s\r\n"
+		"Host: %s\r\n"
 	delim          = "\r\n"
 	field          = "Content-Length: "
 	authentication = "Authorization: Basic "
@@ -64,7 +65,7 @@ func (source *InputHTTP) open() error {
 func (source *InputHTTP) sendHeader() error {
 	var err error
 
-	_, err = source.connection.Write([]byte(header))
+	_, err = source.connection.Write([]byte(fmt.Sprintf(header, source.url)))
 	if err != nil {
 		return &customErrors.ErrHttpWriteHeader{IP: source.connection.LocalAddr().String()}
 	}
